@@ -114,6 +114,9 @@ def restore_session(
 
         if local_storage or session_storage:
             # Need to navigate to URL to set storage
+            if url is None:
+                raise ValueError("url must be provided when restoring local_storage or session_storage")
+            
             pages = context.pages
             if not pages:
                 page = context.new_page()

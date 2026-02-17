@@ -245,8 +245,8 @@ def analyze_column_cardinality(
     category_order = {"low": 0, "medium": 1, "high": 2}
     results.sort(
         key=lambda x: (
-            category_order[x["cardinality_category"]],
-            x["cardinality_ratio"],
+            category_order[str(x["cardinality_category"])],
+            float(x["cardinality_ratio"]),  # type: ignore[arg-type]
         )
     )
 

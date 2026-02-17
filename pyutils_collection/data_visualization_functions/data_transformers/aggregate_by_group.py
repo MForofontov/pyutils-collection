@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def aggregate_by_group(
     data: list[float] | np.ndarray,
     groups: list[Any] | np.ndarray,
-    agg_func: str | Callable = "mean",
+    agg_func: str | Callable[[np.ndarray], float] = "mean",
 ) -> dict[Any, float]:
     """
     Aggregate data by group with various statistics.
@@ -90,14 +90,14 @@ def aggregate_by_group(
 
     # Get aggregation function
     if isinstance(agg_func, str):
-        agg_functions = {
-            "mean": np.mean,
-            "sum": np.sum,
-            "median": np.median,
-            "min": np.min,
-            "max": np.max,
-            "std": np.std,
-            "count": len,
+        agg_functions: dict[str, Callable[[np.ndarray], float]] = {
+            "mean": lambda x: float(np.mean(x)),
+            "sum": lambda x: float(np.sum(x)),
+            "median": lambda x: float(np.median(x)),
+            "min": lambda x: float(np.min(x)),
+            "max": lambda x: float(np.max(x)),
+            "std": lambda x: float(np.std(x)),
+            "count": lambda x: float(len(x)),
         }
 
         if agg_func not in agg_functions:

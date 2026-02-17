@@ -2,6 +2,8 @@
 Tests for extract_emails function.
 """
 
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.regex]
@@ -63,10 +65,10 @@ def test_extract_emails_complex_format() -> None:
 def test_extract_emails_invalid_type_text() -> None:
     """Test TypeError for invalid text type."""
     with pytest.raises(TypeError, match="text must be str"):
-        extract_emails(123)
+        extract_emails(cast(Any, 123))
 
 
 def test_extract_emails_invalid_type_unique() -> None:
     """Test TypeError for invalid unique type."""
     with pytest.raises(TypeError, match="unique must be bool"):
-        extract_emails("test@example.com", unique="yes")
+        extract_emails("test@example.com", unique=cast(Any, "yes"))

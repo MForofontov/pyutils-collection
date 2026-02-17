@@ -8,8 +8,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    get_network_interfaces = None  # type: ignore
+    psutil = None
+    get_network_interfaces = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,

@@ -14,7 +14,8 @@ handler.setFormatter(formatter)
 test_logger.addHandler(handler)
 
 
-def test_deprecated_with_logger(caplog):
+def test_deprecated_with_logger(caplog) -> None:
+
     """
     Test case 1: Deprecated function with logger.
     """
@@ -29,7 +30,8 @@ def test_deprecated_with_logger(caplog):
     assert "Call to deprecated function old_function." in caplog.text
 
 
-def test_deprecated_without_logger(capsys):
+def test_deprecated_without_logger(capsys) -> None:
+
     """
     Test case 2: Deprecated function without logger.
     """
@@ -45,7 +47,8 @@ def test_deprecated_without_logger(capsys):
     assert "old_function_no_logger is deprecated." in str(record[0].message)
 
 
-def test_deprecated_with_args(caplog):
+def test_deprecated_with_args(caplog) -> None:
+
     """
     Test case 3: Deprecated function with arguments.
     """
@@ -60,7 +63,8 @@ def test_deprecated_with_args(caplog):
     assert "Call to deprecated function old_function_with_args." in caplog.text
 
 
-def test_deprecated_with_kwargs(caplog):
+def test_deprecated_with_kwargs(caplog) -> None:
+
     """
     Test case 4: Deprecated function with keyword arguments.
     """
@@ -75,7 +79,8 @@ def test_deprecated_with_kwargs(caplog):
     assert "Call to deprecated function old_function_with_kwargs." in caplog.text
 
 
-def test_deprecated_with_return_value(caplog):
+def test_deprecated_with_return_value(caplog) -> None:
+
     """
     Test case 5: Deprecated function with return value.
     """
@@ -90,7 +95,8 @@ def test_deprecated_with_return_value(caplog):
     assert "Call to deprecated function old_function_with_return." in caplog.text
 
 
-def test_deprecated_with_exception(caplog):
+def test_deprecated_with_exception(caplog) -> None:
+
     """
     Test case 6: Deprecated function that raises an exception.
     """
@@ -105,7 +111,8 @@ def test_deprecated_with_exception(caplog):
     assert "Call to deprecated function old_function_with_exception." in caplog.text
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 7: Invalid logger type.
     """

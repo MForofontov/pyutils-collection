@@ -79,7 +79,10 @@ def create_gradient(
     gradient = []
     for i in range(n_steps):
         t = i / (n_steps - 1) if n_steps > 1 else 0
-        rgb = [start_rgb[j] + t * (end_rgb[j] - start_rgb[j]) for j in range(3)]
+        r = start_rgb[0] + t * (end_rgb[0] - start_rgb[0])
+        g = start_rgb[1] + t * (end_rgb[1] - start_rgb[1])
+        b = start_rgb[2] + t * (end_rgb[2] - start_rgb[2])
+        rgb: tuple[float, float, float] = (r, g, b)
         gradient.append(mcolors.rgb2hex(rgb))
 
     logger.debug(

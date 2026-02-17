@@ -44,7 +44,9 @@ def test_smart_screenshot_with_selector(tmp_path: Path) -> None:
     # Arrange
     mock_page = MagicMock()
     mock_element = MagicMock()
-    mock_page.locator.return_value = mock_element
+    mock_locator = MagicMock()
+    mock_locator.first = mock_element
+    mock_page.locator.return_value = mock_locator
     screenshot_path = str(tmp_path / "element.png")
     
     # Act

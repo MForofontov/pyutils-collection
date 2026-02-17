@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    scan_open_ports = None  # type: ignore
+    psutil = None
+    scan_open_ports = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -49,7 +50,7 @@ def test_scan_open_ports_type_error_host() -> None:
     Test case 3: TypeError for non-string host (simulate error).
     """
     with pytest.raises(TypeError, match="host must be a string"):
-        scan_open_ports(123, 22, 25)
+        scan_open_ports(cast(Any, 123), 22, 25)
 
 
 def test_scan_open_ports_type_error_port() -> None:
@@ -57,4 +58,4 @@ def test_scan_open_ports_type_error_port() -> None:
     Test case 4: TypeError for non-integer port (simulate error).
     """
     with pytest.raises(TypeError, match="start_port must be an integer"):
-        scan_open_ports("localhost", "not_an_int", 25)
+        scan_open_ports("localhost", cast(Any, "not_an_int"), 25)

@@ -7,9 +7,9 @@ and flexible extraction patterns.
 """
 
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
-from playwright.sync_api import Page
+from playwright.sync_api import Locator, Page
 
 
 WaitStrategy = Literal["domcontentloaded", "load", "networkidle", "selector", "function"]
@@ -218,6 +218,7 @@ def extract_dynamic_content(
         }
 
         # Determine extraction target
+        target: Locator | Page
         if extract_selector:
             if logger:
                 logger.debug(f"Extracting from selector: {extract_selector}")
@@ -228,7 +229,8 @@ def extract_dynamic_content(
         # Extract text
         if extract_text:
             if extract_selector:
-                result["text"] = target.text_content()
+                # When extract_selector is set, target is always a Locator
+                result["text"] = cast(Locator, target).text_content()
             else:
                 result["text"] = page.evaluate("() => document.body.innerText")
             if logger:
@@ -238,7 +240,8 @@ def extract_dynamic_content(
         # Extract HTML
         if extract_html:
             if extract_selector:
-                result["html"] = target.inner_html()
+                # When extract_selector is set, target is always a Locator
+                result["html"] = cast(Locator, target).inner_html()
             else:
                 result["html"] = page.content()
             if logger:

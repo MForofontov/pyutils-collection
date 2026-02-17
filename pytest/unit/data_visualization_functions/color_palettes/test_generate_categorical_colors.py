@@ -25,7 +25,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_generate_categorical_colors_basic():
+def test_generate_categorical_colors_basic() -> None:
+
     """
     Test case 1: Generate categorical colors with default settings.
     """
@@ -41,7 +42,8 @@ def test_generate_categorical_colors_basic():
     assert all(isinstance(c, str) for c in colors)
 
 
-def test_generate_categorical_colors_many_categories():
+def test_generate_categorical_colors_many_categories() -> None:
+
     """
     Test case 2: Generate colors for many categories.
     """
@@ -56,7 +58,8 @@ def test_generate_categorical_colors_many_categories():
     assert all(isinstance(c, str) for c in colors)
 
 
-def test_generate_categorical_colors_single_category():
+def test_generate_categorical_colors_single_category() -> None:
+
     """
     Test case 3: Generate color for single category.
     """
@@ -71,7 +74,8 @@ def test_generate_categorical_colors_single_category():
     assert len(colors) == 1
 
 
-def test_generate_categorical_colors_hex_format():
+def test_generate_categorical_colors_hex_format() -> None:
+
     """
     Test case 4: Generated colors are in hex format.
     """
@@ -86,7 +90,8 @@ def test_generate_categorical_colors_hex_format():
     assert all(len(c) == 7 for c in colors)  # #RRGGBB format
 
 
-def test_generate_categorical_colors_unique():
+def test_generate_categorical_colors_unique() -> None:
+
     """
     Test case 5: All generated colors are unique.
     """
@@ -100,7 +105,8 @@ def test_generate_categorical_colors_unique():
     assert len(set(colors)) == len(colors)  # All unique
 
 
-def test_generate_categorical_colors_empty_raises_error():
+def test_generate_categorical_colors_empty_raises_error() -> None:
+
     """
     Test case 6: ValueError for zero or negative n_colors.
     """
@@ -112,7 +118,8 @@ def test_generate_categorical_colors_empty_raises_error():
         generate_categorical_colors(0)
 
 
-def test_generate_categorical_colors_invalid_type_raises_error():
+def test_generate_categorical_colors_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for invalid type.
     """
@@ -124,7 +131,8 @@ def test_generate_categorical_colors_invalid_type_raises_error():
         generate_categorical_colors("5")
 
 
-def test_generate_categorical_colors_none_raises_error():
+def test_generate_categorical_colors_none_raises_error() -> None:
+
     """
     Test case 8: TypeError for None value.
     """

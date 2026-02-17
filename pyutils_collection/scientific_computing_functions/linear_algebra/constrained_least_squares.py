@@ -120,15 +120,17 @@ def constrained_least_squares(
         raise ValueError(f"tol must be positive, got {tol}")
 
     # Parse bounds
-    lb, ub = bounds
-    if np.isscalar(lb):
-        lb = np.full(A_array.shape[1], lb)
+    lb_val: float | list[float] | np.ndarray
+    ub_val: float | list[float] | np.ndarray
+    lb_val, ub_val = bounds
+    if np.isscalar(lb_val):
+        lb = np.full(A_array.shape[1], float(lb_val))  # type: ignore[arg-type]
     else:
-        lb = np.asarray(lb, dtype=float)
-    if np.isscalar(ub):
-        ub = np.full(A_array.shape[1], ub)
+        lb = np.asarray(lb_val, dtype=float)
+    if np.isscalar(ub_val):
+        ub = np.full(A_array.shape[1], float(ub_val))  # type: ignore[arg-type]
     else:
-        ub = np.asarray(ub, dtype=float)
+        ub = np.asarray(ub_val, dtype=float)
 
     if lb.shape[0] != A_array.shape[1]:
         raise ValueError(

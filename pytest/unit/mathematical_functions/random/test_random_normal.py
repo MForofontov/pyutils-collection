@@ -1,4 +1,5 @@
 import math
+from typing import Any, cast
 
 import pytest
 
@@ -80,7 +81,7 @@ def test_random_normal_type_error_count() -> None:
     Test case 7: Test random_normal with invalid type for count.
     """
     with pytest.raises(TypeError, match="count must be an integer"):
-        random_normal("10")
+        random_normal(cast(Any, "10"))
 
 
 def test_random_normal_type_error_mean() -> None:
@@ -88,7 +89,7 @@ def test_random_normal_type_error_mean() -> None:
     Test case 8: Test random_normal with invalid type for mean.
     """
     with pytest.raises(TypeError, match="mean must be numeric"):
-        random_normal(10, mean="0.0")
+        random_normal(10, mean=cast(Any, "0.0"))
 
 
 def test_random_normal_type_error_stddev() -> None:
@@ -96,7 +97,7 @@ def test_random_normal_type_error_stddev() -> None:
     Test case 9: Test random_normal with invalid type for stddev.
     """
     with pytest.raises(TypeError, match="stddev must be numeric"):
-        random_normal(10, stddev="1.0")
+        random_normal(10, stddev=cast(Any, "1.0"))
 
 
 def test_random_normal_value_error_negative_count() -> None:

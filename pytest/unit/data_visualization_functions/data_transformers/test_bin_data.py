@@ -20,13 +20,17 @@ except ImportError:
     np = None  # type: ignore
     bin_data = None  # type: ignore
 
-pytestmark = pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
-)
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
+pytestmark = [
+    pytest.mark.skipif(
+        not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
+    ),
+    pytest.mark.unit,
+    pytest.mark.data_visualization,
+]
 
 
-def test_bin_data_basic():
+def test_bin_data_basic() -> None:
+
     """
     Test case 1: Bin data with default settings.
     """
@@ -41,7 +45,8 @@ def test_bin_data_basic():
     assert len(binned_indices) == len(data)
 
 
-def test_bin_data_custom_bins():
+def test_bin_data_custom_bins() -> None:
+
     """
     Test case 2: Bin data with custom number of bins.
     """
@@ -56,7 +61,8 @@ def test_bin_data_custom_bins():
     assert len(binned_indices) == len(data)
 
 
-def test_bin_data_custom_bin_edges():
+def test_bin_data_custom_bin_edges() -> None:
+
     """
     Test case 3: Bin data with custom bin edges.
     """
@@ -71,7 +77,8 @@ def test_bin_data_custom_bin_edges():
     assert len(bin_edges) == len(custom_edges)
 
 
-def test_bin_data_numpy_array():
+def test_bin_data_numpy_array() -> None:
+
     """
     Test case 4: Bin numpy array data.
     """
@@ -86,7 +93,8 @@ def test_bin_data_numpy_array():
     assert isinstance(binned_indices, np.ndarray)
 
 
-def test_bin_data_empty_raises_error():
+def test_bin_data_empty_raises_error() -> None:
+
     """
     Test case 5: ValueError for empty data.
     """
@@ -98,7 +106,8 @@ def test_bin_data_empty_raises_error():
         bin_data([])
 
 
-def test_bin_data_invalid_bins_raises_error():
+def test_bin_data_invalid_bins_raises_error() -> None:
+
     """
     Test case 6: ValueError for invalid number of bins.
     """
@@ -111,7 +120,8 @@ def test_bin_data_invalid_bins_raises_error():
         bin_data(data, bins=0)
 
 
-def test_bin_data_invalid_type_raises_error():
+def test_bin_data_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for invalid data type.
     """
@@ -123,7 +133,8 @@ def test_bin_data_invalid_type_raises_error():
         bin_data("not_a_list")
 
 
-def test_bin_data_single_value():
+def test_bin_data_single_value() -> None:
+
     """
     Test case 8: Bin data with single unique value.
     """

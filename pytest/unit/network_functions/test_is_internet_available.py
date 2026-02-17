@@ -6,8 +6,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    is_internet_available = None  # type: ignore
+    psutil = None
+    is_internet_available = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,

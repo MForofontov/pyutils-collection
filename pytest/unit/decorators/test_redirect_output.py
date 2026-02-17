@@ -14,7 +14,8 @@ handler.setFormatter(formatter)
 test_logger.addHandler(handler)
 
 
-def test_redirect_output_basic(tmpdir):
+def test_redirect_output_basic(tmpdir) -> None:
+
     """
     Test case 1: Basic functionality of redirecting output
     """
@@ -29,7 +30,8 @@ def test_redirect_output_basic(tmpdir):
         assert f.read().strip() == "Function executed"
 
 
-def test_redirect_output_with_args(tmpdir):
+def test_redirect_output_with_args(tmpdir) -> None:
+
     """
     Test case 2: Function with positional arguments
     """
@@ -44,7 +46,8 @@ def test_redirect_output_with_args(tmpdir):
         assert f.read().strip() == "3"
 
 
-def test_redirect_output_with_kwargs(tmpdir):
+def test_redirect_output_with_kwargs(tmpdir) -> None:
+
     """
     Test case 3: Function with keyword arguments
     """
@@ -59,7 +62,8 @@ def test_redirect_output_with_kwargs(tmpdir):
         assert f.read().strip() == "3"
 
 
-def test_redirect_output_with_var_args(tmpdir):
+def test_redirect_output_with_var_args(tmpdir) -> None:
+
     """
     Test case 4: Function with variable length arguments (*args and **kwargs)
     """
@@ -76,7 +80,8 @@ def test_redirect_output_with_var_args(tmpdir):
         )
 
 
-def test_redirect_output_run_time_error_no_logger(tmpdir):
+def test_redirect_output_run_time_error_no_logger(tmpdir) -> None:
+
     """
     Test case 5: Redirecting output when an error occurs
     """
@@ -90,7 +95,8 @@ def test_redirect_output_run_time_error_no_logger(tmpdir):
         error_function()
 
 
-def test_redirect_output_run_time_error_with_logger(tmpdir, caplog):
+def test_redirect_output_run_time_error_with_logger(tmpdir, caplog) -> None:
+
     """
     Test case 6: Logger functionality when an error occurs
     """
@@ -106,7 +112,8 @@ def test_redirect_output_run_time_error_with_logger(tmpdir, caplog):
         assert "Failed to redirect output" in caplog.text
 
 
-def test_invalid_file_path_no_logger():
+def test_invalid_file_path_no_logger() -> None:
+
     """
     Test case 7: Invalid file path parameter
     """
@@ -117,7 +124,8 @@ def test_invalid_file_path_no_logger():
             pass
 
 
-def test_invalid_file_path_with_logger(caplog):
+def test_invalid_file_path_with_logger(caplog) -> None:
+
     """
     Test case 8: Invalid file path parameter with logger
     """
@@ -131,7 +139,8 @@ def test_invalid_file_path_with_logger(caplog):
         assert "file_path must be a string" in caplog.text
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 9: Invalid logger type
     """

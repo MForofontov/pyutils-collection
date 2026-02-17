@@ -16,7 +16,8 @@ pytestmark = [
 ]
 
 
-def test_get_env_var_basic(monkeypatch):
+def test_get_env_var_basic(monkeypatch) -> None:
+
     """
     Test case 1: Get env var as string
     """
@@ -24,14 +25,16 @@ def test_get_env_var_basic(monkeypatch):
     assert get_env_var("FOO") == "bar"
 
 
-def test_get_env_var_default(monkeypatch):
+def test_get_env_var_default(monkeypatch) -> None:
+
     """
     Test case 2: Get env var with default
     """
     assert get_env_var("NOT_SET", default="baz") == "baz"
 
 
-def test_get_env_var_cast_int(monkeypatch):
+def test_get_env_var_cast_int(monkeypatch) -> None:
+
     """
     Test case 3: Get env var with int cast
     """
@@ -39,7 +42,8 @@ def test_get_env_var_cast_int(monkeypatch):
     assert get_env_var("PORT", cast=int) == 8080
 
 
-def test_get_env_var_cast_fail(monkeypatch):
+def test_get_env_var_cast_fail(monkeypatch) -> None:
+
     """
     Test case 4: Casting failure raises ValueError
     """

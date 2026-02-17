@@ -3,12 +3,14 @@ import pytest
 pytestmark = [pytest.mark.unit, pytest.mark.logger_functions]
 import logging
 import sys
+from typing import Any
 from unittest.mock import patch
 
 from pyutils_collection.logger_functions.colored_formatter import colored_formatter
 
 
-def test_colored_formatter_basic():
+def test_colored_formatter_basic() -> None:
+
     """
     Test case 1: Basic colored formatter functionality.
     """
@@ -34,7 +36,8 @@ def test_colored_formatter_basic():
     assert "INFO" in result
 
 
-def test_colored_formatter_colors():
+def test_colored_formatter_colors() -> None:
+
     """
     Test case 2: Colored formatter adds ANSI color codes.
     """
@@ -68,7 +71,8 @@ def test_colored_formatter_colors():
             assert "\033[0m" in result  # Reset code
 
 
-def test_colored_formatter_no_color():
+def test_colored_formatter_no_color() -> None:
+
     """
     Test case 3: Colored formatter with colors disabled.
     """
@@ -92,22 +96,26 @@ def test_colored_formatter_no_color():
 
 
 @patch("sys.stdout.isatty")
-def test_colored_formatter_auto_detect_color(mock_isatty):
+def test_colored_formatter_auto_detect_color(mock_isatty: Any) -> None:
+
     """
     Test case 4: Automatic color detection.
     """
     # Test when TTY is available
     mock_isatty.return_value = True
     formatter = colored_formatter(use_color=True)
+    assert hasattr(formatter, "use_color")
     assert formatter.use_color is True
 
     # Test when TTY is not available
     mock_isatty.return_value = False
     formatter = colored_formatter(use_color=True)
+    assert hasattr(formatter, "use_color")
     assert formatter.use_color is False
 
 
-def test_colored_formatter_custom_format():
+def test_colored_formatter_custom_format() -> None:
+
     """
     Test case 5: Colored formatter with custom format string.
     """
@@ -132,7 +140,8 @@ def test_colored_formatter_custom_format():
     assert "Custom format message" in result
 
 
-def test_colored_formatter_unknown_level():
+def test_colored_formatter_unknown_level() -> None:
+
     """
     Test case 6: Colored formatter with unknown log level.
     """
@@ -159,7 +168,8 @@ def test_colored_formatter_unknown_level():
     assert "Unknown level message" in result
 
 
-def test_colored_formatter_with_args():
+def test_colored_formatter_with_args() -> None:
+
     """
     Test case 7: Colored formatter with message formatting arguments.
     """

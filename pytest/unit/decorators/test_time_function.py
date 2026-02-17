@@ -46,7 +46,8 @@ def sample_function() -> str:
     return "Function executed"
 
 
-def test_time_function_success(capfd):
+def test_time_function_success(capfd) -> None:
+
     """
     Test case 1: Function executes successfully and prints execution time
     """
@@ -57,7 +58,8 @@ def test_time_function_success(capfd):
     assert "sample_function executed in" in captured.out
 
 
-def test_time_function_with_logger(caplog):
+def test_time_function_with_logger(caplog) -> None:
+
     """
     Test case 2: Function executes successfully and logs execution time
     """
@@ -73,7 +75,8 @@ def test_time_function_with_logger(caplog):
         assert "function_with_logger executed in" in caplog.text
 
 
-def test_time_function_with_args(capfd):
+def test_time_function_with_args(capfd) -> None:
+
     """
     Test case 3: Function with positional arguments
     """
@@ -90,7 +93,8 @@ def test_time_function_with_args(capfd):
     assert "function_with_args executed in" in captured.out
 
 
-def test_time_function_with_kwargs(capfd):
+def test_time_function_with_kwargs(capfd) -> None:
+
     """
     Test case 4: Function with keyword arguments
     """
@@ -107,7 +111,8 @@ def test_time_function_with_kwargs(capfd):
     assert "function_with_kwargs executed in" in captured.out
 
 
-def test_time_function_with_var_args(capfd):
+def test_time_function_with_var_args(capfd) -> None:
+
     """
     Test case 5: Function with variable length arguments (*args and **kwargs)
     """
@@ -124,7 +129,8 @@ def test_time_function_with_var_args(capfd):
     assert "function_with_var_args executed in" in captured.out
 
 
-def test_time_function_exception(capfd):
+def test_time_function_exception(capfd) -> None:
+
     """
     Test case 6: Function raises an exception
     """

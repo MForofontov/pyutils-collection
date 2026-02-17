@@ -163,7 +163,7 @@ def compare_table_data(
     if not common_columns:
         raise ValueError("No common columns found between tables")
 
-    result = {
+    result: dict[str, Any] = {
         "source_count": 0,
         "target_count": 0,
         "count_match": False,

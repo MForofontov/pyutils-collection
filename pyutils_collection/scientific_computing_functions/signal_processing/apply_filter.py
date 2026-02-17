@@ -132,21 +132,23 @@ def apply_filter(
             )
         if len(cutoff) != 2:
             raise ValueError(f"cutoff must have 2 elements for {filter_type} filter")
-        cutoff_norm = [c / nyquist for c in cutoff]
-        if cutoff_norm[0] >= cutoff_norm[1]:
+        cutoff_norm_list = [c / nyquist for c in cutoff]
+        if cutoff_norm_list[0] >= cutoff_norm_list[1]:
             raise ValueError("cutoff[0] must be < cutoff[1]")
-        if any(c <= 0 or c >= 1 for c in cutoff_norm):
+        if any(c <= 0 or c >= 1 for c in cutoff_norm_list):
             raise ValueError("normalized cutoff frequencies must be between 0 and 1")
+        cutoff_norm: float | list[float] = cutoff_norm_list
     else:
         if isinstance(cutoff, (tuple, list)):
             raise ValueError(
                 f"cutoff must be a scalar for {filter_type} filter, got tuple/list"
             )
-        cutoff_norm = cutoff / nyquist
-        if cutoff_norm <= 0 or cutoff_norm >= 1:
+        cutoff_norm_scalar: float = cutoff / nyquist
+        if cutoff_norm_scalar <= 0 or cutoff_norm_scalar >= 1:
             raise ValueError(
-                f"normalized cutoff must be between 0 and 1, got {cutoff_norm}"
+                f"normalized cutoff must be between 0 and 1, got {cutoff_norm_scalar}"
             )
+        cutoff_norm = cutoff_norm_scalar
 
     # Design filter
     try:

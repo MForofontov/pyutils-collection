@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    multicast_send = None  # type: ignore
+    psutil = None
+    multicast_send = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -36,7 +37,7 @@ def test_multicast_send_type_error_message() -> None:
     Test case 2: TypeError for non-string message (simulate error).
     """
     with pytest.raises(AttributeError):
-        multicast_send(123, "224.0.0.1", 5007)
+        multicast_send(cast(Any, 123), "224.0.0.1", 5007)
 
 
 def test_multicast_send_type_error_group() -> None:
@@ -44,7 +45,7 @@ def test_multicast_send_type_error_group() -> None:
     Test case 3: TypeError for non-string group (simulate error).
     """
     with pytest.raises((TypeError, OSError)):
-        multicast_send("hello", 123, 5007)
+        multicast_send("hello", cast(Any, 123), 5007)
 
 
 def test_multicast_send_type_error_port() -> None:
@@ -52,4 +53,4 @@ def test_multicast_send_type_error_port() -> None:
     Test case 4: TypeError for non-integer port (simulate error).
     """
     with pytest.raises(TypeError):
-        multicast_send("hello", "224.0.0.1", "not_an_int")
+        multicast_send("hello", "224.0.0.1", cast(Any, "not_an_int"))

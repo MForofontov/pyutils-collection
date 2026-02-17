@@ -132,10 +132,11 @@ def create_bar_plot(
         raise ValueError(f"figsize dimensions must be positive, got {figsize}")
 
     # Handle multiple series
+    value_series: list[list[float]]
     if len(values) > 0 and isinstance(values[0], list):
-        value_series = [list(v) for v in values]
+        value_series = [list(v) for v in values]  # type: ignore[arg-type]
     else:
-        value_series = [list(values)]
+        value_series = [values]  # type: ignore[list-item]
 
     # Validate dimensions
     for i, series in enumerate(value_series):
@@ -173,34 +174,34 @@ def create_bar_plot(
         # Stacked bars
         bottom = np.zeros(len(categories))
         for i, series in enumerate(value_series):
-            plot_kwargs: dict[str, Any] = {}
+            kwargs: dict[str, Any] = {}
             if labels is not None:
-                plot_kwargs["label"] = labels[i]
+                kwargs["label"] = labels[i]
             if colors is not None:
-                plot_kwargs["color"] = colors[i]
+                kwargs["color"] = colors[i]
 
             if horizontal:
                 # barh uses 'height' parameter instead of 'width'
-                ax.barh(x, series, height=width, left=bottom, **plot_kwargs)
+                ax.barh(x, series, height=width, left=bottom, **kwargs)
             else:
-                ax.bar(x, series, width=width, bottom=bottom, **plot_kwargs)
+                ax.bar(x, series, width=width, bottom=bottom, **kwargs)
 
             bottom += np.array(series)
     else:
         # Grouped bars
         for i, series in enumerate(value_series):
             offset = (i - num_series / 2 + 0.5) * width
-            plot_kwargs: dict[str, Any] = {}
+            kwargs = {}
             if labels is not None:
-                plot_kwargs["label"] = labels[i]
+                kwargs["label"] = labels[i]
             if colors is not None:
-                plot_kwargs["color"] = colors[i]
+                kwargs["color"] = colors[i]
 
             if horizontal:
                 # barh uses 'height' parameter instead of 'width'
-                ax.barh(x + offset, series, height=width, **plot_kwargs)
+                ax.barh(x + offset, series, height=width, **kwargs)
             else:
-                ax.bar(x + offset, series, width=width, **plot_kwargs)
+                ax.bar(x + offset, series, width=width, **kwargs)
 
     # Set ticks and labels
     if horizontal:

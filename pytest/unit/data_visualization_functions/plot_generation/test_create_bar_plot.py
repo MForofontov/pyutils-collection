@@ -26,7 +26,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_bar_plot_basic():
+def test_create_bar_plot_basic() -> None:
+
     """
     Test case 1: Create basic bar plot with default settings.
     """
@@ -46,7 +47,8 @@ def test_create_bar_plot_basic():
     plt.close(fig)
 
 
-def test_create_bar_plot_with_styling():
+def test_create_bar_plot_with_styling() -> None:
+
     """
     Test case 2: Create bar plot with custom styling.
     """
@@ -73,7 +75,8 @@ def test_create_bar_plot_with_styling():
     plt.close(fig)
 
 
-def test_create_bar_plot_horizontal():
+def test_create_bar_plot_horizontal() -> None:
+
     """
     Test case 3: Create horizontal bar plot.
     """
@@ -94,7 +97,8 @@ def test_create_bar_plot_horizontal():
     plt.close(fig)
 
 
-def test_create_bar_plot_multiple_groups():
+def test_create_bar_plot_multiple_groups() -> None:
+
     """
     Test case 4: Create grouped bar plot with multiple data series.
     """
@@ -113,7 +117,8 @@ def test_create_bar_plot_multiple_groups():
     plt.close(fig)
 
 
-def test_create_bar_plot_empty_categories_raises_error():
+def test_create_bar_plot_empty_categories_raises_error() -> None:
+
     """
     Test case 5: ValueError for empty categories.
     """
@@ -127,7 +132,8 @@ def test_create_bar_plot_empty_categories_raises_error():
         create_bar_plot(categories, values)
 
 
-def test_create_bar_plot_mismatched_lengths_raises_error():
+def test_create_bar_plot_mismatched_lengths_raises_error() -> None:
+
     """
     Test case 6: ValueError when categories and values lengths don't match.
     """
@@ -141,7 +147,8 @@ def test_create_bar_plot_mismatched_lengths_raises_error():
         create_bar_plot(categories, values)
 
 
-def test_create_bar_plot_invalid_type_raises_error():
+def test_create_bar_plot_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for invalid categories type.
     """
@@ -155,7 +162,8 @@ def test_create_bar_plot_invalid_type_raises_error():
         create_bar_plot(categories, values)
 
 
-def test_create_bar_plot_invalid_figsize_raises_error():
+def test_create_bar_plot_invalid_figsize_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid figsize.
     """
@@ -169,7 +177,8 @@ def test_create_bar_plot_invalid_figsize_raises_error():
         create_bar_plot(categories, values, figsize=(10, -5))
 
 
-def test_create_bar_plot_with_grid():
+def test_create_bar_plot_with_grid() -> None:
+
     """
     Test case 9: Create bar plot with grid enabled.
     """

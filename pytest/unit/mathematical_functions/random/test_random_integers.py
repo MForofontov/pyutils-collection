@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.mathematical_functions]
@@ -66,7 +68,7 @@ def test_random_integers_type_error_count() -> None:
     Test case 7: Test random_integers with invalid type for count.
     """
     with pytest.raises(TypeError, match="count must be an integer"):
-        random_integers("5")
+        random_integers(cast(Any, "5"))
 
 
 def test_random_integers_type_error_min_value() -> None:
@@ -74,7 +76,7 @@ def test_random_integers_type_error_min_value() -> None:
     Test case 8: Test random_integers with invalid type for min_value.
     """
     with pytest.raises(TypeError, match="min_value must be an integer"):
-        random_integers(5, "0", 10)
+        random_integers(5, cast(Any, "0"), 10)
 
 
 def test_random_integers_type_error_max_value() -> None:
@@ -82,7 +84,7 @@ def test_random_integers_type_error_max_value() -> None:
     Test case 9: Test random_integers with invalid type for max_value.
     """
     with pytest.raises(TypeError, match="max_value must be an integer"):
-        random_integers(5, 0, "10")
+        random_integers(5, 0, cast(Any, "10"))
 
 
 def test_random_integers_value_error_negative_count() -> None:

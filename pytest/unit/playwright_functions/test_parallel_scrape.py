@@ -1,5 +1,6 @@
 """Unit tests for parallel_scrape function."""
 
+from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -36,7 +37,7 @@ def test_parallel_scrape_basic_success(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com/1", "https://example.com/2"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {"title": f"Page {url}", "content": "test content"}
     
     # Act
@@ -68,7 +69,7 @@ def test_parallel_scrape_single_url(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {"data": "scraped"}
     
     # Act
@@ -98,7 +99,7 @@ def test_parallel_scrape_firefox_browser(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {"data": "test"}
     
     # Act
@@ -127,7 +128,7 @@ def test_parallel_scrape_headless_false(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act
@@ -156,7 +157,7 @@ def test_parallel_scrape_custom_timeout(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act
@@ -184,7 +185,7 @@ def test_parallel_scrape_error_handling(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com/1", "https://example.com/2"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         if "1" in url:
             raise ValueError("Test error")
         return {"data": "success"}
@@ -217,7 +218,7 @@ def test_parallel_scrape_multiple_workers(mock_sync_playwright: Mock) -> None:
     
     urls = [f"https://example.com/{i}" for i in range(10)]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {"url": url}
     
     # Act
@@ -236,7 +237,7 @@ def test_parallel_scrape_invalid_urls_type() -> None:
     Test case 8: TypeError for non-list URLs.
     """
     # Arrange
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
@@ -249,7 +250,7 @@ def test_parallel_scrape_empty_urls() -> None:
     Test case 9: ValueError for empty URLs list.
     """
     # Arrange
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
@@ -264,7 +265,7 @@ def test_parallel_scrape_invalid_url_in_list() -> None:
     # Arrange
     urls = ["https://example.com", 123, "https://test.com"]  # Invalid URL
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
@@ -291,7 +292,7 @@ def test_parallel_scrape_invalid_max_workers() -> None:
     # Arrange
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
@@ -306,12 +307,12 @@ def test_parallel_scrape_invalid_browser_type() -> None:
     # Arrange
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
     with pytest.raises(ValueError, match="browser_type must be"):
-        parallel_scrape(urls, scrape_func, browser_type="safari")  # type: ignore
+        parallel_scrape(urls, scrape_func, browser_type="safari")
 
 
 def test_parallel_scrape_invalid_timeout() -> None:
@@ -321,7 +322,7 @@ def test_parallel_scrape_invalid_timeout() -> None:
     # Arrange
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert
@@ -350,7 +351,7 @@ def test_parallel_scrape_with_logger(mock_sync_playwright: Mock, caplog: pytest.
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {"data": "test"}
     
     # Act
@@ -381,7 +382,7 @@ def test_parallel_scrape_context_isolation(mock_sync_playwright: Mock) -> None:
     
     urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act
@@ -411,7 +412,7 @@ def test_parallel_scrape_browser_cleanup_on_error(mock_sync_playwright: Mock) ->
     
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         raise RuntimeError("Critical error")
     
     # Act
@@ -430,7 +431,7 @@ def test_parallel_scrape_invalid_logger_type() -> None:
     # Arrange
     urls = ["https://example.com"]
     
-    def scrape_func(page, url):
+    def scrape_func(page: Any, url: Any) -> dict[str, str]:
         return {}
     
     # Act & Assert

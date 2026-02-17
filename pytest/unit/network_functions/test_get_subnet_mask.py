@@ -1,4 +1,5 @@
 import socket
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
@@ -9,8 +10,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    get_subnet_mask = None  # type: ignore
+    psutil = None
+    get_subnet_mask = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -63,7 +64,7 @@ def test_get_subnet_mask_type_error() -> None:
     Test case 4: TypeError for non-string interface (simulate error).
     """
     with pytest.raises(TypeError, match="interface must be a string"):
-        get_subnet_mask(123)
+        get_subnet_mask(cast(Any, 123))
 
 
 def test_get_subnet_mask_value_error_empty() -> None:

@@ -6,11 +6,24 @@ import logging
 import time
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from typing import TypeVar
+from typing import Any, Protocol, TypeVar
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
+
+class DatabaseConnection(Protocol):
+    """Protocol for database connection objects."""
+
+    def execute(self, query: str) -> Any:
+        """Execute a query."""
+        ...
+
+    def close(self) -> None:
+        """Close the connection."""
+        ...
+
+
+T = TypeVar("T", bound=DatabaseConnection)
 
 
 @contextmanager

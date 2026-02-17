@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    get_network_speed = None  # type: ignore
+    psutil = None
+    get_network_speed = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -56,7 +57,7 @@ def test_get_network_speed_type_error_url() -> None:
     Test case 4: TypeError for non-string URL (simulate error).
     """
     with pytest.raises(TypeError, match="test_url must be a string"):
-        get_network_speed(123, timeout=1)
+        get_network_speed(cast(Any, 123), timeout=1)
 
 
 def test_get_network_speed_value_error_empty_url() -> None:

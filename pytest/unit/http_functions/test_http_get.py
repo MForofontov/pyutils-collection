@@ -8,7 +8,8 @@ from pyutils_collection.http_functions.http_get import http_get
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_successful_request(mock_urlopen):
+def test_http_get_successful_request(mock_urlopen) -> None:
+
     """
     Test case 1: Successful HTTP GET request returns correct response structure.
     """
@@ -29,7 +30,8 @@ def test_http_get_successful_request(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_with_custom_headers(mock_urlopen):
+def test_http_get_with_custom_headers(mock_urlopen) -> None:
+
     """
     Test case 2: HTTP GET request applies custom headers correctly.
     """
@@ -52,7 +54,8 @@ def test_http_get_with_custom_headers(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_with_custom_timeout(mock_urlopen):
+def test_http_get_with_custom_timeout(mock_urlopen) -> None:
+
     """
     Test case 3: HTTP GET request with custom timeout value.
     """
@@ -71,7 +74,8 @@ def test_http_get_with_custom_timeout(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_default_timeout(mock_urlopen):
+def test_http_get_default_timeout(mock_urlopen) -> None:
+
     """
     Test case 4: Default timeout is 30 seconds when not specified.
     """
@@ -88,7 +92,8 @@ def test_http_get_default_timeout(mock_urlopen):
     assert mock_urlopen.call_args[1]["timeout"] == 30
 
 
-def test_http_get_with_empty_url():
+def test_http_get_with_empty_url() -> None:
+
     """
     Test case 5: Empty URL raises ValueError.
     """
@@ -96,7 +101,8 @@ def test_http_get_with_empty_url():
         http_get("")
 
 
-def test_http_get_with_whitespace_url():
+def test_http_get_with_whitespace_url() -> None:
+
     """
     Test case 6: Whitespace-only URL raises ValueError.
     """
@@ -104,7 +110,8 @@ def test_http_get_with_whitespace_url():
         http_get("   ")
 
 
-def test_http_get_with_none_url():
+def test_http_get_with_none_url() -> None:
+
     """
     Test case 7: None URL raises TypeError.
     """
@@ -113,7 +120,8 @@ def test_http_get_with_none_url():
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_http_error_with_response_body(mock_urlopen):
+def test_http_get_http_error_with_response_body(mock_urlopen) -> None:
+
     """
     Test case 8: HTTP GET request with HTTP error that includes response body.
     """
@@ -132,7 +140,8 @@ def test_http_get_http_error_with_response_body(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_http_error_without_response_body(mock_urlopen):
+def test_http_get_http_error_without_response_body(mock_urlopen) -> None:
+
     """
     Test case 9: HTTP GET request with HTTP error but no response body.
     """
@@ -146,7 +155,8 @@ def test_http_get_http_error_without_response_body(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_get_url_error(mock_urlopen):
+def test_http_get_url_error(mock_urlopen) -> None:
+
     """
     Test case 10: HTTP GET request with URL error raises exception.
     """

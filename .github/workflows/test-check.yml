@@ -33,21 +33,11 @@ on:
         default: true
         type: boolean
         required: false
-      coverage_fail_under:
-        description: 'Minimum coverage percentage (0 to disable)'
-        default: 0
-        type: number
-        required: false
       deploy_pages:
         description: 'Deploy Allure report to GitHub Pages'
         default: false
         type: boolean
         required: false
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 jobs:
   test:
@@ -189,30 +179,3 @@ jobs:
           if [ "${{ inputs.enable_coverage }}" = "true" ]; then
             echo "- Coverage artifacts: \`coverage-report-${{ matrix.python-version }}\`, \`coverage-xml-${{ matrix.python-version }}\`" >> $GITHUB_STEP_SUMMARY
           fi
-
-  deploy-allure:
-    if: ${{ inputs.deploy_pages }}
-    needs: [test]
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Download Allure report from first matrix (3.11 or first provided)
-        uses: actions/download-artifact@v4
-        with:
-          # pick one to publish; you can change it to a specific version name
-          name: allure-report-${{ fromJSON(inputs.python_versions)[0] }}
-          path: ./site
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

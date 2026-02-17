@@ -2,6 +2,8 @@
 Tests for extract_urls function.
 """
 
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.regex]
@@ -61,10 +63,10 @@ def test_extract_urls_no_matches() -> None:
 def test_extract_urls_invalid_type_text() -> None:
     """Test TypeError for invalid text type."""
     with pytest.raises(TypeError, match="text must be str"):
-        extract_urls(123)
+        extract_urls(cast(Any, 123))
 
 
 def test_extract_urls_invalid_type_schemes() -> None:
     """Test TypeError for invalid include_schemes type."""
     with pytest.raises(TypeError, match="include_schemes must be list"):
-        extract_urls("https://test.com", include_schemes="https")
+        extract_urls("https://test.com", include_schemes=cast(Any, "https"))

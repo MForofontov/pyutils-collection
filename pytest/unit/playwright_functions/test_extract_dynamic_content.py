@@ -51,7 +51,8 @@ def test_extract_dynamic_content_with_html() -> None:
     mock_page = MagicMock()
     mock_page.url = "https://example.com"
     mock_page.title.return_value = "Test"
-    mock_page.evaluate.side_effect = ["Text content", "<html>content</html>"]
+    mock_page.evaluate.return_value = "Text content"
+    mock_page.content.return_value = "<html>content</html>"
     
     mock_response = MagicMock()
     mock_response.status = 200
@@ -137,8 +138,10 @@ def test_extract_dynamic_content_extract_selector() -> None:
     mock_page.title.return_value = "Page"
     
     mock_element = MagicMock()
-    mock_element.evaluate.return_value = "Element text"
-    mock_page.locator.return_value = mock_element
+    mock_element.text_content.return_value = "Element text"
+    mock_locator = MagicMock()
+    mock_locator.first = mock_element
+    mock_page.locator.return_value = mock_locator
     
     mock_response = MagicMock()
     mock_response.status = 200
@@ -343,7 +346,7 @@ def test_extract_dynamic_content_navigation_failure() -> None:
     mock_page.goto.side_effect = Exception("Navigation failed")
     
     # Act & Assert
-    with pytest.raises(RuntimeError, match="Content extraction failed"):
+    with pytest.raises(RuntimeError, match="Failed to extract dynamic content"):
         extract_dynamic_content(mock_page, "https://example.com")
 
 
@@ -355,7 +358,7 @@ def test_extract_dynamic_content_only_html_no_text() -> None:
     mock_page = MagicMock()
     mock_page.url = "https://example.com"
     mock_page.title.return_value = "Page"
-    mock_page.evaluate.return_value = "<html><body>Content</body></html>"
+    mock_page.content.return_value = "<html><body>Content</body></html>"
     
     mock_response = MagicMock()
     mock_response.status = 200

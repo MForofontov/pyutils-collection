@@ -30,7 +30,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_reset_theme_restores_defaults():
+def test_reset_theme_restores_defaults() -> None:
+
     """
     Test case 1: Reset theme restores matplotlib defaults.
     """
@@ -51,7 +52,8 @@ def test_reset_theme_restores_defaults():
     assert True
 
 
-def test_reset_theme_after_multiple_applications():
+def test_reset_theme_after_multiple_applications() -> None:
+
     """
     Test case 2: Reset works after applying multiple themes.
     """
@@ -70,7 +72,8 @@ def test_reset_theme_after_multiple_applications():
     assert plt.rcParams["figure.facecolor"] != "blue"
 
 
-def test_reset_theme_idempotent():
+def test_reset_theme_idempotent() -> None:
+
     """
     Test case 3: Calling reset multiple times is safe.
     """
@@ -84,7 +87,8 @@ def test_reset_theme_idempotent():
     assert result1 == result2
 
 
-def test_reset_theme_no_parameters():
+def test_reset_theme_no_parameters() -> None:
+
     """
     Test case 4: Reset theme with no parameters.
     """
@@ -95,7 +99,8 @@ def test_reset_theme_no_parameters():
         pytest.fail(f"reset_theme() raised {type(e).__name__}: {e}")
 
 
-def test_reset_theme_restores_color_cycle():
+def test_reset_theme_restores_color_cycle() -> None:
+
     """
     Test case 5: Reset restores default color cycle.
     """
@@ -116,7 +121,8 @@ def test_reset_theme_restores_color_cycle():
     assert "axes.prop_cycle" in plt.rcParams
 
 
-def test_reset_theme_restores_grid_settings():
+def test_reset_theme_restores_grid_settings() -> None:
+
     """
     Test case 6: Reset restores default grid settings.
     """

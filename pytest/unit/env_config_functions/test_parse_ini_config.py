@@ -14,7 +14,8 @@ def write_ini_file(data, path):
         parser.write(f)
 
 
-def test_parse_ini_config_basic(tmp_path):
+def test_parse_ini_config_basic(tmp_path) -> None:
+
     """
     Test case 1: Basic INI config loads as dict.
     """
@@ -25,7 +26,8 @@ def test_parse_ini_config_basic(tmp_path):
     assert config == data
 
 
-def test_parse_ini_config_required_sections(tmp_path):
+def test_parse_ini_config_required_sections(tmp_path) -> None:
+
     """
     Test case 2: Missing required sections raises ValueError.
     """
@@ -36,7 +38,8 @@ def test_parse_ini_config_required_sections(tmp_path):
         parse_ini_config(str(config_file), required_sections=["section1", "section2"])
 
 
-def test_parse_ini_config_schema_validator(tmp_path):
+def test_parse_ini_config_schema_validator(tmp_path) -> None:
+
     """
     Test case 3: Custom schema validator raises ValueError.
     """
@@ -52,7 +55,8 @@ def test_parse_ini_config_schema_validator(tmp_path):
         parse_ini_config(str(config_file), schema_validator=schema)
 
 
-def test_parse_ini_config_file_not_found(tmp_path):
+def test_parse_ini_config_file_not_found(tmp_path) -> None:
+
     """
     Test case 4: Missing INI files raise FileNotFoundError.
     """
@@ -63,7 +67,8 @@ def test_parse_ini_config_file_not_found(tmp_path):
         parse_ini_config(str(missing_file))
 
 
-def test_parse_ini_config_invalid_format(tmp_path):
+def test_parse_ini_config_invalid_format(tmp_path) -> None:
+
     """
     Test case 5: Invalid INI content raises configparser.Error.
     """

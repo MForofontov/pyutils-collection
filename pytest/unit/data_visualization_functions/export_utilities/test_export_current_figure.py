@@ -31,7 +31,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_export_current_figure_basic():
+def test_export_current_figure_basic() -> None:
+
     """
     Test case 1: Export current figure to file.
     """
@@ -53,7 +54,8 @@ def test_export_current_figure_basic():
     plt.close(fig)
 
 
-def test_export_current_figure_pdf():
+def test_export_current_figure_pdf() -> None:
+
     """
     Test case 2: Export current figure as PDF.
     """
@@ -75,7 +77,8 @@ def test_export_current_figure_pdf():
     plt.close(fig)
 
 
-def test_export_current_figure_with_dpi():
+def test_export_current_figure_with_dpi() -> None:
+
     """
     Test case 3: Export with custom DPI.
     """
@@ -97,7 +100,8 @@ def test_export_current_figure_with_dpi():
     plt.close(fig)
 
 
-def test_export_current_figure_creates_directory():
+def test_export_current_figure_creates_directory() -> None:
+
     """
     Test case 4: Export creates directory if it doesn't exist.
     """
@@ -119,7 +123,8 @@ def test_export_current_figure_creates_directory():
     plt.close(fig)
 
 
-def test_export_current_figure_no_current_raises_error():
+def test_export_current_figure_no_current_raises_error() -> None:
+
     """
     Test case 5: ValueError when no current figure exists.
     """
@@ -132,7 +137,8 @@ def test_export_current_figure_no_current_raises_error():
         export_current_figure("test.png")
 
 
-def test_export_current_figure_invalid_filepath_raises_error():
+def test_export_current_figure_invalid_filepath_raises_error() -> None:
+
     """
     Test case 6: TypeError for invalid filepath.
     """
@@ -149,7 +155,8 @@ def test_export_current_figure_invalid_filepath_raises_error():
     plt.close(fig)
 
 
-def test_export_current_figure_empty_filepath_raises_error():
+def test_export_current_figure_empty_filepath_raises_error() -> None:
+
     """
     Test case 7: ValueError for empty filepath.
     """
@@ -166,7 +173,8 @@ def test_export_current_figure_empty_filepath_raises_error():
     plt.close(fig)
 
 
-def test_export_current_figure_invalid_dpi_raises_error():
+def test_export_current_figure_invalid_dpi_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid DPI.
     """

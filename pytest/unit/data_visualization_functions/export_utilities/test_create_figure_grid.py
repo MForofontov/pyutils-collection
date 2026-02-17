@@ -28,7 +28,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_figure_grid_basic():
+def test_create_figure_grid_basic() -> None:
+
     """
     Test case 1: Create basic figure grid.
     """
@@ -45,7 +46,8 @@ def test_create_figure_grid_basic():
     plt.close(fig)
 
 
-def test_create_figure_grid_single_row():
+def test_create_figure_grid_single_row() -> None:
+
     """
     Test case 2: Create figure grid with single row.
     """
@@ -59,7 +61,8 @@ def test_create_figure_grid_single_row():
     plt.close(fig)
 
 
-def test_create_figure_grid_single_col():
+def test_create_figure_grid_single_col() -> None:
+
     """
     Test case 3: Create figure grid with single column.
     """
@@ -73,7 +76,8 @@ def test_create_figure_grid_single_col():
     plt.close(fig)
 
 
-def test_create_figure_grid_large():
+def test_create_figure_grid_large() -> None:
+
     """
     Test case 4: Create large figure grid.
     """
@@ -88,7 +92,8 @@ def test_create_figure_grid_large():
     plt.close(fig)
 
 
-def test_create_figure_grid_custom_size():
+def test_create_figure_grid_custom_size() -> None:
+
     """
     Test case 5: Create figure grid with custom size.
     """
@@ -104,7 +109,8 @@ def test_create_figure_grid_custom_size():
     plt.close(fig)
 
 
-def test_create_figure_grid_zero_rows_raises_error():
+def test_create_figure_grid_zero_rows_raises_error() -> None:
+
     """
     Test case 6: ValueError for zero rows.
     """
@@ -116,7 +122,8 @@ def test_create_figure_grid_zero_rows_raises_error():
         create_figure_grid(nrows=0, ncols=2)
 
 
-def test_create_figure_grid_zero_cols_raises_error():
+def test_create_figure_grid_zero_cols_raises_error() -> None:
+
     """
     Test case 7: ValueError for zero columns.
     """
@@ -128,7 +135,8 @@ def test_create_figure_grid_zero_cols_raises_error():
         create_figure_grid(nrows=2, ncols=0)
 
 
-def test_create_figure_grid_invalid_type_raises_error():
+def test_create_figure_grid_invalid_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid row/col type.
     """
@@ -140,7 +148,8 @@ def test_create_figure_grid_invalid_type_raises_error():
         create_figure_grid(nrows="2", ncols=2)
 
 
-def test_create_figure_grid_invalid_figsize_raises_error():
+def test_create_figure_grid_invalid_figsize_raises_error() -> None:
+
     """
     Test case 9: ValueError for invalid figsize.
     """

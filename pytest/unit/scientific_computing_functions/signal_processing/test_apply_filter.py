@@ -7,6 +7,8 @@ Tests cover:
 - Error cases: invalid types, empty data, invalid parameters
 """
 
+from typing import Any, cast
+
 try:
     import numpy as np
     import scipy
@@ -15,13 +17,12 @@ try:
 except ImportError:
     NUMPY_AVAILABLE = False
     np = None  # type: ignore
-    scipy = None  # type: ignore
+    scipy = None
     apply_filter = None  # type: ignore
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy and/or scipy not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
+pytestmark = [pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy and/or scipy not installed"), pytest.mark.unit, pytest.mark.scientific_computing]
 
 # ========== Normal Operation Tests ==========
 
@@ -29,7 +30,7 @@ pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
 def test_apply_filter_lowpass_default() -> None:
     """Test case 1: Lowpass filter with default parameters."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
     # Act
     result = apply_filter(data, order=1)
@@ -47,7 +48,7 @@ def test_apply_filter_lowpass_default() -> None:
 def test_apply_filter_highpass() -> None:
     """Test case 2: Highpass filter."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
     # Act
     result = apply_filter(data, filter_type="highpass", cutoff=0.3, order=1)
@@ -60,7 +61,7 @@ def test_apply_filter_highpass() -> None:
 def test_apply_filter_bandpass() -> None:
     """Test case 3: Bandpass filter with tuple cutoff."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 4.0, 3.0, 2.0, 1.0]
     cutoff = (0.1, 0.4)
 
     # Act
@@ -74,7 +75,7 @@ def test_apply_filter_bandpass() -> None:
 def test_apply_filter_bandstop() -> None:
     """Test case 4: Bandstop filter."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 4.0, 3.0, 2.0, 1.0]
     cutoff = (0.2, 0.4)
 
     # Act
@@ -88,7 +89,7 @@ def test_apply_filter_bandstop() -> None:
 def test_apply_filter_cheby1_method() -> None:
     """Test case 5: Chebyshev type 1 filter."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
     # Act
     result = apply_filter(data, filter_method="cheby1", order=1)
@@ -101,7 +102,7 @@ def test_apply_filter_cheby1_method() -> None:
 def test_apply_filter_cheby2_method() -> None:
     """Test case 6: Chebyshev type 2 filter."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
     # Act
     result = apply_filter(data, filter_method="cheby2", order=1)
@@ -114,7 +115,7 @@ def test_apply_filter_cheby2_method() -> None:
 def test_apply_filter_ellip_method() -> None:
     """Test case 7: Elliptic filter."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 
     # Act
     result = apply_filter(data, filter_method="ellip", order=1)
@@ -140,7 +141,7 @@ def test_apply_filter_numpy_array() -> None:
 def test_apply_filter_custom_sampling_rate() -> None:
     """Test case 9: Filter with custom sampling rate."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
     sampling_rate = 1000.0
     cutoff_hz = 100.0  # 100 Hz cutoff
 
@@ -185,7 +186,7 @@ def test_apply_filter_small_signal() -> None:
 def test_apply_filter_very_low_cutoff() -> None:
     """Test case 12: Edge case with very low cutoff frequency."""
     # Arrange
-    data = list(np.sin(np.linspace(0, 10, 100)))
+    data: list[float] = list(np.sin(np.linspace(0, 10, 100)))
     cutoff = 0.05  # Low cutoff
 
     # Act
@@ -199,7 +200,7 @@ def test_apply_filter_very_low_cutoff() -> None:
 def test_apply_filter_very_high_cutoff() -> None:
     """Test case 13: Edge case with moderate-high cutoff frequency."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0, 4.0, 3.0, 2.0, 1.0]
     cutoff = 0.45  # Moderate-high cutoff (below Nyquist)
 
     # Act
@@ -261,7 +262,7 @@ def test_apply_filter_invalid_data_type() -> None:
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):
-        apply_filter(invalid_data)
+        apply_filter(cast(Any, invalid_data))
 
 
 def test_apply_filter_invalid_filter_type_type() -> None:
@@ -315,7 +316,7 @@ def test_apply_filter_invalid_order_type() -> None:
 def test_apply_filter_invalid_order_value() -> None:
     """Test case 22: ValueError for order < 1."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     invalid_order = 0
     expected_message = "order must be >= 1"
 
@@ -327,7 +328,7 @@ def test_apply_filter_invalid_order_value() -> None:
 def test_apply_filter_negative_order() -> None:
     """Test case 23: ValueError for negative order."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     invalid_order = -1
     expected_message = "order must be >= 1"
 
@@ -375,7 +376,7 @@ def test_apply_filter_invalid_sampling_rate_type() -> None:
 def test_apply_filter_negative_sampling_rate() -> None:
     """Test case 27: ValueError for negative sampling_rate."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     invalid_rate = -1.0
     expected_message = "sampling_rate must be positive"
 
@@ -387,7 +388,7 @@ def test_apply_filter_negative_sampling_rate() -> None:
 def test_apply_filter_zero_sampling_rate() -> None:
     """Test case 28: ValueError for zero sampling_rate."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     invalid_rate = 0.0
     expected_message = "sampling_rate must be positive"
 
@@ -426,13 +427,13 @@ def test_apply_filter_non_numeric_data() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        apply_filter(invalid_data)
+        apply_filter(cast(Any, invalid_data))
 
 
 def test_apply_filter_bandpass_scalar_cutoff() -> None:
     """Test case 32: ValueError for bandpass filter with scalar cutoff."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = 0.3  # Scalar instead of tuple
     expected_message = "cutoff must be a tuple for bandpass filter"
 
@@ -444,7 +445,7 @@ def test_apply_filter_bandpass_scalar_cutoff() -> None:
 def test_apply_filter_bandstop_scalar_cutoff() -> None:
     """Test case 33: ValueError for bandstop filter with scalar cutoff."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = 0.3  # Scalar instead of tuple
     expected_message = "cutoff must be a tuple for bandstop filter"
 
@@ -456,19 +457,19 @@ def test_apply_filter_bandstop_scalar_cutoff() -> None:
 def test_apply_filter_bandpass_wrong_tuple_length() -> None:
     """Test case 34: ValueError for bandpass filter with wrong tuple length."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.1, 0.2, 0.3)  # 3 elements instead of 2
     expected_message = "cutoff must have 2 elements"
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        apply_filter(data, filter_type="bandpass", cutoff=cutoff)
+        apply_filter(data, filter_type="bandpass", cutoff=cast(Any, cutoff))
 
 
 def test_apply_filter_bandpass_inverted_cutoff() -> None:
     """Test case 35: ValueError for bandpass with inverted cutoff frequencies."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.4, 0.2)  # Low > High
     expected_message = "cutoff\\[0\\] must be < cutoff\\[1\\]"
 
@@ -480,7 +481,7 @@ def test_apply_filter_bandpass_inverted_cutoff() -> None:
 def test_apply_filter_bandpass_equal_cutoff() -> None:
     """Test case 36: ValueError for bandpass with equal cutoff frequencies."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.3, 0.3)  # Low == High
     expected_message = "cutoff\\[0\\] must be < cutoff\\[1\\]"
 
@@ -492,7 +493,7 @@ def test_apply_filter_bandpass_equal_cutoff() -> None:
 def test_apply_filter_lowpass_tuple_cutoff() -> None:
     """Test case 37: ValueError for lowpass filter with tuple cutoff."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.2, 0.4)  # Tuple instead of scalar
     expected_message = "cutoff must be a scalar for lowpass filter"
 
@@ -504,7 +505,7 @@ def test_apply_filter_lowpass_tuple_cutoff() -> None:
 def test_apply_filter_highpass_tuple_cutoff() -> None:
     """Test case 38: ValueError for highpass filter with tuple cutoff."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.2, 0.4)  # Tuple instead of scalar
     expected_message = "cutoff must be a scalar for highpass filter"
 
@@ -516,7 +517,7 @@ def test_apply_filter_highpass_tuple_cutoff() -> None:
 def test_apply_filter_cutoff_out_of_range_low() -> None:
     """Test case 39: ValueError for cutoff frequency <= 0."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = 0.0  # Zero normalized cutoff
     expected_message = "normalized cutoff must be between 0 and 1"
 
@@ -528,7 +529,7 @@ def test_apply_filter_cutoff_out_of_range_low() -> None:
 def test_apply_filter_cutoff_out_of_range_high() -> None:
     """Test case 40: ValueError for cutoff frequency >= 1."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = 1.0  # Equals Nyquist
     expected_message = "normalized cutoff must be between 0 and 1"
 
@@ -540,7 +541,7 @@ def test_apply_filter_cutoff_out_of_range_high() -> None:
 def test_apply_filter_bandpass_cutoff_out_of_range() -> None:
     """Test case 41: ValueError for bandpass cutoff frequencies out of range."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data: list[float] = [1.0, 2.0, 3.0, 4.0, 5.0]
     cutoff = (0.0, 0.5)  # Low frequency is 0
     expected_message = "normalized cutoff frequencies must be between 0 and 1"
 

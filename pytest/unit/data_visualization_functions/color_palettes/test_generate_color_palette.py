@@ -25,7 +25,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_generate_color_palette_basic():
+def test_generate_color_palette_basic() -> None:
+
     """
     Test case 1: Generate basic color palette with default count.
     """
@@ -37,7 +38,8 @@ def test_generate_color_palette_basic():
     assert all(isinstance(c, str) for c in colors)
 
 
-def test_generate_color_palette_large():
+def test_generate_color_palette_large() -> None:
+
     """
     Test case 2: Generate large color palette.
     """
@@ -49,7 +51,8 @@ def test_generate_color_palette_large():
     assert len(set(colors)) == 20  # All unique
 
 
-def test_generate_color_palette_custom_scheme():
+def test_generate_color_palette_custom_scheme() -> None:
+
     """
     Test case 3: Generate palette with custom color scheme.
     """
@@ -62,7 +65,8 @@ def test_generate_color_palette_custom_scheme():
     assert all(c.startswith("#") for c in colors)
 
 
-def test_generate_color_palette_diverging():
+def test_generate_color_palette_diverging() -> None:
+
     """
     Test case 4: Generate diverging color palette.
     """
@@ -73,7 +77,8 @@ def test_generate_color_palette_diverging():
     assert len(colors) == 7
 
 
-def test_generate_color_palette_single_color():
+def test_generate_color_palette_single_color() -> None:
+
     """
     Test case 5: Generate palette with single color.
     """
@@ -85,7 +90,8 @@ def test_generate_color_palette_single_color():
     assert isinstance(colors[0], str)
 
 
-def test_generate_color_palette_zero_colors_raises_error():
+def test_generate_color_palette_zero_colors_raises_error() -> None:
+
     """
     Test case 6: ValueError for zero colors.
     """
@@ -97,7 +103,8 @@ def test_generate_color_palette_zero_colors_raises_error():
         generate_color_palette(n_colors=0)
 
 
-def test_generate_color_palette_negative_colors_raises_error():
+def test_generate_color_palette_negative_colors_raises_error() -> None:
+
     """
     Test case 7: ValueError for negative number of colors.
     """
@@ -109,7 +116,8 @@ def test_generate_color_palette_negative_colors_raises_error():
         generate_color_palette(n_colors=-5)
 
 
-def test_generate_color_palette_invalid_type_raises_error():
+def test_generate_color_palette_invalid_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid n_colors type.
     """
@@ -121,7 +129,8 @@ def test_generate_color_palette_invalid_type_raises_error():
         generate_color_palette(n_colors="5")
 
 
-def test_generate_color_palette_invalid_scheme_raises_error():
+def test_generate_color_palette_invalid_scheme_raises_error() -> None:
+
     """
     Test case 9: ValueError for invalid color scheme.
     """

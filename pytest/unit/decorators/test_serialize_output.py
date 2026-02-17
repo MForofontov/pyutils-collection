@@ -21,14 +21,16 @@ def sample_function() -> dict:
     return {"key": "value"}
 
 
-def test_serialize_output_success():
+def test_serialize_output_success() -> None:
+
     """
     Test case 1: Function output is serialized to JSON
     """
     assert sample_function() == json.dumps({"key": "value"})
 
 
-def test_serialize_output_with_args():
+def test_serialize_output_with_args() -> None:
+
     """
     Test case 2: Function with positional arguments
     """
@@ -40,7 +42,8 @@ def test_serialize_output_with_args():
     assert function_with_args(1, 2) == json.dumps({"sum": 3})
 
 
-def test_serialize_output_with_kwargs():
+def test_serialize_output_with_kwargs() -> None:
+
     """
     Test case 3: Function with keyword arguments
     """
@@ -52,7 +55,8 @@ def test_serialize_output_with_kwargs():
     assert function_with_kwargs(1, b=2) == json.dumps({"sum": 3})
 
 
-def test_serialize_output_with_var_args():
+def test_serialize_output_with_var_args() -> None:
+
     """
     Test case 4: Function with variable length arguments (*args and **kwargs)
     """
@@ -68,7 +72,8 @@ def test_serialize_output_with_var_args():
     )
 
 
-def test_serialize_invalid_logger():
+def test_serialize_invalid_logger() -> None:
+
     """
     Test case 5: Invalid logger
     """
@@ -81,7 +86,8 @@ def test_serialize_invalid_logger():
             pass
 
 
-def test_serialize_output_with_logger(caplog):
+def test_serialize_output_with_logger(caplog) -> None:
+
     """
     Test case 6: Logger functionality when an error occurs
     """
@@ -98,7 +104,8 @@ def test_serialize_output_with_logger(caplog):
         assert "Error serializing output in error_function: Sample error" in caplog.text
 
 
-def test_invalid_format_type():
+def test_invalid_format_type() -> None:
+
     """
     Test case 7: Invalid format type
     """
@@ -109,7 +116,8 @@ def test_invalid_format_type():
             pass
 
 
-def test_invalid_format_type_with_logger(caplog):
+def test_invalid_format_type_with_logger(caplog) -> None:
+
     """
     Test case 8: Invalid format type with logger
     """
@@ -126,7 +134,8 @@ def test_invalid_format_type_with_logger(caplog):
         )
 
 
-def test_invalid_format():
+def test_invalid_format() -> None:
+
     """
     Test case 9: Invalid format
     """
@@ -139,7 +148,8 @@ def test_invalid_format():
             pass
 
 
-def test_invalid_format_with_logger(caplog):
+def test_invalid_format_with_logger(caplog) -> None:
+
     """
     Test case 10: Invalid format with logger
     """

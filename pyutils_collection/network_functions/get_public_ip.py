@@ -30,7 +30,7 @@ def get_public_ip(timeout: float = 5.0) -> str:
     try:
         response = requests.get(_PUBLIC_IP_ENDPOINT, timeout=timeout)
         response.raise_for_status()
-        ip = response.text.strip()
+        ip: str = response.text.strip()
         if _is_valid_ipv4(ip):
             return ip
     except requests.RequestException:

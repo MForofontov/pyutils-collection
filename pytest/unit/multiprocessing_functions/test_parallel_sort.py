@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.multiprocessing_functions]
@@ -81,7 +83,7 @@ def test_parallel_sort_invalid_data_type() -> None:
     Test case 9: Test parallel_sort with invalid data type.
     """
     with pytest.raises(TypeError):
-        parallel_sort("not_a_list")
+        parallel_sort(cast(Any, "not_a_list"))
 
 
 def test_parallel_sort_invalid_num_processes_type() -> None:
@@ -89,7 +91,7 @@ def test_parallel_sort_invalid_num_processes_type() -> None:
     Test case 10: Test parallel_sort with invalid num_processes type.
     """
     with pytest.raises(TypeError):
-        parallel_sort([1, 2, 3], num_processes="invalid")
+        parallel_sort([1, 2, 3], num_processes=cast(Any, "invalid"))
 
 
 def test_parallel_sort_invalid_chunk_size_type() -> None:
@@ -97,7 +99,7 @@ def test_parallel_sort_invalid_chunk_size_type() -> None:
     Test case 11: Test parallel_sort with invalid chunk_size type.
     """
     with pytest.raises(TypeError):
-        parallel_sort([1, 2, 3], chunk_size="invalid")
+        parallel_sort([1, 2, 3], chunk_size=cast(Any, "invalid"))
 
 
 def test_parallel_sort_zero_chunk_size() -> None:

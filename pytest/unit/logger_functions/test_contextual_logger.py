@@ -92,6 +92,7 @@ def test_contextual_logger_with_context_logging(
     # Check that context is included in log record
     assert hasattr(record, "user_id")
     assert record.user_id == "123"
+    assert hasattr(record, "operation")
     assert record.operation == "test_op"
 
 

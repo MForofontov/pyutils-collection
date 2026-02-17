@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.mathematical_functions]
@@ -100,7 +102,7 @@ def test_random_sample_type_error_population() -> None:
     Test case 10: Test random_sample with invalid type for population.
     """
     with pytest.raises(TypeError, match="population must be a list"):
-        random_sample("not a list", 3)
+        random_sample(cast(Any, "not a list"), 3)
 
 
 def test_random_sample_type_error_count() -> None:
@@ -108,7 +110,7 @@ def test_random_sample_type_error_count() -> None:
     Test case 11: Test random_sample with invalid type for count.
     """
     with pytest.raises(TypeError, match="count must be an integer"):
-        random_sample([1, 2, 3], "2")
+        random_sample([1, 2, 3], cast(Any, "2"))
 
 
 def test_random_sample_type_error_replace() -> None:
@@ -116,7 +118,7 @@ def test_random_sample_type_error_replace() -> None:
     Test case 12: Test random_sample with invalid type for replace.
     """
     with pytest.raises(TypeError, match="replace must be a boolean"):
-        random_sample([1, 2, 3], 2, replace="true")
+        random_sample([1, 2, 3], 2, replace=cast(Any, "true"))
 
 
 def test_random_sample_value_error_negative_count() -> None:

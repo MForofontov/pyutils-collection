@@ -145,7 +145,8 @@ def generate_color_palette(
             colors = base_colors.copy()
             hues = np.linspace(0, 1, n_colors - len(base_colors) + 1)[:-1]
             for hue in hues:
-                rgb = mcolors.hsv_to_rgb([hue, 0.7, 0.9])
+                rgb_arr = mcolors.hsv_to_rgb((hue, 0.7, 0.9))
+                rgb: tuple[float, float, float] = (float(rgb_arr[0]), float(rgb_arr[1]), float(rgb_arr[2]))
                 colors.append(mcolors.rgb2hex(rgb))
 
     elif palette_type == "sequential":
@@ -161,7 +162,10 @@ def generate_color_palette(
         colors = []
         for i in range(n_colors):
             t = i / (n_colors - 1) if n_colors > 1 else 0
-            rgb = [start_rgb[j] + t * (end_rgb[j] - start_rgb[j]) for j in range(3)]
+            r = start_rgb[0] + t * (end_rgb[0] - start_rgb[0])
+            g = start_rgb[1] + t * (end_rgb[1] - start_rgb[1])
+            b = start_rgb[2] + t * (end_rgb[2] - start_rgb[2])
+            rgb = (r, g, b)
             colors.append(mcolors.rgb2hex(rgb))
 
     elif palette_type == "diverging":
@@ -182,16 +186,17 @@ def generate_color_palette(
             if t < 0.5:
                 # Interpolate from start to mid
                 t_scaled = t * 2
-                rgb = [
-                    start_rgb[j] + t_scaled * (mid_rgb[j] - start_rgb[j])
-                    for j in range(3)
-                ]
+                r = start_rgb[0] + t_scaled * (mid_rgb[0] - start_rgb[0])
+                g = start_rgb[1] + t_scaled * (mid_rgb[1] - start_rgb[1])
+                b = start_rgb[2] + t_scaled * (mid_rgb[2] - start_rgb[2])
+                rgb = (r, g, b)
             else:
                 # Interpolate from mid to end
                 t_scaled = (t - 0.5) * 2
-                rgb = [
-                    mid_rgb[j] + t_scaled * (end_rgb[j] - mid_rgb[j]) for j in range(3)
-                ]
+                r = mid_rgb[0] + t_scaled * (end_rgb[0] - mid_rgb[0])
+                g = mid_rgb[1] + t_scaled * (end_rgb[1] - mid_rgb[1])
+                b = mid_rgb[2] + t_scaled * (end_rgb[2] - mid_rgb[2])
+                rgb = (r, g, b)
             colors.append(mcolors.rgb2hex(rgb))
 
     else:  # rainbow
@@ -199,7 +204,8 @@ def generate_color_palette(
         hues = np.linspace(0, 1, n_colors + 1)[:-1]
         colors = []
         for hue in hues:
-            rgb = mcolors.hsv_to_rgb([hue, 0.8, 0.9])
+            rgb_arr = mcolors.hsv_to_rgb((hue, 0.8, 0.9))
+            rgb = (float(rgb_arr[0]), float(rgb_arr[1]), float(rgb_arr[2]))
             colors.append(mcolors.rgb2hex(rgb))
 
     logger.debug(f"Generated {n_colors} colors with palette_type='{palette_type}'")

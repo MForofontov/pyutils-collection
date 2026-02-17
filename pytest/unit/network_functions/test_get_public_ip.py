@@ -7,13 +7,16 @@ try:
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
-    requests = None  # type: ignore
-    get_public_ip = None  # type: ignore
+    requests = None  # type: ignore[assignment]
+    get_public_ip = None  # type: ignore[assignment]
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not REQUESTS_AVAILABLE, reason="requests not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.network_functions]
+pytestmark = [
+    pytest.mark.skipif(not REQUESTS_AVAILABLE, reason="requests not installed"),
+    pytest.mark.unit,
+    pytest.mark.network_functions,
+]
 
 
 def test_get_public_ip_type() -> None:

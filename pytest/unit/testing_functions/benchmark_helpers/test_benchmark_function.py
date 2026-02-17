@@ -50,7 +50,8 @@ def test_benchmark_function_single_iteration() -> None:
     """
 
     # Arrange
-    def test_func():
+    def test_func() -> None:
+
         return 42
 
     # Act
@@ -108,7 +109,8 @@ def test_benchmark_function_type_error_iterations() -> None:
     """
 
     # Arrange
-    def test_func():
+    def test_func() -> None:
+
         return True
 
     # Act & Assert
@@ -122,7 +124,8 @@ def test_benchmark_function_value_error_zero_iterations() -> None:
     """
 
     # Arrange
-    def test_func():
+    def test_func() -> None:
+
         return True
 
     # Act & Assert
@@ -136,7 +139,8 @@ def test_benchmark_function_value_error_negative_iterations() -> None:
     """
 
     # Arrange
-    def test_func():
+    def test_func() -> None:
+
         return True
 
     # Act & Assert

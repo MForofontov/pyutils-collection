@@ -21,7 +21,8 @@ def sample_function() -> str:
     return "Function executed"
 
 
-def test_throttle_success():
+def test_throttle_success() -> None:
+
     """
     Test case 1: Function executes successfully with sufficient interval
     """
@@ -30,7 +31,8 @@ def test_throttle_success():
     assert sample_function() == "Function executed"
 
 
-def test_throttle_with_args():
+def test_throttle_with_args() -> None:
+
     """
     Test case 2: Function with positional arguments
     """
@@ -44,7 +46,8 @@ def test_throttle_with_args():
     assert function_with_args(1, 2) == 3
 
 
-def test_throttle_with_kwargs():
+def test_throttle_with_kwargs() -> None:
+
     """
     Test case 3: Function with keyword arguments
     """
@@ -58,7 +61,8 @@ def test_throttle_with_kwargs():
     assert function_with_kwargs(1, b=2) == 3
 
 
-def test_throttle_with_var_args():
+def test_throttle_with_var_args() -> None:
+
     """
     Test case 4: Function with variable length arguments (*args and **kwargs)
     """
@@ -78,7 +82,8 @@ def test_throttle_with_var_args():
     )
 
 
-def test_throttle_failure():
+def test_throttle_failure() -> None:
+
     """
     Test case 5: Function fails when called too frequently
     """
@@ -90,7 +95,8 @@ def test_throttle_failure():
         sample_function()
 
 
-def test_throttle_with_logger(caplog):
+def test_throttle_with_logger(caplog) -> None:
+
     """
     Test case 6: Logger functionality when function is called too frequently
     """
@@ -112,7 +118,8 @@ def test_throttle_with_logger(caplog):
         )
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 7: Invalid logger type
     """
@@ -125,7 +132,8 @@ def test_invalid_logger_type():
             pass
 
 
-def test_invalid_rate_limit_type():
+def test_invalid_rate_limit_type() -> None:
+
     """
     Test case 8: Invalid rate_limit type
     """
@@ -138,7 +146,8 @@ def test_invalid_rate_limit_type():
             pass
 
 
-def test_invalid_rate_limit_type_with_logger(caplog):
+def test_invalid_rate_limit_type_with_logger(caplog) -> None:
+
     """
     Test case 9: Invalid rate_limit type with logger
     """
@@ -157,7 +166,8 @@ def test_invalid_rate_limit_type_with_logger(caplog):
         )
 
 
-def test_invalid_rate_limit_value():
+def test_invalid_rate_limit_value() -> None:
+
     """
     Test case 10: Invalid rate_limit value
     """
@@ -170,7 +180,8 @@ def test_invalid_rate_limit_value():
             pass
 
 
-def test_invalid_rate_limit_value_with_logger(caplog):
+def test_invalid_rate_limit_value_with_logger(caplog) -> None:
+
     """
     Test case 11: Invalid rate_limit value with logger
     """

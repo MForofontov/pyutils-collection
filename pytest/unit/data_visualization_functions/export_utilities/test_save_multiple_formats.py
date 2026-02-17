@@ -31,7 +31,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_save_multiple_formats_basic():
+def test_save_multiple_formats_basic() -> None:
+
     """
     Test case 1: Save figure in multiple formats.
     """
@@ -55,7 +56,8 @@ def test_save_multiple_formats_basic():
     plt.close(fig)
 
 
-def test_save_multiple_formats_single_format():
+def test_save_multiple_formats_single_format() -> None:
+
     """
     Test case 2: Save figure in single format.
     """
@@ -78,7 +80,8 @@ def test_save_multiple_formats_single_format():
     plt.close(fig)
 
 
-def test_save_multiple_formats_many_formats():
+def test_save_multiple_formats_many_formats() -> None:
+
     """
     Test case 3: Save figure in many formats.
     """
@@ -102,7 +105,8 @@ def test_save_multiple_formats_many_formats():
     plt.close(fig)
 
 
-def test_save_multiple_formats_custom_dpi():
+def test_save_multiple_formats_custom_dpi() -> None:
+
     """
     Test case 4: Save with custom DPI.
     """
@@ -124,7 +128,8 @@ def test_save_multiple_formats_custom_dpi():
     plt.close(fig)
 
 
-def test_save_multiple_formats_invalid_fig_raises_error():
+def test_save_multiple_formats_invalid_fig_raises_error() -> None:
+
     """
     Test case 5: TypeError for invalid figure.
     """
@@ -136,7 +141,8 @@ def test_save_multiple_formats_invalid_fig_raises_error():
         save_multiple_formats("not_a_figure", "path", formats=["png"])
 
 
-def test_save_multiple_formats_empty_formats_raises_error():
+def test_save_multiple_formats_empty_formats_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty formats list.
     """
@@ -152,7 +158,8 @@ def test_save_multiple_formats_empty_formats_raises_error():
     plt.close(fig)
 
 
-def test_save_multiple_formats_invalid_format_raises_error():
+def test_save_multiple_formats_invalid_format_raises_error() -> None:
+
     """
     Test case 7: ValueError for invalid format.
     """
@@ -168,7 +175,8 @@ def test_save_multiple_formats_invalid_format_raises_error():
     plt.close(fig)
 
 
-def test_save_multiple_formats_invalid_dpi_raises_error():
+def test_save_multiple_formats_invalid_dpi_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid DPI.
     """

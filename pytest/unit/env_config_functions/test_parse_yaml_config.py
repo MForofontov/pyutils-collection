@@ -19,7 +19,8 @@ def write_yaml_file(data, path):
         yaml.safe_dump(data, f)
 
 
-def test_parse_yaml_config_basic(tmp_path):
+def test_parse_yaml_config_basic(tmp_path) -> None:
+
     """
     Test case 1: Basic YAML config loads as dict
     """
@@ -30,7 +31,8 @@ def test_parse_yaml_config_basic(tmp_path):
     assert config == data
 
 
-def test_parse_yaml_config_required_keys(tmp_path):
+def test_parse_yaml_config_required_keys(tmp_path) -> None:
+
     """
     Test case 2: Missing required keys raises ValueError
     """
@@ -41,7 +43,8 @@ def test_parse_yaml_config_required_keys(tmp_path):
         parse_yaml_config(str(config_file), required_keys=["a", "b"])
 
 
-def test_parse_yaml_config_schema_validator(tmp_path):
+def test_parse_yaml_config_schema_validator(tmp_path) -> None:
+
     """
     Test case 3: Custom schema validator raises ValueError
     """
@@ -57,7 +60,8 @@ def test_parse_yaml_config_schema_validator(tmp_path):
         parse_yaml_config(str(config_file), schema_validator=schema)
 
 
-def test_parse_yaml_config_invalid_yaml(tmp_path):
+def test_parse_yaml_config_invalid_yaml(tmp_path) -> None:
+
     """
     Test case 4: Invalid YAML raises yaml.YAMLError
     """
@@ -67,7 +71,8 @@ def test_parse_yaml_config_invalid_yaml(tmp_path):
         parse_yaml_config(str(config_file))
 
 
-def test_parse_yaml_config_not_dict(tmp_path):
+def test_parse_yaml_config_not_dict(tmp_path) -> None:
+
     """
     Test case 5: YAML that is not a dict raises ValueError
     """
@@ -78,7 +83,8 @@ def test_parse_yaml_config_not_dict(tmp_path):
         parse_yaml_config(str(config_file))
 
 
-def test_parse_yaml_config_missing_file(tmp_path):
+def test_parse_yaml_config_missing_file(tmp_path) -> None:
+
     """
     Test case 6: Missing YAML files raise FileNotFoundError
     """

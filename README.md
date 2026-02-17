@@ -1,6 +1,10 @@
-# Python Utilities
+# 🛠️ Pyutils Collection
 
-> **Copy-paste utility library** - 320+ production-ready Python functions organized by domain. Copy what you need, leave the rest.
+[![PyPI version](https://img.shields.io/pypi/v/pyutils-collection.svg)](https://pypi.org/project/pyutils-collection/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pyutils-collection.svg)](https://pypi.org/project/pyutils-collection/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **Enterprise-grade Python utilities** - 320+ type-safe, tested functions across 23 specialized modules for async operations, data processing, file handling, security, and more.
 
 ## 🎯 What is This?
 
@@ -50,8 +54,7 @@ pip install -e ".[dev]"
 | 🌐 **web_scraping_functions** | 18 | HTML/CSS/XPath parsing, table extraction |
 | 🎭 **playwright_functions** | 6 | Browser automation, screenshots, session management |
 | 🔗 **url_functions** | 8 | Parse, build, validate, normalize URLs |
-| 🖨️ **print_functions** | 3 | Colored output, tables, progress bars |
-| 🔍 **regex_functions** | 5 | Email/phone/URL validation & extraction |
+|  **regex_functions** | 5 | Email/phone/URL validation & extraction |
 | ⚙️ **cli_functions** | 16 | System info, process management, environment vars |
 | 📝 **logger_functions** | 7 | Logger setup, function logging, rotation |
 | 🔄 **multiprocessing_functions** | 19 | Parallel processing, pool management |

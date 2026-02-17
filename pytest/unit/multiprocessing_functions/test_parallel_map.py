@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.multiprocessing_functions]
@@ -50,7 +52,7 @@ def test_parallel_map_non_list_input() -> None:
     Test case 4: Test parallel_map with non-list input (should raise TypeError if validated).
     """
     try:
-        parallel_map(lambda x: x, "not a list")
+        parallel_map(lambda x: x, cast(Any, "not a list"))
     except Exception as e:
         assert isinstance(e, Exception)
 
@@ -61,7 +63,7 @@ def test_parallel_map_non_callable_func() -> None:
     """
     data = [1, 2, 3]
     try:
-        parallel_map(123, data)
+        parallel_map(cast(Any, 123), data)
     except Exception as e:
         assert isinstance(e, Exception)
 

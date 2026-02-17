@@ -25,7 +25,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_adjust_brightness_lighten():
+def test_adjust_brightness_lighten() -> None:
+
     """
     Test case 1: Lighten a color.
     """
@@ -42,7 +43,8 @@ def test_adjust_brightness_lighten():
     assert result != color  # Should be different
 
 
-def test_adjust_brightness_darken():
+def test_adjust_brightness_darken() -> None:
+
     """
     Test case 2: Darken a color.
     """
@@ -58,7 +60,8 @@ def test_adjust_brightness_darken():
     assert result.startswith("#")
 
 
-def test_adjust_brightness_no_change():
+def test_adjust_brightness_no_change() -> None:
+
     """
     Test case 3: Factor of 1.0 should not change color.
     """
@@ -73,7 +76,8 @@ def test_adjust_brightness_no_change():
     assert result.lower() == color.lower()
 
 
-def test_adjust_brightness_black():
+def test_adjust_brightness_black() -> None:
+
     """
     Test case 4: Adjust brightness of black color.
     """
@@ -88,7 +92,8 @@ def test_adjust_brightness_black():
     assert isinstance(result, str)
 
 
-def test_adjust_brightness_white():
+def test_adjust_brightness_white() -> None:
+
     """
     Test case 5: Darken white color.
     """
@@ -103,7 +108,8 @@ def test_adjust_brightness_white():
     assert result != color  # Should be darker
 
 
-def test_adjust_brightness_negative_factor_raises_error():
+def test_adjust_brightness_negative_factor_raises_error() -> None:
+
     """
     Test case 6: ValueError for negative brightness factor.
     """
@@ -115,7 +121,8 @@ def test_adjust_brightness_negative_factor_raises_error():
         adjust_brightness("#FF0000", factor=-0.5)
 
 
-def test_adjust_brightness_zero_factor_raises_error():
+def test_adjust_brightness_zero_factor_raises_error() -> None:
+
     """
     Test case 7: ValueError for zero brightness factor.
     """
@@ -127,7 +134,8 @@ def test_adjust_brightness_zero_factor_raises_error():
         adjust_brightness("#FF0000", factor=0)
 
 
-def test_adjust_brightness_invalid_color_raises_error():
+def test_adjust_brightness_invalid_color_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid hex color.
     """
@@ -139,7 +147,8 @@ def test_adjust_brightness_invalid_color_raises_error():
         adjust_brightness("invalid", factor=1.0)
 
 
-def test_adjust_brightness_invalid_type_raises_error():
+def test_adjust_brightness_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid color type.
     """

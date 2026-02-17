@@ -4,6 +4,8 @@ Unit tests for compute_svd function.
 Tests cover normal operation, edge cases, and error conditions.
 """
 
+from typing import Any, cast
+
 try:
     import numpy as np
     import scipy
@@ -12,13 +14,15 @@ try:
 except ImportError:
     NUMPY_AVAILABLE = False
     np = None  # type: ignore
-    scipy = None  # type: ignore
     compute_svd = None  # type: ignore
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy and/or scipy not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
+pytestmark = [
+    pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy and/or scipy not installed"),
+    pytest.mark.unit,
+    pytest.mark.scientific_computing,
+]
 
 # Normal operation tests
 
@@ -26,7 +30,7 @@ pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
 def test_compute_svd_basic_matrix() -> None:
     """Test case 1: Normal operation with basic matrix."""
     # Arrange
-    matrix = [[1, 2], [3, 4], [5, 6]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
 
     # Act
     result = compute_svd(matrix)
@@ -35,34 +39,34 @@ def test_compute_svd_basic_matrix() -> None:
     assert "U" in result
     assert "singular_values" in result
     assert "Vt" in result
-    assert len(result["singular_values"]) == 2
+    assert len(cast(np.ndarray, result["singular_values"])) == 2
 
 
 def test_compute_svd_square_matrix() -> None:
     """Test case 2: Normal operation with square matrix."""
     # Arrange
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    matrix: list[list[float]] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
 
     # Act
     result = compute_svd(matrix)
 
     # Assert
-    assert result["U"].shape == (3, 3)
-    assert len(result["singular_values"]) == 3
-    assert result["Vt"].shape == (3, 3)
+    assert cast(np.ndarray, result["U"]).shape == (3, 3)
+    assert len(cast(np.ndarray, result["singular_values"])) == 3
+    assert cast(np.ndarray, result["Vt"]).shape == (3, 3)
 
 
 def test_compute_svd_reduced_matrices() -> None:
     """Test case 3: Normal operation with reduced matrices."""
     # Arrange
-    matrix = [[1, 2], [3, 4], [5, 6]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
 
     # Act
     result = compute_svd(matrix, full_matrices=False)
 
     # Assert
-    assert result["U"].shape == (3, 2)
-    assert result["Vt"].shape == (2, 2)
+    assert cast(np.ndarray, result["U"]).shape == (3, 2)
+    assert cast(np.ndarray, result["Vt"]).shape == (2, 2)
 
 
 def test_compute_svd_numpy_array() -> None:
@@ -82,7 +86,7 @@ def test_compute_svd_numpy_array() -> None:
 def test_compute_svd_low_rank_approximation() -> None:
     """Test case 5: Normal operation with low-rank approximation."""
     # Arrange
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    matrix: list[list[float]] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
 
     # Act
     result = compute_svd(matrix, low_rank_k=2)
@@ -90,13 +94,13 @@ def test_compute_svd_low_rank_approximation() -> None:
     # Assert
     assert "approximation" in result
     assert "approximation_error" in result
-    assert result["approximation"].shape == (3, 3)
+    assert cast(np.ndarray, result["approximation"]).shape == (3, 3)
 
 
 def test_compute_svd_singular_values_only() -> None:
     """Test case 6: Normal operation computing only singular values."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
 
     # Act
     result = compute_svd(matrix, compute_uv=False)
@@ -125,14 +129,14 @@ def test_compute_svd_identity_matrix() -> None:
 def test_compute_svd_rank_deficient() -> None:
     """Test case 8: Edge case with rank-deficient matrix."""
     # Arrange
-    matrix = [[1, 2], [2, 4]]  # Rank 1
+    matrix: list[list[float]] = [[1.0, 2.0], [2.0, 4.0]]  # Rank 1
 
     # Act
     result = compute_svd(matrix)
 
     # Assert
-    assert len(result["singular_values"]) == 2
-    assert result["singular_values"][1] < 1e-10  # Near zero
+    assert len(cast(np.ndarray, result["singular_values"])) == 2
+    assert cast(np.ndarray, result["singular_values"])[1] < 1e-10  # Near zero
 
 
 def test_compute_svd_tall_matrix() -> None:
@@ -144,8 +148,8 @@ def test_compute_svd_tall_matrix() -> None:
     result = compute_svd(matrix, full_matrices=False)
 
     # Assert
-    assert result["U"].shape == (100, 5)
-    assert len(result["singular_values"]) == 5
+    assert cast(np.ndarray, result["U"]).shape == (100, 5)
+    assert len(cast(np.ndarray, result["singular_values"])) == 5
 
 
 def test_compute_svd_wide_matrix() -> None:
@@ -157,46 +161,46 @@ def test_compute_svd_wide_matrix() -> None:
     result = compute_svd(matrix, full_matrices=False)
 
     # Assert
-    assert result["U"].shape == (5, 5)
-    assert len(result["singular_values"]) == 5
+    assert cast(np.ndarray, result["U"]).shape == (5, 5)
+    assert len(cast(np.ndarray, result["singular_values"])) == 5
 
 
 def test_compute_svd_single_column() -> None:
     """Test case 11: Edge case with single column matrix."""
     # Arrange
-    matrix = [[1], [2], [3]]
+    matrix: list[list[float]] = [[1.0], [2.0], [3.0]]
 
     # Act
     result = compute_svd(matrix)
 
     # Assert
-    assert len(result["singular_values"]) == 1
-    assert result["singular_values"][0] > 0
+    assert len(cast(np.ndarray, result["singular_values"])) == 1
+    assert cast(np.ndarray, result["singular_values"])[0] > 0
 
 
 def test_compute_svd_single_row() -> None:
     """Test case 12: Edge case with single row matrix."""
     # Arrange
-    matrix = [[1, 2, 3]]
+    matrix: list[list[float]] = [[1.0, 2.0, 3.0]]
 
     # Act
     result = compute_svd(matrix)
 
     # Assert
-    assert len(result["singular_values"]) == 1
+    assert len(cast(np.ndarray, result["singular_values"])) == 1
 
 
 def test_compute_svd_low_rank_k_equals_1() -> None:
     """Test case 13: Edge case with rank-1 approximation."""
     # Arrange
-    matrix = [[1, 2, 3], [4, 5, 6]]
+    matrix: list[list[float]] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
 
     # Act
     result = compute_svd(matrix, low_rank_k=1)
 
     # Assert
     assert "approximation" in result
-    assert result["approximation_error"] >= 0
+    assert cast(float, result["approximation_error"]) >= 0
 
 
 # Error case tests
@@ -210,54 +214,54 @@ def test_compute_svd_invalid_matrix_type() -> None:
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_invalid_full_matrices_type() -> None:
     """Test case 15: TypeError for invalid full_matrices type."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
     invalid_full_matrices = "true"
     expected_message = "full_matrices must be a boolean"
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):
-        compute_svd(matrix, full_matrices=invalid_full_matrices)
+        compute_svd(matrix, full_matrices=cast(Any, invalid_full_matrices))
 
 
 def test_compute_svd_invalid_compute_uv_type() -> None:
     """Test case 16: TypeError for invalid compute_uv type."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
     invalid_compute_uv = 1
     expected_message = "compute_uv must be a boolean"
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):
-        compute_svd(matrix, compute_uv=invalid_compute_uv)
+        compute_svd(matrix, compute_uv=cast(Any, invalid_compute_uv))
 
 
 def test_compute_svd_invalid_low_rank_k_type() -> None:
     """Test case 17: TypeError for invalid low_rank_k type."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
     invalid_k = 1.5
     expected_message = "low_rank_k must be an integer"
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):
-        compute_svd(matrix, low_rank_k=invalid_k)
+        compute_svd(matrix, low_rank_k=cast(Any, invalid_k))
 
 
 def test_compute_svd_empty_matrix() -> None:
     """Test case 18: ValueError for empty matrix."""
     # Arrange
-    empty_matrix = []
+    empty_matrix: list[Any] = []
     expected_message = "matrix must be 2-dimensional"
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(empty_matrix)
+        compute_svd(cast(Any, empty_matrix))
 
 
 def test_compute_svd_non_numeric_values() -> None:
@@ -268,7 +272,7 @@ def test_compute_svd_non_numeric_values() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_nan_values() -> None:
@@ -279,7 +283,7 @@ def test_compute_svd_nan_values() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_inf_values() -> None:
@@ -290,13 +294,13 @@ def test_compute_svd_inf_values() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_low_rank_k_negative() -> None:
     """Test case 22: ValueError for negative k."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
     invalid_k = -1
     expected_message = "low_rank_k must be"
 
@@ -308,7 +312,7 @@ def test_compute_svd_low_rank_k_negative() -> None:
 def test_compute_svd_low_rank_k_too_large() -> None:
     """Test case 23: ValueError for k larger than rank."""
     # Arrange
-    matrix = [[1, 2], [3, 4]]
+    matrix: list[list[float]] = [[1.0, 2.0], [3.0, 4.0]]
     invalid_k = 10
     expected_message = "low_rank_k must be"
 
@@ -325,7 +329,7 @@ def test_compute_svd_1d_array() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_jagged_array() -> None:
@@ -336,13 +340,13 @@ def test_compute_svd_jagged_array() -> None:
 
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
-        compute_svd(invalid_matrix)
+        compute_svd(cast(Any, invalid_matrix))
 
 
 def test_compute_svd_low_rank_k_ignored_without_compute_uv() -> None:
     """Test case 26: low_rank_k is ignored when compute_uv=False."""
     # Arrange
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    matrix: list[list[float]] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
 
     # Act - low_rank_k is silently ignored, no error raised
     result = compute_svd(matrix, low_rank_k=2, compute_uv=False)
@@ -365,5 +369,6 @@ def test_compute_svd_singular_values_conversion() -> None:
     # Assert
     assert "singular_values" in result
     assert isinstance(result["singular_values"], np.ndarray)
-    assert result["singular_values"].dtype in [np.float32, np.float64]
-    assert len(result["singular_values"]) == 2
+    singular_values = result["singular_values"]
+    assert singular_values.dtype in [np.float32, np.float64]
+    assert len(singular_values) == 2

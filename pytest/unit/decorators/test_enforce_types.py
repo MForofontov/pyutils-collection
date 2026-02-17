@@ -20,7 +20,8 @@ def sample_function(a: int, b: str) -> str:
     return f"{a} - {b}"
 
 
-def test_valid_types():
+def test_valid_types() -> None:
+
     """
     Test case 1: Valid types for arguments and return value
     """
@@ -28,7 +29,8 @@ def test_valid_types():
     assert result == "1 - test"
 
 
-def test_valid_types_with_logger(caplog):
+def test_valid_types_with_logger(caplog) -> None:
+
     """
     Test case 2: Valid types for arguments and return value, with logger
     """
@@ -44,7 +46,8 @@ def test_valid_types_with_logger(caplog):
     assert "Return value must be of type int" not in caplog.text
 
 
-def test_valid_types_with_kwargs():
+def test_valid_types_with_kwargs() -> None:
+
     """
     Test case 3: Valid types for arguments with kwargs
     """
@@ -57,7 +60,8 @@ def test_valid_types_with_kwargs():
     assert result == "1 - test"
 
 
-def test_valid_types_with_kwargs_and_logger(caplog):
+def test_valid_types_with_kwargs_and_logger(caplog) -> None:
+
     """
     Test case 4: Valid types for arguments with kwargs, with logger
     """
@@ -73,7 +77,8 @@ def test_valid_types_with_kwargs_and_logger(caplog):
     assert "Return value must be of type int" not in caplog.text
 
 
-def test_missing_type_annotations():
+def test_missing_type_annotations() -> None:
+
     """
     Test case 5: Function without type annotations
     """
@@ -86,7 +91,8 @@ def test_missing_type_annotations():
     assert result == "1 - test"
 
 
-def test_default_argument_values():
+def test_default_argument_values() -> None:
+
     """
     Test case 6: Function with default argument values
     """
@@ -99,7 +105,8 @@ def test_default_argument_values():
     assert result == "1 - default"
 
 
-def test_variable_length_arguments():
+def test_variable_length_arguments() -> None:
+
     """
     Test case 7: Function with variable length arguments (*args and **kwargs)
     """
@@ -112,7 +119,8 @@ def test_variable_length_arguments():
     assert result == "1 - ('arg1', 'arg2') - {'kwarg1': 1.0, 'kwarg2': 2.0}"
 
 
-def test_invalid_argument_type():
+def test_invalid_argument_type() -> None:
+
     """
     Test case 8: Invalid type for argument, no logger provided
     """
@@ -127,7 +135,8 @@ def test_invalid_argument_type():
         sample_function_invalid_arg("invalid", "test")
 
 
-def test_invalid_return_type():
+def test_invalid_return_type() -> None:
+
     """
     Test case 9: Invalid type for return value, no logger provided
     """
@@ -142,7 +151,8 @@ def test_invalid_return_type():
         sample_function_invalid_return(1, "test")
 
 
-def test_invalid_argument_type_with_logger(caplog):
+def test_invalid_argument_type_with_logger(caplog) -> None:
+
     """
     Test case 10: Invalid type for argument, with logger
     """
@@ -159,7 +169,8 @@ def test_invalid_argument_type_with_logger(caplog):
         assert "Argument 'a' must be of type int" in caplog.text
 
 
-def test_invalid_return_type_with_logger(caplog):
+def test_invalid_return_type_with_logger(caplog) -> None:
+
     """
     Test case 11: Invalid type for return value, with logger
     """
@@ -176,7 +187,8 @@ def test_invalid_return_type_with_logger(caplog):
         assert "Return value must be of type int" in caplog.text
 
 
-def test_invalid_argument_type_with_kwargs():
+def test_invalid_argument_type_with_kwargs() -> None:
+
     """
     Test case 12: Invalid type for argument with kwargs, no logger provided
     """
@@ -191,7 +203,8 @@ def test_invalid_argument_type_with_kwargs():
         sample_function_invalid_arg_kwargs(a="invalid", b="test")
 
 
-def test_invalid_argument_type_with_kwargs_and_logger(caplog):
+def test_invalid_argument_type_with_kwargs_and_logger(caplog) -> None:
+
     """
     Test case 13: Invalid type for argument with kwargs, with logger
     """
@@ -208,7 +221,8 @@ def test_invalid_argument_type_with_kwargs_and_logger(caplog):
         assert "Argument 'a' must be of type int" in caplog.text
 
 
-def test_mixed_valid_and_invalid_arguments():
+def test_mixed_valid_and_invalid_arguments() -> None:
+
     """
     Test case 14: Mixed valid and invalid arguments
     """
@@ -223,7 +237,8 @@ def test_mixed_valid_and_invalid_arguments():
         sample_function_mixed_args(1, "test", "invalid")
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 15: Invalid logger type
     """

@@ -24,7 +24,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_scatter_plot_basic():
+def test_create_scatter_plot_basic() -> None:
+
     """
     Test case 1: Create basic scatter plot.
     """
@@ -43,7 +44,8 @@ def test_create_scatter_plot_basic():
     plt.close(fig)
 
 
-def test_create_scatter_plot_with_styling():
+def test_create_scatter_plot_with_styling() -> None:
+
     """
     Test case 2: Create scatter plot with custom styling.
     """
@@ -60,7 +62,8 @@ def test_create_scatter_plot_with_styling():
     plt.close(fig)
 
 
-def test_create_scatter_plot_numpy_arrays():
+def test_create_scatter_plot_numpy_arrays() -> None:
+
     """
     Test case 3: Create scatter plot with numpy arrays.
     """
@@ -79,7 +82,8 @@ def test_create_scatter_plot_numpy_arrays():
     plt.close(fig)
 
 
-def test_create_scatter_plot_with_grid():
+def test_create_scatter_plot_with_grid() -> None:
+
     """
     Test case 4: Create scatter plot with grid enabled.
     """
@@ -95,7 +99,8 @@ def test_create_scatter_plot_with_grid():
     plt.close(fig)
 
 
-def test_create_scatter_plot_empty_x_raises_error():
+def test_create_scatter_plot_empty_x_raises_error() -> None:
+
     """
     Test case 5: ValueError for empty x data.
     """
@@ -109,7 +114,8 @@ def test_create_scatter_plot_empty_x_raises_error():
         create_scatter_plot(x, y)
 
 
-def test_create_scatter_plot_mismatched_lengths_raises_error():
+def test_create_scatter_plot_mismatched_lengths_raises_error() -> None:
+
     """
     Test case 6: ValueError when x and y lengths don't match.
     """
@@ -123,7 +129,8 @@ def test_create_scatter_plot_mismatched_lengths_raises_error():
         create_scatter_plot(x, y)
 
 
-def test_create_scatter_plot_invalid_alpha_raises_error():
+def test_create_scatter_plot_invalid_alpha_raises_error() -> None:
+
     """
     Test case 7: ValueError for alpha outside [0, 1] range.
     """
@@ -136,7 +143,8 @@ def test_create_scatter_plot_invalid_alpha_raises_error():
         create_scatter_plot(x, y, alpha=1.5)
 
 
-def test_create_scatter_plot_invalid_x_type_raises_error():
+def test_create_scatter_plot_invalid_x_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid x data type.
     """
@@ -150,7 +158,8 @@ def test_create_scatter_plot_invalid_x_type_raises_error():
         create_scatter_plot(x, y)
 
 
-def test_create_scatter_plot_invalid_figsize_raises_error():
+def test_create_scatter_plot_invalid_figsize_raises_error() -> None:
+
     """
     Test case 9: ValueError for negative figsize.
     """

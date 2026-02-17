@@ -23,7 +23,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_gradient_basic():
+def test_create_gradient_basic() -> None:
+
     """
     Test case 1: Create basic gradient between two colors.
     """
@@ -40,7 +41,8 @@ def test_create_gradient_basic():
     assert colors[-1].lower() == end_color.lower()
 
 
-def test_create_gradient_many_steps():
+def test_create_gradient_many_steps() -> None:
+
     """
     Test case 2: Create gradient with many intermediate colors.
     """
@@ -56,7 +58,8 @@ def test_create_gradient_many_steps():
     assert all(isinstance(c, str) for c in colors)
 
 
-def test_create_gradient_two_steps():
+def test_create_gradient_two_steps() -> None:
+
     """
     Test case 3: Create gradient with minimal steps (just start and end).
     """
@@ -73,7 +76,8 @@ def test_create_gradient_two_steps():
     assert colors[1].lower() == end_color.lower()
 
 
-def test_create_gradient_without_hash():
+def test_create_gradient_without_hash() -> None:
+
     """
     Test case 4: Create gradient with named colors (no hash).
     """
@@ -89,7 +93,8 @@ def test_create_gradient_without_hash():
     assert all(isinstance(c, str) and c.startswith("#") for c in colors)
 
 
-def test_create_gradient_one_step_raises_error():
+def test_create_gradient_one_step_raises_error() -> None:
+
     """
     Test case 5: One step gradient is actually allowed.
     """
@@ -105,7 +110,8 @@ def test_create_gradient_one_step_raises_error():
     assert isinstance(colors[0], str)
 
 
-def test_create_gradient_zero_steps_raises_error():
+def test_create_gradient_zero_steps_raises_error() -> None:
+
     """
     Test case 6: Accept one step (function allows it).
     """
@@ -117,7 +123,8 @@ def test_create_gradient_zero_steps_raises_error():
     assert len(result) == 1
 
 
-def test_create_gradient_invalid_start_color_raises_error():
+def test_create_gradient_invalid_start_color_raises_error() -> None:
+
     """
     Test case 7: ValueError for invalid start color format.
     """
@@ -129,7 +136,8 @@ def test_create_gradient_invalid_start_color_raises_error():
         create_gradient("not_a_color_xyz123", "#0000FF", n_steps=5)
 
 
-def test_create_gradient_invalid_end_color_raises_error():
+def test_create_gradient_invalid_end_color_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid end color format.
     """
@@ -141,7 +149,8 @@ def test_create_gradient_invalid_end_color_raises_error():
         create_gradient("#FF0000", "not_a_color_xyz123", n_steps=5)
 
 
-def test_create_gradient_invalid_type_raises_error():
+def test_create_gradient_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid color type.
     """

@@ -16,7 +16,8 @@ pytestmark = [
 ]
 
 
-def test_load_dotenv_basic(tmp_path):
+def test_load_dotenv_basic(tmp_path) -> None:
+
     """
     Test case 1: Basic .env file loading.
     """
@@ -30,7 +31,8 @@ def test_load_dotenv_basic(tmp_path):
     assert os.environ["BAZ"] == "qux"
 
 
-def test_load_dotenv_override(tmp_path):
+def test_load_dotenv_override(tmp_path) -> None:
+
     """
     Test case 2: Override existing environment variables.
     """
@@ -41,7 +43,8 @@ def test_load_dotenv_override(tmp_path):
     assert os.environ["EXISTING"] == "new"
 
 
-def test_load_dotenv_no_override(tmp_path):
+def test_load_dotenv_no_override(tmp_path) -> None:
+
     """
     Test case 3: Don't override existing environment variables.
     """
@@ -52,7 +55,8 @@ def test_load_dotenv_no_override(tmp_path):
     assert os.environ["EXISTING"] == "old"
 
 
-def test_load_dotenv_comments(tmp_path):
+def test_load_dotenv_comments(tmp_path) -> None:
+
     """
     Test case 4: Skip comments and empty lines.
     """
@@ -67,14 +71,16 @@ def test_load_dotenv_comments(tmp_path):
     assert os.environ["VAR2"] == "value2"
 
 
-def test_load_dotenv_nonexistent_file():
+def test_load_dotenv_nonexistent_file() -> None:
+
     """
     Test case 5: Nonexistent file returns None and leaves environment untouched.
     """
     load_dotenv("nonexistent.env")  # Should not raise
 
 
-def test_load_dotenv_empty_file(tmp_path):
+def test_load_dotenv_empty_file(tmp_path) -> None:
+
     """
     Test case 6: Empty .env file.
     """
@@ -83,7 +89,8 @@ def test_load_dotenv_empty_file(tmp_path):
     load_dotenv(str(config_file))  # Should not raise
 
 
-def test_load_dotenv_malformed_lines(tmp_path):
+def test_load_dotenv_malformed_lines(tmp_path) -> None:
+
     """
     Test case 7: File with malformed lines (no equals sign).
     """
@@ -96,7 +103,8 @@ def test_load_dotenv_malformed_lines(tmp_path):
     assert os.environ["VAR2"] == "value2"
 
 
-def test_load_dotenv_quoted_values(tmp_path):
+def test_load_dotenv_quoted_values(tmp_path) -> None:
+
     """
     Test case 8: Values with quotes.
     """
@@ -109,7 +117,8 @@ def test_load_dotenv_quoted_values(tmp_path):
     assert os.environ["VAR2"] == "single quoted"
 
 
-def test_load_dotenv_invalid_dotenv_path_type():
+def test_load_dotenv_invalid_dotenv_path_type() -> None:
+
     """
     Test case 9: Test load_dotenv with invalid dotenv_path type.
     """
@@ -117,7 +126,8 @@ def test_load_dotenv_invalid_dotenv_path_type():
         load_dotenv(123)
 
 
-def test_load_dotenv_invalid_override_type():
+def test_load_dotenv_invalid_override_type() -> None:
+
     """
     Test case 10: Test load_dotenv with invalid override type.
     """

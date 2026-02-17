@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.multiprocessing_functions]
@@ -26,7 +28,7 @@ def test_parallel_unique_empty_list() -> None:
     """
     Test case 3: Test parallel_unique with an empty list.
     """
-    result = parallel_unique([])
+    result: list[int] = parallel_unique([])
     assert result == []
 
 
@@ -53,7 +55,7 @@ def test_parallel_unique_non_list_input() -> None:
     Test case 6: Test parallel_unique with non-list input (should raise TypeError if validated).
     """
     try:
-        parallel_unique("not a list")
+        parallel_unique(cast(Any, "not a list"))
     except Exception as e:
         assert isinstance(e, Exception)
 

@@ -25,7 +25,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_get_colorblind_safe_palette_default():
+def test_get_colorblind_safe_palette_default() -> None:
+
     """
     Test case 1: Get default colorblind safe palette with 8 colors.
     """
@@ -38,7 +39,8 @@ def test_get_colorblind_safe_palette_default():
     assert all(isinstance(c, str) for c in colors)
 
 
-def test_get_colorblind_safe_palette_specific_count():
+def test_get_colorblind_safe_palette_specific_count() -> None:
+
     """
     Test case 2: Get specific number of colorblind safe colors.
     """
@@ -49,7 +51,8 @@ def test_get_colorblind_safe_palette_specific_count():
     assert len(colors) == 5
 
 
-def test_get_colorblind_safe_palette_large():
+def test_get_colorblind_safe_palette_large() -> None:
+
     """
     Test case 3: Get large colorblind safe palette.
     """
@@ -60,7 +63,8 @@ def test_get_colorblind_safe_palette_large():
     assert len(colors) == 10
 
 
-def test_get_colorblind_safe_palette_single_color():
+def test_get_colorblind_safe_palette_single_color() -> None:
+
     """
     Test case 4: Get single colorblind safe color.
     """
@@ -72,7 +76,8 @@ def test_get_colorblind_safe_palette_single_color():
     assert isinstance(colors[0], str)
 
 
-def test_get_colorblind_safe_palette_hex_format():
+def test_get_colorblind_safe_palette_hex_format() -> None:
+
     """
     Test case 5: Verify colors are in hex format.
     """
@@ -84,7 +89,8 @@ def test_get_colorblind_safe_palette_hex_format():
     assert all(len(c) == 7 for c in colors)
 
 
-def test_get_colorblind_safe_palette_zero_colors_raises_error():
+def test_get_colorblind_safe_palette_zero_colors_raises_error() -> None:
+
     """
     Test case 6: ValueError for zero colors.
     """
@@ -96,7 +102,8 @@ def test_get_colorblind_safe_palette_zero_colors_raises_error():
         get_colorblind_safe_palette(n_colors=0)
 
 
-def test_get_colorblind_safe_palette_negative_colors_raises_error():
+def test_get_colorblind_safe_palette_negative_colors_raises_error() -> None:
+
     """
     Test case 7: ValueError for negative number of colors.
     """
@@ -108,7 +115,8 @@ def test_get_colorblind_safe_palette_negative_colors_raises_error():
         get_colorblind_safe_palette(n_colors=-3)
 
 
-def test_get_colorblind_safe_palette_invalid_type_raises_error():
+def test_get_colorblind_safe_palette_invalid_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid n_colors type.
     """

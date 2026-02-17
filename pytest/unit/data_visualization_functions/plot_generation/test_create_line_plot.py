@@ -24,7 +24,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_line_plot_single_series():
+def test_create_line_plot_single_series() -> None:
+
     """
     Test case 1: Create line plot with single series.
     """
@@ -45,7 +46,8 @@ def test_create_line_plot_single_series():
     plt.close(fig)
 
 
-def test_create_line_plot_multiple_series():
+def test_create_line_plot_multiple_series() -> None:
+
     """
     Test case 2: Create line plot with multiple series.
     """
@@ -67,7 +69,8 @@ def test_create_line_plot_multiple_series():
     plt.close(fig)
 
 
-def test_create_line_plot_with_grid_and_markers():
+def test_create_line_plot_with_grid_and_markers() -> None:
+
     """
     Test case 3: Create line plot with grid and markers enabled.
     """
@@ -84,7 +87,8 @@ def test_create_line_plot_with_grid_and_markers():
     plt.close(fig)
 
 
-def test_create_line_plot_numpy_arrays():
+def test_create_line_plot_numpy_arrays() -> None:
+
     """
     Test case 4: Create line plot with numpy arrays.
     """
@@ -102,7 +106,8 @@ def test_create_line_plot_numpy_arrays():
     plt.close(fig)
 
 
-def test_create_line_plot_empty_x_raises_error():
+def test_create_line_plot_empty_x_raises_error() -> None:
+
     """
     Test case 5: ValueError for empty x data.
     """
@@ -116,7 +121,8 @@ def test_create_line_plot_empty_x_raises_error():
         create_line_plot(x, y)
 
 
-def test_create_line_plot_empty_y_raises_error():
+def test_create_line_plot_empty_y_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty y data.
     """
@@ -130,7 +136,8 @@ def test_create_line_plot_empty_y_raises_error():
         create_line_plot(x, y)
 
 
-def test_create_line_plot_mismatched_lengths_raises_error():
+def test_create_line_plot_mismatched_lengths_raises_error() -> None:
+
     """
     Test case 7: ValueError when x and y lengths don't match.
     """
@@ -144,7 +151,8 @@ def test_create_line_plot_mismatched_lengths_raises_error():
         create_line_plot(x, y)
 
 
-def test_create_line_plot_invalid_x_type_raises_error():
+def test_create_line_plot_invalid_x_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid x data type.
     """
@@ -158,7 +166,8 @@ def test_create_line_plot_invalid_x_type_raises_error():
         create_line_plot(x, y)
 
 
-def test_create_line_plot_invalid_figsize_raises_error():
+def test_create_line_plot_invalid_figsize_raises_error() -> None:
+
     """
     Test case 9: ValueError for negative figsize.
     """
@@ -171,7 +180,8 @@ def test_create_line_plot_invalid_figsize_raises_error():
         create_line_plot(x, y, figsize=(-10, 6))
 
 
-def test_create_line_plot_custom_colors():
+def test_create_line_plot_custom_colors() -> None:
+
     """
     Test case 10: Create line plot with custom colors.
     """

@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 try:
@@ -7,13 +8,16 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    is_port_listening = None  # type: ignore
+    psutil = None
+    is_port_listening = None  # type: ignore[assignment]
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.network_functions]
+pytestmark = [
+    pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not installed"),
+    pytest.mark.unit,
+    pytest.mark.network_functions,
+]
 
 
 def test_is_port_listening_true() -> None:
@@ -51,4 +55,4 @@ def test_is_port_listening_type_error() -> None:
     Test case 4: TypeError for non-integer port (simulate error).
     """
     with pytest.raises((TypeError, AttributeError, psutil.AccessDenied)):
-        is_port_listening("not_an_int")
+        is_port_listening(cast(Any, "not_an_int"))

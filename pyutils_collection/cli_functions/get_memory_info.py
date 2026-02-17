@@ -3,13 +3,13 @@
 import psutil
 
 
-def get_memory_info() -> dict[str, int | float]:
+def get_memory_info() -> dict[str, int | float | None]:
     """
     Get system memory usage information.
 
     Returns
     -------
-    dict[str, int | float]
+    dict[str, int | float | None]
         Dictionary containing memory information including total, available,
         used, free, and percentage used.
 

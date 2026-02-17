@@ -2,6 +2,8 @@
 Tests for sanitize_filename function.
 """
 
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.regex]
@@ -62,7 +64,7 @@ def test_sanitize_filename_multiple_dots() -> None:
 def test_sanitize_filename_invalid_type_filename() -> None:
     """Test TypeError for invalid filename type."""
     with pytest.raises(TypeError, match="filename must be str"):
-        sanitize_filename(123)
+        sanitize_filename(cast(Any, 123))
 
 
 def test_sanitize_filename_invalid_max_length() -> None:

@@ -6,7 +6,8 @@ import json
 from pyutils_collection.json_functions.safe_json_load import safe_json_load
 
 
-def test_safe_json_load_valid():
+def test_safe_json_load_valid() -> None:
+
     """
     Test case 1: Valid JSON string should load as dict.
     """
@@ -15,7 +16,8 @@ def test_safe_json_load_valid():
     assert result == {"a": 1, "b": 2}
 
 
-def test_safe_json_load_invalid():
+def test_safe_json_load_invalid() -> None:
+
     """
     Test case 2: Invalid JSON string returns default value.
     """
@@ -24,7 +26,8 @@ def test_safe_json_load_invalid():
     assert result == {"error": True}
 
 
-def test_safe_json_load_empty():
+def test_safe_json_load_empty() -> None:
+
     """
     Test case 3: Empty string returns None (default).
     """
@@ -32,7 +35,8 @@ def test_safe_json_load_empty():
     assert result is None
 
 
-def test_safe_json_load_object_hook():
+def test_safe_json_load_object_hook() -> None:
+
     """
     Test case 4: Custom object_hook is used for decoding.
     """
@@ -46,7 +50,8 @@ def test_safe_json_load_object_hook():
     assert result["sum"] == 3
 
 
-def test_safe_json_load_custom_decoder():
+def test_safe_json_load_custom_decoder() -> None:
+
     """
     Test case 5: Custom decoder class is used.
     """
@@ -62,7 +67,8 @@ def test_safe_json_load_custom_decoder():
     assert result["custom"] is True
 
 
-def test_safe_json_load_type_error_input():
+def test_safe_json_load_type_error_input() -> None:
+
     """
     Test case 6: Non-string input triggers TypeError and returns the default value.
     """

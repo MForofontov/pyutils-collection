@@ -28,7 +28,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_configure_export_defaults_basic():
+def test_configure_export_defaults_basic() -> None:
+
     """
     Test case 1: Configure export defaults with basic settings.
     """
@@ -40,7 +41,8 @@ def test_configure_export_defaults_basic():
     assert plt.rcParams["savefig.format"] == "png"
 
 
-def test_configure_export_defaults_high_dpi():
+def test_configure_export_defaults_high_dpi() -> None:
+
     """
     Test case 2: Configure with high DPI for publication.
     """
@@ -51,7 +53,8 @@ def test_configure_export_defaults_high_dpi():
     assert plt.rcParams["savefig.dpi"] == 300
 
 
-def test_configure_export_defaults_pdf_format():
+def test_configure_export_defaults_pdf_format() -> None:
+
     """
     Test case 3: Configure for PDF export.
     """
@@ -62,7 +65,8 @@ def test_configure_export_defaults_pdf_format():
     assert plt.rcParams["savefig.format"] == "pdf"
 
 
-def test_configure_export_defaults_transparent():
+def test_configure_export_defaults_transparent() -> None:
+
     """
     Test case 4: Configure with transparent background.
     """
@@ -73,7 +77,8 @@ def test_configure_export_defaults_transparent():
     assert plt.rcParams["savefig.transparent"]
 
 
-def test_configure_export_defaults_bbox_tight():
+def test_configure_export_defaults_bbox_tight() -> None:
+
     """
     Test case 5: Configure with tight bounding box.
     """
@@ -84,7 +89,8 @@ def test_configure_export_defaults_bbox_tight():
     assert plt.rcParams["savefig.bbox"] == "tight"
 
 
-def test_configure_export_defaults_invalid_dpi_raises_error():
+def test_configure_export_defaults_invalid_dpi_raises_error() -> None:
+
     """
     Test case 6: ValueError for invalid DPI.
     """
@@ -96,7 +102,8 @@ def test_configure_export_defaults_invalid_dpi_raises_error():
         configure_export_defaults(dpi=-100)
 
 
-def test_configure_export_defaults_zero_dpi_raises_error():
+def test_configure_export_defaults_zero_dpi_raises_error() -> None:
+
     """
     Test case 7: ValueError for zero DPI.
     """
@@ -108,7 +115,8 @@ def test_configure_export_defaults_zero_dpi_raises_error():
         configure_export_defaults(dpi=0)
 
 
-def test_configure_export_defaults_invalid_format_raises_error():
+def test_configure_export_defaults_invalid_format_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid format.
     """
@@ -120,7 +128,8 @@ def test_configure_export_defaults_invalid_format_raises_error():
         configure_export_defaults(format="invalid_format")
 
 
-def test_configure_export_defaults_invalid_type_raises_error():
+def test_configure_export_defaults_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid DPI type.
     """

@@ -20,7 +20,8 @@ pytestmark = [
 ]
 
 
-def test_rgb_to_hex_red():
+def test_rgb_to_hex_red() -> None:
+
     """
     Test case 1: Convert red RGB to hex.
     """
@@ -35,7 +36,8 @@ def test_rgb_to_hex_red():
     assert result == expected
 
 
-def test_rgb_to_hex_green():
+def test_rgb_to_hex_green() -> None:
+
     """
     Test case 2: Convert green RGB to hex.
     """
@@ -50,7 +52,8 @@ def test_rgb_to_hex_green():
     assert result == expected
 
 
-def test_rgb_to_hex_mixed():
+def test_rgb_to_hex_mixed() -> None:
+
     """
     Test case 3: Convert mixed RGB values to hex.
     """
@@ -65,7 +68,8 @@ def test_rgb_to_hex_mixed():
     assert result == expected
 
 
-def test_rgb_to_hex_black():
+def test_rgb_to_hex_black() -> None:
+
     """
     Test case 4: Convert black RGB to hex.
     """
@@ -80,7 +84,8 @@ def test_rgb_to_hex_black():
     assert result == expected
 
 
-def test_rgb_to_hex_white():
+def test_rgb_to_hex_white() -> None:
+
     """
     Test case 5: Convert white RGB to hex.
     """
@@ -95,7 +100,8 @@ def test_rgb_to_hex_white():
     assert result == expected
 
 
-def test_rgb_to_hex_r_out_of_range_raises_error():
+def test_rgb_to_hex_r_out_of_range_raises_error() -> None:
+
     """
     Test case 6: ValueError for r value out of range.
     """
@@ -108,7 +114,8 @@ def test_rgb_to_hex_r_out_of_range_raises_error():
         rgb_to_hex(r, g, b)
 
 
-def test_rgb_to_hex_negative_value_raises_error():
+def test_rgb_to_hex_negative_value_raises_error() -> None:
+
     """
     Test case 7: ValueError for negative RGB value.
     """
@@ -121,7 +128,8 @@ def test_rgb_to_hex_negative_value_raises_error():
         rgb_to_hex(r, g, b)
 
 
-def test_rgb_to_hex_invalid_type_raises_error():
+def test_rgb_to_hex_invalid_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for non-integer input.
     """

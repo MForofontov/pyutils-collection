@@ -9,7 +9,8 @@ from pyutils_collection.http_functions.http_post import http_post
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_no_data(mock_urlopen):
+def test_http_post_no_data(mock_urlopen) -> None:
+
     """Test case 1: Test HTTP POST request with no data payload."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -30,7 +31,8 @@ def test_http_post_no_data(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_with_dict_data(mock_urlopen):
+def test_http_post_with_dict_data(mock_urlopen) -> None:
+
     """Test case 2: Test HTTP POST request with dictionary data gets JSON encoded."""
     mock_response = Mock()
     mock_response.getcode.return_value = 201
@@ -52,7 +54,8 @@ def test_http_post_with_dict_data(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_with_string_data(mock_urlopen):
+def test_http_post_with_string_data(mock_urlopen) -> None:
+
     """Test case 3: Test HTTP POST request with string data uses form encoding."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -74,7 +77,8 @@ def test_http_post_with_string_data(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_with_custom_headers(mock_urlopen):
+def test_http_post_with_custom_headers(mock_urlopen) -> None:
+
     """Test case 4: Test HTTP POST request with custom headers are properly set."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -95,7 +99,8 @@ def test_http_post_with_custom_headers(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_with_custom_timeout(mock_urlopen):
+def test_http_post_with_custom_timeout(mock_urlopen) -> None:
+
     """Test case 5: Test HTTP POST request with custom timeout value."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -112,7 +117,8 @@ def test_http_post_with_custom_timeout(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_default_timeout(mock_urlopen):
+def test_http_post_default_timeout(mock_urlopen) -> None:
+
     """Test case 6: Test that default timeout is 30 seconds when not specified."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -128,7 +134,8 @@ def test_http_post_default_timeout(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_http_error_with_response_body(mock_urlopen):
+def test_http_post_http_error_with_response_body(mock_urlopen) -> None:
+
     """Test case 7: Test HTTP POST request with HTTP error that includes response body."""
     error = urllib.error.HTTPError(
         url="https://example.com",
@@ -149,7 +156,8 @@ def test_http_post_http_error_with_response_body(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_complex_nested_data(mock_urlopen):
+def test_http_post_complex_nested_data(mock_urlopen) -> None:
+
     """Test case 8: Test HTTP POST request with complex nested dictionary data."""
     mock_response = Mock()
     mock_response.getcode.return_value = 200
@@ -175,7 +183,8 @@ def test_http_post_complex_nested_data(mock_urlopen):
 
 
 @patch("urllib.request.urlopen")
-def test_http_post_url_error(mock_urlopen):
+def test_http_post_url_error(mock_urlopen) -> None:
+
     """Test case 9: Test HTTP POST request handles URLError correctly."""
     from urllib.error import URLError
 
@@ -187,19 +196,22 @@ def test_http_post_url_error(mock_urlopen):
         http_post("https://example.com", data={"test": "data"})
 
 
-def test_http_post_with_empty_url():
+def test_http_post_with_empty_url() -> None:
+
     """Test case 10: Test http_post function with empty URL raises ValueError."""
     with pytest.raises(ValueError, match="URL must be a non-empty string"):
         http_post("")
 
 
-def test_http_post_with_whitespace_url():
+def test_http_post_with_whitespace_url() -> None:
+
     """Test case 11: Test http_post function with whitespace-only URL raises ValueError."""
     with pytest.raises(ValueError, match="URL must be a non-empty string"):
         http_post("   ")
 
 
-def test_http_post_with_none_url():
+def test_http_post_with_none_url() -> None:
+
     """Test case 12: Test http_post function with None URL raises TypeError."""
     with pytest.raises(TypeError):
         http_post(None)

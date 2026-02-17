@@ -5,6 +5,7 @@ Tests cover normal operation, edge cases, and error conditions.
 """
 
 import warnings
+from typing import Any, cast
 
 try:
     import numpy as np
@@ -15,16 +16,17 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     NUMPY_AVAILABLE = False
-    np = None  # type: ignore
-    scipy = None  # type: ignore
-    robust_statistics = None  # type: ignore
+    np = None  # type: ignore[assignment]
+    scipy = None
+    robust_statistics = None  # type: ignore[assignment]
 
 import pytest
 
-pytestmark = pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy and/or scipy not installed")
-
-pytestmark = pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy/scipy not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
+pytestmark = [
+    pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy/scipy not installed"),
+    pytest.mark.unit,
+    pytest.mark.scientific_computing,
+]
 
 # Normal operation tests
 
@@ -32,7 +34,7 @@ pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.scientific_computing]
 def test_robust_statistics_basic_dataset() -> None:
     """Test case 1: Normal operation with basic dataset."""
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data = [1.0, 2.0, 3.0, 4.0, 5.0]
 
     # Act
     result = robust_statistics(data)
@@ -49,7 +51,7 @@ def test_robust_statistics_basic_dataset() -> None:
 def test_robust_statistics_with_outliers() -> None:
     """Test case 2: Normal operation with outliers."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 100]  # 100 is an outlier
+    data = [1.0, 2.0, 3.0, 4.0, 5.0, 100.0]  # 100 is an outlier
 
     # Act
     result = robust_statistics(data)
@@ -78,7 +80,7 @@ def test_robust_statistics_numpy_array() -> None:
 def test_robust_statistics_high_outliers() -> None:
     """Test case 4: Normal operation with extreme high outliers."""
     # Arrange
-    data = [1, 2, 3, 4, 5, 1000, 2000]
+    data = [1.0, 2.0, 3.0, 4.0, 5.0, 1000.0, 2000.0]
 
     # Act
     result = robust_statistics(data)
@@ -91,7 +93,7 @@ def test_robust_statistics_high_outliers() -> None:
 def test_robust_statistics_negative_values() -> None:
     """Test case 5: Normal operation with negative values."""
     # Arrange
-    data = [-10, -5, 0, 5, 10]
+    data = [-10.0, -5.0, 0.0, 5.0, 10.0]
 
     # Act
     result = robust_statistics(data)
@@ -165,7 +167,7 @@ def test_robust_statistics_two_values() -> None:
 def test_robust_statistics_single_outlier_low() -> None:
     """Test case 10: Edge case with single low outlier."""
     # Arrange
-    data = [-1000, 1, 2, 3, 4, 5]
+    data = [-1000.0, 1.0, 2.0, 3.0, 4.0, 5.0]
 
     # Act
     result = robust_statistics(data)
@@ -178,7 +180,7 @@ def test_robust_statistics_single_outlier_low() -> None:
 def test_robust_statistics_even_count() -> None:
     """Test case 11: Edge case with even number of values."""
     # Arrange
-    data = [1, 2, 3, 4]
+    data = [1.0, 2.0, 3.0, 4.0]
 
     # Act
     result = robust_statistics(data)
@@ -207,7 +209,7 @@ def test_robust_statistics_mixed_scale() -> None:
 def test_robust_statistics_invalid_data_type() -> None:
     """Test case 13: TypeError for invalid data type."""
     # Arrange
-    invalid_data = "not_a_list"
+    invalid_data = cast(Any, "not_a_list")
     expected_message = "data must be a list or numpy array"
 
     # Act & Assert
@@ -218,7 +220,7 @@ def test_robust_statistics_invalid_data_type() -> None:
 def test_robust_statistics_empty_data() -> None:
     """Test case 14: ValueError for empty data."""
     # Arrange
-    empty_data = []
+    empty_data: list[float] = []
     expected_message = "data cannot be empty"
 
     # Act & Assert
@@ -243,7 +245,7 @@ def test_robust_statistics_single_value() -> None:
 def test_robust_statistics_non_numeric_values() -> None:
     """Test case 16: ValueError for non-numeric values."""
     # Arrange
-    invalid_data = [1, 2, "three", 4, 5]
+    invalid_data = cast(Any, [1, 2, "three", 4, 5])
     expected_message = "data contains non-numeric values"
 
     # Act & Assert
@@ -254,7 +256,7 @@ def test_robust_statistics_non_numeric_values() -> None:
 def test_robust_statistics_dict_input() -> None:
     """Test case 17: TypeError for dictionary input."""
     # Arrange
-    invalid_data = {"a": 1, "b": 2}
+    invalid_data = cast(Any, {"a": 1, "b": 2})
     expected_message = "data must be a list or numpy array"
 
     # Act & Assert
@@ -265,7 +267,7 @@ def test_robust_statistics_dict_input() -> None:
 def test_robust_statistics_none_input() -> None:
     """Test case 18: TypeError for None input."""
     # Arrange
-    invalid_data = None
+    invalid_data = cast(Any, None)
     expected_message = "data must be a list or numpy array"
 
     # Act & Assert
@@ -276,7 +278,7 @@ def test_robust_statistics_none_input() -> None:
 def test_robust_statistics_nested_list() -> None:
     """Test case 19: TypeError for nested list."""
     # Arrange
-    invalid_data = [[1, 2], [3, 4]]
+    invalid_data = cast(Any, [[1, 2], [3, 4]])
     expected_message = "only 0-dimensional arrays can be converted to Python scalars"
 
     # Act & Assert

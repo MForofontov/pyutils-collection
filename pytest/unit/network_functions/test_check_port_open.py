@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    check_port_open = None  # type: ignore
+    psutil = None
+    check_port_open = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -44,7 +45,7 @@ def test_check_port_open_type_error_host() -> None:
     Test case 3: TypeError for non-string host.
     """
     with pytest.raises(TypeError, match="host must be a string"):
-        check_port_open(123, 80)
+        check_port_open(cast(Any, 123), 80)
 
 
 def test_check_port_open_type_error_port() -> None:
@@ -52,7 +53,7 @@ def test_check_port_open_type_error_port() -> None:
     Test case 4: TypeError for non-integer port.
     """
     with pytest.raises(TypeError, match="port must be an integer"):
-        check_port_open("localhost", "80")
+        check_port_open("localhost", cast(Any, "80"))
 
 
 def test_check_port_open_value_error_host() -> None:
@@ -78,7 +79,7 @@ def test_check_port_open_type_error_timeout() -> None:
     Test case 7: TypeError for invalid timeout type.
     """
     with pytest.raises(TypeError, match="timeout must be a number"):
-        check_port_open("localhost", 80, timeout="invalid")
+        check_port_open("localhost", 80, timeout=cast(Any, "invalid"))
 
 
 def test_check_port_open_value_error_timeout() -> None:

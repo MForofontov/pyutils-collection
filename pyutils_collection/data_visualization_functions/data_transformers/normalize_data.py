@@ -120,7 +120,7 @@ def normalize_data(
         normalized = (data_array - median) / iqr
 
     logger.debug(f"Normalized {data_array.size} values")
-    return normalized
+    return np.asarray(normalized)
 
 
 __all__ = ["normalize_data"]

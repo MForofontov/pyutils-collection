@@ -46,7 +46,8 @@ def sample_function() -> str:
     return "Function executed"
 
 
-def test_time_and_resource_function_success(capfd):
+def test_time_and_resource_function_success(capfd) -> None:
+
     """
     Test case 1: Function executes successfully and prints time and resource usage
     """
@@ -56,7 +57,8 @@ def test_time_and_resource_function_success(capfd):
     assert "Execution time" in captured.out
 
 
-def test_time_and_resource_function_with_logger(caplog):
+def test_time_and_resource_function_with_logger(caplog) -> None:
+
     """
     Test case 2: Function executes successfully with logger
     """
@@ -72,7 +74,8 @@ def test_time_and_resource_function_with_logger(caplog):
         assert "Execution time" in caplog.text
 
 
-def test_time_and_resource_function_with_all_monitors(capfd):
+def test_time_and_resource_function_with_all_monitors(capfd) -> None:
+
     """
     Test case 3: Function executes successfully with all monitors enabled
     """
@@ -113,7 +116,8 @@ def test_time_and_resource_function_with_all_monitors(capfd):
     assert "Maximum page faults" in captured.out
 
 
-def test_time_and_resource_function_prints(capfd):
+def test_time_and_resource_function_prints(capfd) -> None:
+
     """
     Test case 4: Function executes successfully and prints time and resource usage
     """
@@ -155,7 +159,8 @@ def test_time_and_resource_function_prints(capfd):
     assert "Maximum page faults" in captured.out
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 5: Invalid logger type
     """

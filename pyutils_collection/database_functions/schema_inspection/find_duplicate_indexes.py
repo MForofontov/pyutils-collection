@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def find_duplicate_indexes(
     connection: Any,
     schema: str | None = None,
-) -> dict[str, list[dict[str, Any]]]:
+) -> dict[str, Any]:
     """
     Find duplicate and redundant indexes across tables.
 
@@ -29,11 +29,11 @@ def find_duplicate_indexes(
 
     Returns
     -------
-    dict[str, list[dict[str, Any]]]
+    dict[str, Any]
         Dictionary with:
         - 'exact_duplicates': List of exact duplicate index groups
         - 'redundant': List of redundant indexes (prefix of another)
-        - 'unused_candidates': Indexes on low-cardinality columns
+        - 'summary': Dict with count statistics
 
     Raises
     ------
@@ -65,7 +65,7 @@ def find_duplicate_indexes(
     inspector = inspect(connection)
     tables = inspector.get_table_names(schema=schema)
 
-    all_indexes = []
+    all_indexes: list[dict[str, Any]] = []
 
     # Collect all indexes with their details
     for table in tables:
@@ -81,8 +81,8 @@ def find_duplicate_indexes(
             )
 
     # Find exact duplicates (same columns, same order)
-    exact_duplicates = []
-    seen_combinations = {}
+    exact_duplicates: list[list[dict[str, Any]]] = []
+    seen_combinations: dict[tuple[Any, ...], Any] = {}
 
     for idx in all_indexes:
         key = (idx["table"], idx["columns"], idx["unique"])
@@ -99,7 +99,7 @@ def find_duplicate_indexes(
             seen_combinations[key] = idx
 
     # Find redundant indexes (one is prefix of another)
-    redundant = []
+    redundant: list[dict[str, Any]] = []
 
     for i, idx1 in enumerate(all_indexes):
         for idx2 in all_indexes[i + 1 :]:
@@ -112,7 +112,7 @@ def find_duplicate_indexes(
 
             # Check if one is prefix of another
             if cols1 != cols2:
-                if cols2[: len(cols1)] == cols1:
+                if tuple(cols2[: len(cols1)]) == cols1:
                     redundant.append(
                         {
                             "redundant_index": idx1["name"],
@@ -123,7 +123,7 @@ def find_duplicate_indexes(
                             "reason": f"Index {idx1['name']} is redundant - {idx2['name']} starts with same columns",
                         }
                     )
-                elif cols1[: len(cols2)] == cols2:
+                elif tuple(cols1[: len(cols2)]) == cols2:
                     redundant.append(
                         {
                             "redundant_index": idx2["name"],

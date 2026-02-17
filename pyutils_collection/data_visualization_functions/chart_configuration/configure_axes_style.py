@@ -111,22 +111,22 @@ def configure_axes_style(
 
     # Apply title and labels
     if title:
-        kwargs = {"fontweight": "bold"}
+        kwargs: dict[str, str | int] = {"fontweight": "bold"}
         if title_fontsize is not None:
             kwargs["fontsize"] = title_fontsize
         ax.set_title(title, **kwargs)
 
     if xlabel:
-        kwargs = {}
+        kwargs_xlabel: dict[str, str | int] = {}
         if label_fontsize is not None:
-            kwargs["fontsize"] = label_fontsize
-        ax.set_xlabel(xlabel, **kwargs)
+            kwargs_xlabel["fontsize"] = label_fontsize
+        ax.set_xlabel(xlabel, **kwargs_xlabel)
 
     if ylabel:
-        kwargs = {}
+        kwargs_ylabel: dict[str, str | int] = {}
         if label_fontsize is not None:
-            kwargs["fontsize"] = label_fontsize
-        ax.set_ylabel(ylabel, **kwargs)
+            kwargs_ylabel["fontsize"] = label_fontsize
+        ax.set_ylabel(ylabel, **kwargs_ylabel)
 
     # Configure grid
     if grid:

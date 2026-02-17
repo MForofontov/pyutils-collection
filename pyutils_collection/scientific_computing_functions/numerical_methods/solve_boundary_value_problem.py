@@ -210,7 +210,7 @@ def solve_boundary_value_problem(
             y_start = ivp_sol.y[:, 0]
             bc_residual = boundary_conditions(y_start, y_end)
 
-            return np.linalg.norm(bc_residual)
+            return float(np.linalg.norm(bc_residual))
 
         # Initial guess for missing conditions
         initial_guess = np.zeros(n_vars - 1)

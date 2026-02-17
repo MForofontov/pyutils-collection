@@ -28,7 +28,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_set_figure_size_basic():
+def test_set_figure_size_basic() -> None:
+
     """
     Test case 1: Set figure size with default dimensions.
     """
@@ -40,7 +41,8 @@ def test_set_figure_size_basic():
     assert plt.rcParams["figure.figsize"][1] == 6
 
 
-def test_set_figure_size_square():
+def test_set_figure_size_square() -> None:
+
     """
     Test case 2: Set square figure size.
     """
@@ -52,7 +54,8 @@ def test_set_figure_size_square():
     assert plt.rcParams["figure.figsize"][1] == 8
 
 
-def test_set_figure_size_large():
+def test_set_figure_size_large() -> None:
+
     """
     Test case 3: Set large figure size.
     """
@@ -64,7 +67,8 @@ def test_set_figure_size_large():
     assert plt.rcParams["figure.figsize"][1] == 15
 
 
-def test_set_figure_size_small():
+def test_set_figure_size_small() -> None:
+
     """
     Test case 4: Set small figure size.
     """
@@ -76,7 +80,8 @@ def test_set_figure_size_small():
     assert plt.rcParams["figure.figsize"][1] == 3
 
 
-def test_set_figure_size_invalid_width_type_raises_error():
+def test_set_figure_size_invalid_width_type_raises_error() -> None:
+
     """
     Test case 5: TypeError for invalid width type.
     """
@@ -88,7 +93,8 @@ def test_set_figure_size_invalid_width_type_raises_error():
         set_figure_size(width="10", height=6)
 
 
-def test_set_figure_size_negative_width_raises_error():
+def test_set_figure_size_negative_width_raises_error() -> None:
+
     """
     Test case 6: ValueError for negative width.
     """
@@ -100,7 +106,8 @@ def test_set_figure_size_negative_width_raises_error():
         set_figure_size(width=-5, height=6)
 
 
-def test_set_figure_size_zero_height_raises_error():
+def test_set_figure_size_zero_height_raises_error() -> None:
+
     """
     Test case 7: ValueError for zero height.
     """
@@ -112,7 +119,8 @@ def test_set_figure_size_zero_height_raises_error():
         set_figure_size(width=10, height=0)
 
 
-def test_set_figure_size_invalid_height_type_raises_error():
+def test_set_figure_size_invalid_height_type_raises_error() -> None:
+
     """
     Test case 8: TypeError for invalid height type.
     """

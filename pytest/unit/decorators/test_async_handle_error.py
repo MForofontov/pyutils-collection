@@ -121,7 +121,8 @@ async def test_sync_function_with_no_args():
     assert result == "success"
 
 
-def test_non_async_function_with_logger(caplog):
+def test_non_async_function_with_logger(caplog) -> None:
+
     """
     Test case 6: Synchronous function that logs an error with logging enabled.
     """
@@ -151,7 +152,8 @@ async def test_async_function_with_logger(caplog):
         )
 
 
-def test_non_async_function():
+def test_non_async_function() -> None:
+
     """
     Test case 8: Synchronous function that raises an error.
     """

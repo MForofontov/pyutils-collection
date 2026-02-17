@@ -46,13 +46,14 @@ def convert_timezone(
         raise TypeError("dt must be a datetime object")
 
     # Convert timezone strings to pytz objects
+    to_tz: pytz.BaseTzInfo
     if isinstance(to_timezone, str):
         try:
             to_tz = pytz.timezone(to_timezone)
         except pytz.exceptions.UnknownTimeZoneError as exc:
             raise ValueError(f"Unknown timezone: {to_timezone}") from exc
     else:
-        to_tz = to_timezone  # type: ignore[assignment]
+        to_tz = to_timezone  # Already a tzinfo object
 
     # Handle source timezone
     if dt.tzinfo is None:

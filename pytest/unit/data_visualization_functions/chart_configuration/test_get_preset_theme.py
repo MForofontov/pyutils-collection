@@ -27,7 +27,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_get_preset_theme_default():
+def test_get_preset_theme_default() -> None:
+
     """
     Test case 1: Get default theme.
     """
@@ -39,7 +40,8 @@ def test_get_preset_theme_default():
     assert theme.name == "default"
 
 
-def test_get_preset_theme_dark():
+def test_get_preset_theme_dark() -> None:
+
     """
     Test case 2: Get dark theme.
     """
@@ -51,7 +53,8 @@ def test_get_preset_theme_dark():
     assert theme.name == "dark"
 
 
-def test_get_preset_theme_minimal():
+def test_get_preset_theme_minimal() -> None:
+
     """
     Test case 3: Get minimal theme.
     """
@@ -63,7 +66,8 @@ def test_get_preset_theme_minimal():
     assert theme.name == "minimal"
 
 
-def test_get_preset_theme_scientific():
+def test_get_preset_theme_scientific() -> None:
+
     """
     Test case 4: Get publication theme (scientific is not a valid theme).
     """
@@ -75,7 +79,8 @@ def test_get_preset_theme_scientific():
     assert theme.name == "publication"
 
 
-def test_get_preset_theme_invalid_name_raises_error():
+def test_get_preset_theme_invalid_name_raises_error() -> None:
+
     """
     Test case 5: ValueError for non-existent theme.
     """
@@ -88,7 +93,8 @@ def test_get_preset_theme_invalid_name_raises_error():
         get_preset_theme(invalid_name)
 
 
-def test_get_preset_theme_empty_string_raises_error():
+def test_get_preset_theme_empty_string_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty theme name.
     """
@@ -100,7 +106,8 @@ def test_get_preset_theme_empty_string_raises_error():
         get_preset_theme("")
 
 
-def test_get_preset_theme_invalid_type_raises_error():
+def test_get_preset_theme_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for invalid type.
     """

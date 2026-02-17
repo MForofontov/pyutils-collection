@@ -31,7 +31,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_create_histogram_basic():
+def test_create_histogram_basic() -> None:
+
     """
     Test case 1: Create basic histogram with default settings.
     """
@@ -49,7 +50,8 @@ def test_create_histogram_basic():
     plt.close(fig)
 
 
-def test_create_histogram_with_bins():
+def test_create_histogram_with_bins() -> None:
+
     """
     Test case 2: Create histogram with custom number of bins.
     """
@@ -69,7 +71,8 @@ def test_create_histogram_with_bins():
     plt.close(fig)
 
 
-def test_create_histogram_with_styling():
+def test_create_histogram_with_styling() -> None:
+
     """
     Test case 3: Create histogram with custom styling.
     """
@@ -90,7 +93,8 @@ def test_create_histogram_with_styling():
     plt.close(fig)
 
 
-def test_create_histogram_normalized():
+def test_create_histogram_normalized() -> None:
+
     """
     Test case 4: Create normalized histogram (density plot).
     """
@@ -107,7 +111,8 @@ def test_create_histogram_normalized():
     plt.close(fig)
 
 
-def test_create_histogram_empty_data_raises_error():
+def test_create_histogram_empty_data_raises_error() -> None:
+
     """
     Test case 5: ValueError for empty data.
     """
@@ -122,7 +127,8 @@ def test_create_histogram_empty_data_raises_error():
         create_histogram(data)
 
 
-def test_create_histogram_invalid_bins_raises_error():
+def test_create_histogram_invalid_bins_raises_error() -> None:
+
     """
     Test case 6: ValueError for invalid bins value.
     """
@@ -135,7 +141,8 @@ def test_create_histogram_invalid_bins_raises_error():
         create_histogram(data, bins=0)
 
 
-def test_create_histogram_invalid_type_raises_error():
+def test_create_histogram_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for invalid data type.
     """
@@ -148,7 +155,8 @@ def test_create_histogram_invalid_type_raises_error():
         create_histogram(data)
 
 
-def test_create_histogram_invalid_alpha_raises_error():
+def test_create_histogram_invalid_alpha_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid alpha value.
     """
@@ -161,7 +169,8 @@ def test_create_histogram_invalid_alpha_raises_error():
         create_histogram(data, alpha=1.5)
 
 
-def test_create_histogram_numpy_array():
+def test_create_histogram_numpy_array() -> None:
+
     """
     Test case 9: Create histogram from numpy array.
     """

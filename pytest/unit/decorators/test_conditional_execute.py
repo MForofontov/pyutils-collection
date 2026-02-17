@@ -69,7 +69,8 @@ def example_function_raises_exception(a, b):
     return f"Result: {a + b}"
 
 
-def test_conditional_execute_always_true():
+def test_conditional_execute_always_true() -> None:
+
     """
     Test case 1: Predicate always true.
     """
@@ -77,7 +78,8 @@ def test_conditional_execute_always_true():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_always_false():
+def test_conditional_execute_always_false() -> None:
+
     """
     Test case 2: Predicate always false.
     """
@@ -85,7 +87,8 @@ def test_conditional_execute_always_false():
     assert result is None
 
 
-def test_conditional_execute_condition_met():
+def test_conditional_execute_condition_met() -> None:
+
     """
     Test case 3: Predicate condition met based on arguments.
     """
@@ -93,7 +96,8 @@ def test_conditional_execute_condition_met():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_condition_not_met():
+def test_conditional_execute_condition_not_met() -> None:
+
     """
     Test case 4: Predicate condition not met based on arguments.
     """
@@ -106,7 +110,8 @@ def test_conditional_execute_condition_not_met():
     assert result is None
 
 
-def test_conditional_execute_condition_met_kwargs():
+def test_conditional_execute_condition_met_kwargs() -> None:
+
     """
     Test case 5: Predicate condition met based on keyword arguments.
     """
@@ -114,7 +119,8 @@ def test_conditional_execute_condition_met_kwargs():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_condition_not_met_kwargs():
+def test_conditional_execute_condition_not_met_kwargs() -> None:
+
     """
     Test case 6: Predicate condition not met based on keyword arguments.
     """
@@ -127,7 +133,8 @@ def test_conditional_execute_condition_not_met_kwargs():
     assert result is None
 
 
-def test_conditional_execute_condition_met_mixed_args():
+def test_conditional_execute_condition_met_mixed_args() -> None:
+
     """
     Test case 7: Predicate condition met based on mixed arguments and keyword arguments.
     """
@@ -135,7 +142,8 @@ def test_conditional_execute_condition_met_mixed_args():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_condition_not_met_mixed_args():
+def test_conditional_execute_condition_not_met_mixed_args() -> None:
+
     """
     Test case 8: Predicate condition not met based on mixed arguments and keyword arguments.
     """
@@ -148,7 +156,8 @@ def test_conditional_execute_condition_not_met_mixed_args():
     assert result is None
 
 
-def test_conditional_execute_no_args():
+def test_conditional_execute_no_args() -> None:
+
     """
     Test case 9: Predicate with no arguments.
     """
@@ -156,7 +165,8 @@ def test_conditional_execute_no_args():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_with_default_args():
+def test_conditional_execute_with_default_args() -> None:
+
     """
     Test case 10: Function with default arguments.
     """
@@ -172,7 +182,8 @@ def test_conditional_execute_with_default_args():
     assert result == "Result: 3"
 
 
-def test_conditional_execute_predicate_raises_exception():
+def test_conditional_execute_predicate_raises_exception() -> None:
+
     """
     Test case 11: Predicate raises an exception.
     """
@@ -183,7 +194,8 @@ def test_conditional_execute_predicate_raises_exception():
         example_function_raises_exception(1, 2)
 
 
-def test_conditional_execute_invalid_predicate():
+def test_conditional_execute_invalid_predicate() -> None:
+
     """
     Test case 12: Invalid predicate (not callable).
     """

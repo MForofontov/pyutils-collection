@@ -7,7 +7,8 @@ from datetime import datetime
 from pyutils_collection.logger_functions.structured_formatter import structured_formatter
 
 
-def test_structured_formatter_basic():
+def test_structured_formatter_basic() -> None:
+
     """Test case 1: Test basic structured formatter functionality."""
     formatter = structured_formatter()
     assert isinstance(formatter, logging.Formatter)
@@ -33,7 +34,8 @@ def test_structured_formatter_basic():
     assert "test" in result  # module name
 
 
-def test_structured_formatter_timestamp():
+def test_structured_formatter_timestamp() -> None:
+
     """Test case 2: Test that structured formatter includes timestamp."""
     formatter = structured_formatter()
 
@@ -57,7 +59,8 @@ def test_structured_formatter_timestamp():
     datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
 
 
-def test_structured_formatter_level_alignment():
+def test_structured_formatter_level_alignment() -> None:
+
     """Test case 3: Test level name alignment."""
     formatter = structured_formatter(max_level_width=10)
 
@@ -81,7 +84,8 @@ def test_structured_formatter_level_alignment():
     assert level_part.strip() == "WARNING"
 
 
-def test_structured_formatter_module_alignment():
+def test_structured_formatter_module_alignment() -> None:
+
     """Test case 4: Module name alignment."""
     formatter = structured_formatter(max_module_width=12)
 
@@ -105,7 +109,8 @@ def test_structured_formatter_module_alignment():
     assert module_part.strip() == "test"
 
 
-def test_structured_formatter_location():
+def test_structured_formatter_location() -> None:
+
     """Test case 5: Function and line number formatting."""
     formatter = structured_formatter()
 

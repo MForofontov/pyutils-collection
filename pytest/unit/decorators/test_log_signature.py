@@ -34,7 +34,8 @@ def return_value(value):
     return value
 
 
-def test_log_signature_add(caplog):
+def test_log_signature_add(caplog) -> None:
+
     """
     Test case 1: Logging function signature for add function.
     """
@@ -44,7 +45,8 @@ def test_log_signature_add(caplog):
         assert "Executing add(a, b) with args: (1, 2) and kwargs: {}" in caplog.text
 
 
-def test_log_signature_greet(caplog):
+def test_log_signature_greet(caplog) -> None:
+
     """
     Test case 2: Logging function signature for greet function.
     """
@@ -56,7 +58,8 @@ def test_log_signature_greet(caplog):
         )
 
 
-def test_log_signature_return_value(caplog):
+def test_log_signature_return_value(caplog) -> None:
+
     """
     Test case 3: Logging function signature for return_value function.
     """
@@ -69,7 +72,8 @@ def test_log_signature_return_value(caplog):
         )
 
 
-def test_log_signature_with_kwargs(caplog):
+def test_log_signature_with_kwargs(caplog) -> None:
+
     """
     Test case 4: Logging function signature with keyword arguments.
     """
@@ -87,7 +91,8 @@ def test_log_signature_with_kwargs(caplog):
         )
 
 
-def test_log_signature_with_multiple_args(caplog):
+def test_log_signature_with_multiple_args(caplog) -> None:
+
     """
     Test case 5: Logging function signature with multiple arguments.
     """
@@ -105,7 +110,8 @@ def test_log_signature_with_multiple_args(caplog):
         )
 
 
-def test_log_signature_raise_value_error(caplog):
+def test_log_signature_raise_value_error(caplog) -> None:
+
     """
     Test case 6: Logging function signature for function that raises ValueError.
     """
@@ -117,7 +123,8 @@ def test_log_signature_raise_value_error(caplog):
         )
 
 
-def test_log_signature_with_exception(caplog):
+def test_log_signature_with_exception(caplog) -> None:
+
     """
     Test case 7: Logging function signature for function that raises a custom exception.
     """
@@ -136,7 +143,8 @@ def test_log_signature_with_exception(caplog):
         assert "Exception occurred in raise_custom_exception():" in caplog.text
 
 
-def test_log_signature_invalid_logger():
+def test_log_signature_invalid_logger() -> None:
+
     """
     Test case 8: Invalid logger.
     """

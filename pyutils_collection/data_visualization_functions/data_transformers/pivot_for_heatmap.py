@@ -123,13 +123,14 @@ def pivot_for_heatmap(
         cell_values[(row, col)].append(value)
 
     # Apply aggregation function
-    agg_functions = {
-        "mean": np.mean,
-        "sum": np.sum,
-        "median": np.median,
-        "min": np.min,
-        "max": np.max,
-        "count": len,
+    from collections.abc import Callable
+    agg_functions: dict[str, Callable[[list[float]], float]] = {
+        "mean": lambda x: float(np.mean(x)),
+        "sum": lambda x: float(np.sum(x)),
+        "median": lambda x: float(np.median(x)),
+        "min": lambda x: float(np.min(x)),
+        "max": lambda x: float(np.max(x)),
+        "count": lambda x: float(len(x)),
     }
     func = agg_functions[agg_func]
 

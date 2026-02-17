@@ -19,7 +19,8 @@ def write_toml_file(data, path):
         toml.dump(data, f)
 
 
-def test_parse_toml_config_basic(tmp_path):
+def test_parse_toml_config_basic(tmp_path) -> None:
+
     """
     Test case 1: Basic TOML config loads as dict
     """
@@ -30,7 +31,8 @@ def test_parse_toml_config_basic(tmp_path):
     assert config == data
 
 
-def test_parse_toml_config_required_keys(tmp_path):
+def test_parse_toml_config_required_keys(tmp_path) -> None:
+
     """
     Test case 2: Missing required keys raises ValueError
     """
@@ -41,7 +43,8 @@ def test_parse_toml_config_required_keys(tmp_path):
         parse_toml_config(str(config_file), required_keys=["a", "b"])
 
 
-def test_parse_toml_config_schema_validator(tmp_path):
+def test_parse_toml_config_schema_validator(tmp_path) -> None:
+
     """
     Test case 3: Custom schema validator raises ValueError
     """
@@ -57,7 +60,8 @@ def test_parse_toml_config_schema_validator(tmp_path):
         parse_toml_config(str(config_file), schema_validator=schema)
 
 
-def test_parse_toml_config_invalid_toml(tmp_path):
+def test_parse_toml_config_invalid_toml(tmp_path) -> None:
+
     """
     Test case 4: Invalid TOML raises toml.TomlDecodeError
     """
@@ -67,7 +71,8 @@ def test_parse_toml_config_invalid_toml(tmp_path):
         parse_toml_config(str(config_file))
 
 
-def test_parse_toml_config_not_dict(tmp_path, monkeypatch):
+def test_parse_toml_config_not_dict(tmp_path, monkeypatch) -> None:
+
     """
     Test case 5: TOML that is not a dict raises ValueError
     """

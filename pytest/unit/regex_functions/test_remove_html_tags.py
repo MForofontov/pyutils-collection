@@ -2,6 +2,8 @@
 Tests for remove_html_tags function.
 """
 
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.regex]
@@ -60,10 +62,10 @@ def test_remove_html_tags_empty() -> None:
 def test_remove_html_tags_invalid_type_text() -> None:
     """Test TypeError for invalid text type."""
     with pytest.raises(TypeError, match="text must be str"):
-        remove_html_tags(123)
+        remove_html_tags(cast(Any, 123))
 
 
 def test_remove_html_tags_invalid_type_keep_text() -> None:
     """Test TypeError for invalid keep_text type."""
     with pytest.raises(TypeError, match="keep_text must be bool"):
-        remove_html_tags("<p>test</p>", keep_text="yes")
+        remove_html_tags("<p>test</p>", keep_text=cast(Any, "yes"))

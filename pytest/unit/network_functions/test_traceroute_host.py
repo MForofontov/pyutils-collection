@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    traceroute_host = None  # type: ignore
+    psutil = None
+    traceroute_host = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -43,7 +44,7 @@ def test_traceroute_host_type_error_host() -> None:
     Test case 3: TypeError for non-string host.
     """
     with pytest.raises(TypeError, match="host must be a string"):
-        traceroute_host(123)
+        traceroute_host(cast(Any, 123))
 
 
 def test_traceroute_host_value_error_empty() -> None:

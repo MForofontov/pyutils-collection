@@ -49,7 +49,8 @@ def sample_function() -> str:
     return "Function executed"
 
 
-def test_timeout_success():
+def test_timeout_success() -> None:
+
     """
     Test case 1: Function executes successfully within the timeout period
     """
@@ -57,7 +58,8 @@ def test_timeout_success():
     assert result == "Function executed"
 
 
-def test_timeout_with_args():
+def test_timeout_with_args() -> None:
+
     """
     Test case 2: Function with positional arguments
     """
@@ -71,7 +73,8 @@ def test_timeout_with_args():
     assert result == 3
 
 
-def test_timeout_with_kwargs():
+def test_timeout_with_kwargs() -> None:
+
     """
     Test case 3: Function with keyword arguments
     """
@@ -85,7 +88,8 @@ def test_timeout_with_kwargs():
     assert result == 3
 
 
-def test_timeout_with_var_args():
+def test_timeout_with_var_args() -> None:
+
     """
     Test case 4: Function with variable length arguments (*args and **kwargs)
     """
@@ -99,7 +103,8 @@ def test_timeout_with_var_args():
     assert result == "1 - ('arg1', 'arg2') - {'kwarg1': 1.0, 'kwarg2': 2.0}"
 
 
-def test_timeout_exceeded():
+def test_timeout_exceeded() -> None:
+
     """
     Test case 5: Function exceeds the timeout period and raises TimeoutException
     """
@@ -115,7 +120,8 @@ def test_timeout_exceeded():
         long_running_function()
 
 
-def test_timeout_with_logger(caplog):
+def test_timeout_with_logger(caplog) -> None:
+
     """
     Test case 6: Function exceeds the timeout period and logs the timeout message
     """
@@ -133,7 +139,8 @@ def test_timeout_with_logger(caplog):
         )
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 7: Invalid logger type
     """
@@ -146,7 +153,8 @@ def test_invalid_logger_type():
             pass
 
 
-def test_invalid_seconds_type():
+def test_invalid_seconds_type() -> None:
+
     """
     Test case 8: Invalid seconds type
     """
@@ -157,7 +165,8 @@ def test_invalid_seconds_type():
             pass
 
 
-def test_negative_seconds_value():
+def test_negative_seconds_value() -> None:
+
     """
     Test case 9: Negative seconds value
     """

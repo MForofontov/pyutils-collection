@@ -376,13 +376,13 @@ def test_validate_cerberus_schema_cerberus_not_available() -> None:
 
     try:
         # Temporarily remove and reimport with CERBERUS_AVAILABLE = False
-        if "data_validation.schema_validation.validate_cerberus_schema" in sys.modules:
+        if "pyutils_collection.data_validation.schema_validation.validate_cerberus_schema" in sys.modules:
             del sys.modules[
-                "data_validation.schema_validation.validate_cerberus_schema"
+                "pyutils_collection.data_validation.schema_validation.validate_cerberus_schema"
             ]
 
         # Mock the module
-        import data_validation.schema_validation.validate_cerberus_schema as module
+        import pyutils_collection.data_validation.schema_validation.validate_cerberus_schema as module
 
         original_available = module.CERBERUS_AVAILABLE
         module.CERBERUS_AVAILABLE = False

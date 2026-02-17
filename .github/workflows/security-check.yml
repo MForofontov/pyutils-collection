@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: "3.11"
-      B_ANDIT_DIRS: "asyncio_functions compression_functions data_types datetime_functions decorators env_config_functions file_functions http_functions iterable_functions json_functions cli_functions logger_functions logging_debugging mathematical_functions multiprocessing_functions print_functions security_functions ssh_functions strings_utility"
+      B_ANDIT_DIRS: "asyncio_functions compression_functions data_types datetime_functions decorators env_config_functions file_functions http_functions iterable_functions json_functions cli_functions logger_functions logging_debugging mathematical_functions multiprocessing_functions security_functions ssh_functions strings_utility"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

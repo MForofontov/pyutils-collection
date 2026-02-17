@@ -83,6 +83,7 @@ jobs:
     
     permissions:
       id-token: write  # OIDC for trusted publishing
+      contents: write  # Upload to release
     
     steps:
     - name: Download distributions
@@ -93,32 +94,11 @@ jobs:
     
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-
-  github-release:
-    name: Sign and upload to GitHub Release
-    if: github.event_name == 'release'
-    needs: [publish-to-pypi]
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write  # Upload to release
-      id-token: write  # Sigstore signing
-    
-    steps:
-    - name: Download distributions
-      uses: actions/download-artifact@v4
       with:
-        name: python-package-distributions
-        path: dist/
-    
-    - name: Sign distributions with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v2.1.1
-      with:
-        inputs: >-
-          ./dist/*.tar.gz
-          ./dist/*.whl
+        attestations: true
     
     - name: Upload to GitHub Release
+      if: github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: >-

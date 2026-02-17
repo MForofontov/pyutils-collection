@@ -1,5 +1,112 @@
 # GitHub Copilot Instructions for Python Utilities Repository
 
+## ⚠️ CRITICAL: CHANGELOG Workflow (MUST FOLLOW)
+
+**ALL changes must be documented in `CHANGELOG.md` immediately after implementation.**
+
+### Development Workflow
+
+1. **Make changes** (add/modify/fix functions)
+2. **IMMEDIATELY update CHANGELOG.md** - Add entry to `[Unreleased]` section
+3. **When ready to publish** - Move `[Unreleased]` → `[X.Y.Z] - YYYY-MM-DD`
+
+### Update CHANGELOG After Every Change
+
+Add entries to the `[Unreleased]` section using these categories (only include categories with content):
+
+**After creating new functions**:
+```markdown
+### Added
+- **module_name.function_name** - Brief description (include citation if algorithmic)
+```
+
+**After modifying existing functions**:
+```markdown
+### Enhanced
+- **module_name.function_name** - What was improved (e.g., "Added retry logic with exponential backoff")
+```
+
+**After fixing bugs**:
+```markdown
+### Fixed
+- **module_name.function_name** - What was fixed (e.g., "Fixed race condition in async processing")
+```
+
+**After removing functions**:
+```markdown
+### Removed
+- **module_name.function_name** - Reason for removal
+```
+
+**After refactoring**:
+```markdown
+### Changed
+- **module_name.function_name** - What changed and why
+```
+
+**After adding/updating tests**:
+```markdown
+### Tests
+- Added 15 unit tests for asyncio_functions.async_batch covering edge cases
+```
+
+**After updating documentation**:
+```markdown
+### Documentation
+- Updated README with new examples for database_functions
+```
+
+### CHANGELOG Structure
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- **new_module.new_function** - Description
+
+### Fixed
+- **existing_module.function** - Bug fix description
+
+## [1.0.2] - 2026-02-17
+...previous release...
+```
+
+**Only include section headers that have content. Remove empty sections.**
+
+### Publishing a New Version
+
+When releasing:
+
+1. **Update `_version.py`**:
+   ```python
+   __version__ = "1.1.0"  # Follow SemVer: MAJOR.MINOR.PATCH
+   ```
+
+2. **Update CHANGELOG.md**:
+   - Change `[Unreleased]` → `[1.1.0] - 2026-02-17`
+   - Add new empty `[Unreleased]` section at top
+   - Remove empty section headers
+
+3. **Commit and tag**:
+   ```bash
+   git commit -m "Release v1.1.0"
+   git tag -a v1.1.0 -m "Release version 1.1.0"
+   ```
+
+### Semantic Versioning
+
+- **MAJOR** (X.0.0): Breaking changes, API incompatibility
+- **MINOR** (0.X.0): New features, backward compatible
+- **PATCH** (0.0.X): Bug fixes, backward compatible
+
+**Remember**: Update CHANGELOG.md in `[Unreleased]` IMMEDIATELY after implementing changes!
+
+---
+
 ## Project Overview
 
 This is a comprehensive Python utilities library containing 200+ reusable functions, classes, and decorators organized into 14 specialized modules. The project emphasizes type safety, comprehensive testing, maintainability, and follows Python best practices for enterprise-grade utility libraries.
@@ -45,7 +152,6 @@ python-utils/
 ├── logger_functions/               # Logging utilities
 ├── mathematical_functions/         # Mathematical operations
 ├── multiprocessing_functions/      # Parallel processing
-├── print_functions/                # Enhanced console output
 ├── strings_utility/                # String manipulation
 ├── pytest/                         # Comprehensive test suites
 │   └── unit/                       # Unit tests mirroring src structure
@@ -751,9 +857,8 @@ def validate_numeric_input(
    - Example: `migrate_id_type(..., logger=progress_logger)`
 
 3. **Integration utilities** - Functions that bridge logging systems
-   - Print functions that integrate with logging
    - Functions that need to work with custom logging frameworks
-   - Example: `print_message(..., logger=app_logger)`
+   - Example: `custom_integration_func(..., logger=app_logger)`
 
 **❌ DON'T use logger parameters in:**
 

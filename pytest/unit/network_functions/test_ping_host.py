@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    ping_host = None  # type: ignore
+    psutil = None
+    ping_host = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -43,7 +44,7 @@ def test_ping_host_type_error_host() -> None:
     Test case 3: TypeError for non-string host.
     """
     with pytest.raises(TypeError, match="host must be a string"):
-        ping_host(123)
+        ping_host(cast(Any, 123))
 
 
 def test_ping_host_value_error_host() -> None:
@@ -59,7 +60,7 @@ def test_ping_host_type_error_count() -> None:
     Test case 5: TypeError for non-integer count.
     """
     with pytest.raises(TypeError, match="count must be an integer"):
-        ping_host("8.8.8.8", count="not_an_int")
+        ping_host("8.8.8.8", count=cast(Any, "not_an_int"))
 
 
 def test_ping_host_type_error_timeout() -> None:
@@ -67,7 +68,7 @@ def test_ping_host_type_error_timeout() -> None:
     Test case 6: TypeError for non-integer timeout.
     """
     with pytest.raises(TypeError, match="timeout must be an integer"):
-        ping_host("8.8.8.8", timeout="not_an_int")
+        ping_host("8.8.8.8", timeout=cast(Any, "not_an_int"))
 
 
 def test_ping_host_exception_handling() -> None:

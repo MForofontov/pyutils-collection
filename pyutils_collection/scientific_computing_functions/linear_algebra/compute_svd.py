@@ -13,7 +13,7 @@ def compute_svd(
     full_matrices: bool = True,
     compute_uv: bool = True,
     low_rank_k: int | None = None,
-) -> dict[str, np.ndarray | float]:
+) -> dict[str, np.ndarray | float | int]:
     """
     Perform Singular Value Decomposition with validation and options.
 
@@ -110,7 +110,7 @@ def compute_svd(
     try:
         if compute_uv:
             U, s, Vt = np.linalg.svd(mat, full_matrices=full_matrices)
-            result = {
+            result: dict[str, np.ndarray | float | int] = {
                 "U": U,
                 "singular_values": s,
                 "Vt": Vt,
@@ -133,7 +133,7 @@ def compute_svd(
 
         result["approximation"] = approximation
         result["approximation_error"] = float(error)
-        result["rank_k"] = low_rank_k
+        result["rank_k"] = int(low_rank_k)
 
     return result
 

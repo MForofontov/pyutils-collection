@@ -22,13 +22,17 @@ except ImportError:
     np = None  # type: ignore
     calculate_moving_statistics = None  # type: ignore
 
-pytestmark = pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
-)
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
+pytestmark = [
+    pytest.mark.skipif(
+        not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
+    ),
+    pytest.mark.unit,
+    pytest.mark.data_visualization,
+]
 
 
-def test_calculate_moving_statistics_mean():
+def test_calculate_moving_statistics_mean() -> None:
+
     """
     Test case 1: Calculate moving mean.
     """
@@ -47,7 +51,8 @@ def test_calculate_moving_statistics_mean():
     assert len(result["mean"]) == len(data)
 
 
-def test_calculate_moving_statistics_median():
+def test_calculate_moving_statistics_median() -> None:
+
     """
     Test case 2: Calculate moving median.
     """
@@ -66,7 +71,8 @@ def test_calculate_moving_statistics_median():
     assert len(result["median"]) == len(data)
 
 
-def test_calculate_moving_statistics_std():
+def test_calculate_moving_statistics_std() -> None:
+
     """
     Test case 3: Calculate moving standard deviation.
     """
@@ -86,7 +92,8 @@ def test_calculate_moving_statistics_std():
     assert all(v >= 0 for v in result["std"])  # Standard deviation is non-negative
 
 
-def test_calculate_moving_statistics_max():
+def test_calculate_moving_statistics_max() -> None:
+
     """
     Test case 4: Calculate moving maximum.
     """
@@ -105,7 +112,8 @@ def test_calculate_moving_statistics_max():
     assert len(result["max"]) == len(data)
 
 
-def test_calculate_moving_statistics_min():
+def test_calculate_moving_statistics_min() -> None:
+
     """
     Test case 5: Calculate moving minimum.
     """
@@ -124,7 +132,8 @@ def test_calculate_moving_statistics_min():
     assert len(result["min"]) == len(data)
 
 
-def test_calculate_moving_statistics_empty_raises_error():
+def test_calculate_moving_statistics_empty_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty data.
     """
@@ -136,7 +145,8 @@ def test_calculate_moving_statistics_empty_raises_error():
         calculate_moving_statistics([], window_size=3)
 
 
-def test_calculate_moving_statistics_invalid_window_raises_error():
+def test_calculate_moving_statistics_invalid_window_raises_error() -> None:
+
     """
     Test case 7: ValueError for invalid window size.
     """
@@ -149,7 +159,8 @@ def test_calculate_moving_statistics_invalid_window_raises_error():
         calculate_moving_statistics(data, window_size=-1)
 
 
-def test_calculate_moving_statistics_invalid_statistic_raises_error():
+def test_calculate_moving_statistics_invalid_statistic_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid statistic type.
     """
@@ -162,7 +173,8 @@ def test_calculate_moving_statistics_invalid_statistic_raises_error():
         calculate_moving_statistics(data, window_size=3, statistics=["invalid"])
 
 
-def test_calculate_moving_statistics_invalid_type_raises_error():
+def test_calculate_moving_statistics_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid data type.
     """

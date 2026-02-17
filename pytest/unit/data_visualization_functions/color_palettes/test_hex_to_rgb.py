@@ -20,7 +20,8 @@ pytestmark = [
 ]
 
 
-def test_hex_to_rgb_with_hash():
+def test_hex_to_rgb_with_hash() -> None:
+
     """
     Test case 1: Convert hex color with # prefix.
     """
@@ -35,7 +36,8 @@ def test_hex_to_rgb_with_hash():
     assert result == expected
 
 
-def test_hex_to_rgb_without_hash():
+def test_hex_to_rgb_without_hash() -> None:
+
     """
     Test case 2: Convert hex color without # prefix.
     """
@@ -50,7 +52,8 @@ def test_hex_to_rgb_without_hash():
     assert result == expected
 
 
-def test_hex_to_rgb_blue():
+def test_hex_to_rgb_blue() -> None:
+
     """
     Test case 3: Convert blue hex color.
     """
@@ -65,7 +68,8 @@ def test_hex_to_rgb_blue():
     assert result == expected
 
 
-def test_hex_to_rgb_mixed_case():
+def test_hex_to_rgb_mixed_case() -> None:
+
     """
     Test case 4: Convert mixed case hex color.
     """
@@ -80,7 +84,8 @@ def test_hex_to_rgb_mixed_case():
     assert result == expected
 
 
-def test_hex_to_rgb_invalid_length_raises_error():
+def test_hex_to_rgb_invalid_length_raises_error() -> None:
+
     """
     Test case 5: ValueError for invalid hex length.
     """
@@ -93,7 +98,8 @@ def test_hex_to_rgb_invalid_length_raises_error():
         hex_to_rgb(hex_color)
 
 
-def test_hex_to_rgb_invalid_characters_raises_error():
+def test_hex_to_rgb_invalid_characters_raises_error() -> None:
+
     """
     Test case 6: ValueError for invalid hex characters.
     """
@@ -106,7 +112,8 @@ def test_hex_to_rgb_invalid_characters_raises_error():
         hex_to_rgb(hex_color)
 
 
-def test_hex_to_rgb_invalid_type_raises_error():
+def test_hex_to_rgb_invalid_type_raises_error() -> None:
+
     """
     Test case 7: TypeError for non-string input.
     """

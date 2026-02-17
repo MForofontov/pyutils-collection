@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.multiprocessing_functions]
@@ -63,7 +65,7 @@ def test_parallel_progress_bar_invalid_function_type() -> None:
     Test case 6: Test parallel_progress_bar with invalid function type.
     """
     with pytest.raises(TypeError):
-        parallel_progress_bar("not_a_function", [1, 2, 3])
+        parallel_progress_bar(cast(Any, "not_a_function"), [1, 2, 3])
 
 
 def test_parallel_progress_bar_invalid_data_type() -> None:
@@ -71,7 +73,7 @@ def test_parallel_progress_bar_invalid_data_type() -> None:
     Test case 7: Test parallel_progress_bar with invalid data type.
     """
     with pytest.raises(TypeError):
-        parallel_progress_bar(square, "not_a_list")
+        parallel_progress_bar(square, cast(Any, "not_a_list"))
 
 
 def test_parallel_progress_bar_invalid_num_processes_type() -> None:
@@ -79,7 +81,7 @@ def test_parallel_progress_bar_invalid_num_processes_type() -> None:
     Test case 8: Test parallel_progress_bar with invalid num_processes type.
     """
     with pytest.raises(TypeError):
-        parallel_progress_bar(square, [1, 2, 3], num_processes="not_an_int")
+        parallel_progress_bar(square, [1, 2, 3], num_processes=cast(Any, "not_an_int"))
 
 
 def test_parallel_progress_bar_zero_num_processes() -> None:

@@ -119,11 +119,15 @@ def bootstrap_statistic(
         np.random.seed(random_seed)
 
     # Select statistic function
-    stat_func = {
-        "mean": np.mean,
-        "median": np.median,
-        "std": np.std,
-    }[statistic]
+    from collections.abc import Callable
+    from typing import Any
+    
+    stat_funcs: dict[str, Callable[[np.ndarray], Any]] = {
+        "mean": lambda x: np.mean(x),
+        "median": lambda x: np.median(x),
+        "std": lambda x: np.std(x),
+    }
+    stat_func = stat_funcs[statistic]
 
     # Calculate point estimate
     point_estimate = float(stat_func(arr))

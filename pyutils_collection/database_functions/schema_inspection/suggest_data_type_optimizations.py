@@ -293,7 +293,7 @@ def suggest_data_type_optimizations(
     # Sort by severity and potential savings
     severity_order = {"high": 0, "medium": 1, "low": 2}
     suggestions.sort(
-        key=lambda x: (severity_order[x["severity"]], -x.get("potential_savings_mb", 0))
+        key=lambda x: (severity_order[str(x["severity"])], -float(x.get("potential_savings_mb", 0)))  # type: ignore[arg-type]
     )
 
     return suggestions

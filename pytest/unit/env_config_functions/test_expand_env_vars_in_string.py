@@ -16,7 +16,8 @@ pytestmark = [
 ]
 
 
-def test_expand_env_vars_basic(monkeypatch):
+def test_expand_env_vars_basic(monkeypatch) -> None:
+
     """
     Test case 1: Expand $VAR and ${VAR} in string
     """
@@ -27,7 +28,8 @@ def test_expand_env_vars_basic(monkeypatch):
     assert result == "User: alice, Foo: bar"
 
 
-def test_expand_env_vars_missing(monkeypatch):
+def test_expand_env_vars_missing(monkeypatch) -> None:
+
     """
     Test case 2: Missing variable replaced with empty string
     """
@@ -36,7 +38,8 @@ def test_expand_env_vars_missing(monkeypatch):
     assert result == "Path: "
 
 
-def test_expand_env_vars_with_default(monkeypatch):
+def test_expand_env_vars_with_default(monkeypatch) -> None:
+
     """
     Test case 3: Missing variable replaced with default
     """
@@ -45,7 +48,8 @@ def test_expand_env_vars_with_default(monkeypatch):
     assert result == "Path: none"
 
 
-def test_expand_env_vars_multiple(monkeypatch):
+def test_expand_env_vars_multiple(monkeypatch) -> None:
+
     """
     Test case 4: Multiple variables in string
     """
@@ -56,7 +60,8 @@ def test_expand_env_vars_multiple(monkeypatch):
     assert result == "1-2-x"
 
 
-def test_expand_env_vars_empty_string():
+def test_expand_env_vars_empty_string() -> None:
+
     """
     Test case 5: Empty string input
     """
@@ -64,7 +69,8 @@ def test_expand_env_vars_empty_string():
     assert result == ""
 
 
-def test_expand_env_vars_no_variables():
+def test_expand_env_vars_no_variables() -> None:
+
     """
     Test case 6: String with no variables
     """
@@ -73,7 +79,8 @@ def test_expand_env_vars_no_variables():
     assert result == "No variables here"
 
 
-def test_expand_env_vars_invalid_string_type():
+def test_expand_env_vars_invalid_string_type() -> None:
+
     """
     Test case 7: Test with invalid string type
     """
@@ -81,7 +88,8 @@ def test_expand_env_vars_invalid_string_type():
         expand_env_vars_in_string(123)
 
 
-def test_expand_env_vars_invalid_string_none():
+def test_expand_env_vars_invalid_string_none() -> None:
+
     """
     Test case 8: Test with None input
     """
@@ -89,7 +97,8 @@ def test_expand_env_vars_invalid_string_none():
         expand_env_vars_in_string(None)
 
 
-def test_expand_env_vars_invalid_default_type():
+def test_expand_env_vars_invalid_default_type() -> None:
+
     """
     Test case 9: Test with invalid default type
     """

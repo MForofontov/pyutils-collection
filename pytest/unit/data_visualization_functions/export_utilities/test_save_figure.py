@@ -26,7 +26,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_save_figure_png():
+def test_save_figure_png() -> None:
+
     """
     Test case 1: Save figure as PNG.
     """
@@ -48,7 +49,8 @@ def test_save_figure_png():
         shutil.rmtree(temp_dir)
 
 
-def test_save_figure_pdf():
+def test_save_figure_pdf() -> None:
+
     """
     Test case 2: Save figure as PDF.
     """
@@ -69,7 +71,8 @@ def test_save_figure_pdf():
         shutil.rmtree(temp_dir)
 
 
-def test_save_figure_with_transparent_background():
+def test_save_figure_with_transparent_background() -> None:
+
     """
     Test case 3: Save figure with transparent background.
     """
@@ -90,7 +93,8 @@ def test_save_figure_with_transparent_background():
         shutil.rmtree(temp_dir)
 
 
-def test_save_figure_creates_directory():
+def test_save_figure_creates_directory() -> None:
+
     """
     Test case 4: Save figure creates parent directories.
     """
@@ -112,7 +116,8 @@ def test_save_figure_creates_directory():
         shutil.rmtree(temp_dir)
 
 
-def test_save_figure_invalid_type_raises_error():
+def test_save_figure_invalid_type_raises_error() -> None:
+
     """
     Test case 5: TypeError for non-Figure object.
     """
@@ -125,7 +130,8 @@ def test_save_figure_invalid_type_raises_error():
         save_figure(not_a_figure, "test.png")
 
 
-def test_save_figure_no_extension_raises_error():
+def test_save_figure_no_extension_raises_error() -> None:
+
     """
     Test case 6: ValueError for filepath without extension.
     """
@@ -141,7 +147,8 @@ def test_save_figure_no_extension_raises_error():
         plt.close(fig)
 
 
-def test_save_figure_invalid_dpi_raises_error():
+def test_save_figure_invalid_dpi_raises_error() -> None:
+
     """
     Test case 7: ValueError for negative DPI.
     """

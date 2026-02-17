@@ -22,15 +22,17 @@ except ImportError:
 pytestmark = pytest.mark.skipif(
     not MATPLOTLIB_AVAILABLE, reason="matplotlib not installed"
 )
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
+pytestmark = pytest.mark.unit
+pytestmark = pytest.mark.data_visualization
 
 
-def test_aggregate_by_group_mean():
+def test_aggregate_by_group_mean() -> None:
+
     """
     Test case 1: Aggregate data by group using mean.
     """
     # Arrange
-    data = [10, 20, 30, 40, 50, 60]
+    data = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0]
     groups = ["A", "B", "A", "B", "A", "B"]
 
     # Act
@@ -44,12 +46,13 @@ def test_aggregate_by_group_mean():
     assert result["B"] == 40.0  # (20 + 40 + 60) / 3
 
 
-def test_aggregate_by_group_sum():
+def test_aggregate_by_group_sum() -> None:
+
     """
     Test case 2: Aggregate data by group using sum.
     """
     # Arrange
-    data = [5, 10, 15, 20]
+    data = [5.0, 10.0, 15.0, 20.0]
     groups = ["X", "X", "Y", "Y"]
 
     # Act
@@ -60,12 +63,13 @@ def test_aggregate_by_group_sum():
     assert result["Y"] == 35  # 15 + 20
 
 
-def test_aggregate_by_group_count():
+def test_aggregate_by_group_count() -> None:
+
     """
     Test case 3: Aggregate data by group using count.
     """
     # Arrange
-    data = [1, 2, 3, 4, 5]
+    data = [1.0, 2.0, 3.0, 4.0, 5.0]
     groups = ["A", "A", "B", "B", "B"]
 
     # Act
@@ -76,12 +80,13 @@ def test_aggregate_by_group_count():
     assert result["B"] == 3
 
 
-def test_aggregate_by_group_max():
+def test_aggregate_by_group_max() -> None:
+
     """
     Test case 4: Aggregate data by group using max.
     """
     # Arrange
-    data = [10, 5, 20, 15, 30]
+    data = [10.0, 5.0, 20.0, 15.0, 30.0]
     groups = ["G1", "G1", "G2", "G1", "G2"]
 
     # Act
@@ -92,12 +97,13 @@ def test_aggregate_by_group_max():
     assert result["G2"] == 30  # max(20, 30)
 
 
-def test_aggregate_by_group_min():
+def test_aggregate_by_group_min() -> None:
+
     """
     Test case 5: Aggregate data by group using min.
     """
     # Arrange
-    data = [10, 5, 20, 15, 30]
+    data = [10.0, 5.0, 20.0, 15.0, 30.0]
     groups = ["G1", "G1", "G2", "G1", "G2"]
 
     # Act
@@ -108,7 +114,8 @@ def test_aggregate_by_group_min():
     assert result["G2"] == 20  # min(20, 30)
 
 
-def test_aggregate_by_group_empty_data_raises_error():
+def test_aggregate_by_group_empty_data_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty data.
     """
@@ -120,12 +127,13 @@ def test_aggregate_by_group_empty_data_raises_error():
         aggregate_by_group([], [])
 
 
-def test_aggregate_by_group_mismatched_lengths_raises_error():
+def test_aggregate_by_group_mismatched_lengths_raises_error() -> None:
+
     """
     Test case 7: ValueError when data and groups have different lengths.
     """
     # Arrange
-    data = [1, 2, 3]
+    data = [1.0, 2.0, 3.0]
     groups = ["A", "B"]
     expected_message = "data and groups must have.*same length"
 
@@ -134,12 +142,13 @@ def test_aggregate_by_group_mismatched_lengths_raises_error():
         aggregate_by_group(data, groups)
 
 
-def test_aggregate_by_group_invalid_method_raises_error():
+def test_aggregate_by_group_invalid_method_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid aggregation method.
     """
     # Arrange
-    data = [1, 2, 3]
+    data = [1.0, 2.0, 3.0]
     groups = ["A", "A", "B"]
     expected_message = "Unknown aggregation|invalid"
 
@@ -148,7 +157,8 @@ def test_aggregate_by_group_invalid_method_raises_error():
         aggregate_by_group(data, groups, agg_func="invalid")
 
 
-def test_aggregate_by_group_invalid_type_raises_error():
+def test_aggregate_by_group_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid data type.
     """
@@ -156,8 +166,8 @@ def test_aggregate_by_group_invalid_type_raises_error():
     expected_message = "Cannot convert|could not convert|must be"
 
     # Act & Assert
+    from typing import cast, Any
     with pytest.raises((TypeError, ValueError), match=expected_message):
-        aggregate_by_group("not_a_list", ["A", "B"])
+        aggregate_by_group(cast(Any, "not_a_list"), ["A", "B"])
 
 
-__all__ = ["test_aggregate_by_group_mean"]

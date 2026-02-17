@@ -188,7 +188,7 @@ def test_managed_browser_cleanup_on_error(mock_sync_playwright: Mock) -> None:
     mock_context.new_page.return_value = mock_page
     
     # Act & Assert
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError, match="Browser management failed"):
         with managed_browser() as (browser, context, page):
             raise ValueError("Test error")
     

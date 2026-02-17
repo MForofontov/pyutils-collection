@@ -2,6 +2,8 @@
 Tests for remove_extra_whitespace function.
 """
 
+from typing import Any, cast
+
 import pytest
 
 pytestmark = [pytest.mark.unit, pytest.mark.regex]
@@ -60,10 +62,10 @@ def test_remove_extra_whitespace_empty() -> None:
 def test_remove_extra_whitespace_invalid_type_text() -> None:
     """Test TypeError for invalid text type."""
     with pytest.raises(TypeError, match="text must be str"):
-        remove_extra_whitespace(123)
+        remove_extra_whitespace(cast(Any, 123))
 
 
 def test_remove_extra_whitespace_invalid_type_preserve() -> None:
     """Test TypeError for invalid preserve_newlines type."""
     with pytest.raises(TypeError, match="preserve_newlines must be bool"):
-        remove_extra_whitespace("test", preserve_newlines="yes")
+        remove_extra_whitespace("test", preserve_newlines=cast(Any, "yes"))

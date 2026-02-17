@@ -259,7 +259,7 @@ def check_data_anomalies(
 
     # Sort by severity
     severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    anomalies.sort(key=lambda x: severity_order.get(x["severity"], 4))
+    anomalies.sort(key=lambda x: severity_order.get(str(x["severity"]), 4))
 
     return anomalies
 

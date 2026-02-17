@@ -8,7 +8,8 @@ import time
 from pyutils_collection.logger_functions.performance_formatter import performance_formatter
 
 
-def test_performance_formatter_basic():
+def test_performance_formatter_basic() -> None:
+
     """
     Test case 1: Basic performance formatter functionality.
     """
@@ -59,7 +60,8 @@ def test_performance_formatter_timestamp() -> None:
     assert re.match(r"\[\d{2}:\d{2}:\d{2}\.\d{3}\]", result)
 
 
-def test_performance_formatter_thread_info():
+def test_performance_formatter_thread_info() -> None:
+
     """
     Test case 3: Thread information inclusion.
     """
@@ -83,7 +85,8 @@ def test_performance_formatter_thread_info():
     assert parts[1].startswith("T")
 
 
-def test_performance_formatter_no_thread_info():
+def test_performance_formatter_no_thread_info() -> None:
+
     """
     Test case 4: Exclusion of thread information.
     """
@@ -108,7 +111,8 @@ def test_performance_formatter_no_thread_info():
     assert parts[1] == "ERROR"
 
 
-def test_performance_formatter_elapsed_time():
+def test_performance_formatter_elapsed_time() -> None:
+
     """
     Test case 5: Elapsed time calculation.
     """
@@ -141,7 +145,8 @@ def test_performance_formatter_elapsed_time():
     assert elapsed_value > 0
 
 
-def test_performance_formatter_module_function():
+def test_performance_formatter_module_function() -> None:
+
     """
     Test case 6: Module and function name formatting.
     """
@@ -167,7 +172,8 @@ def test_performance_formatter_module_function():
     assert "test.test_function:30" in location_part
 
 
-def test_performance_formatter_multiple_calls():
+def test_performance_formatter_multiple_calls() -> None:
+
     """
     Test case 7: Elapsed time accumulation across multiple calls.
     """
@@ -214,7 +220,8 @@ def test_performance_formatter_multiple_calls():
     assert elapsed2 > elapsed1
 
 
-def test_performance_formatter_with_formatting():
+def test_performance_formatter_with_formatting() -> None:
+
     """
     Test case 8: Performance formatter with message formatting.
     """

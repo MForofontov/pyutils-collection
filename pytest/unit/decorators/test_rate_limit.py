@@ -20,7 +20,8 @@ def sample_function() -> str:
     return "Function executed"
 
 
-def test_rate_limit_single_call():
+def test_rate_limit_single_call() -> None:
+
     """
     Test case 1: Single call within the rate limit period
     """
@@ -32,7 +33,8 @@ def test_rate_limit_single_call():
     assert single_call_function() == "Function executed"
 
 
-def test_rate_limit_basic():
+def test_rate_limit_basic() -> None:
+
     """
     Test case 2: Basic functionality of rate limiting
     """
@@ -42,7 +44,8 @@ def test_rate_limit_basic():
         sample_function()
 
 
-def test_rate_limit_custom_message():
+def test_rate_limit_custom_message() -> None:
+
     """
     Test case 3: Custom exception message when rate limit is exceeded
     """
@@ -56,7 +59,8 @@ def test_rate_limit_custom_message():
         custom_message_function()
 
 
-def test_rate_limit_with_logger(caplog):
+def test_rate_limit_with_logger(caplog) -> None:
+
     """
     Test case 4: Logger functionality when rate limit is exceeded
     """
@@ -76,7 +80,8 @@ def test_rate_limit_with_logger(caplog):
         )
 
 
-def test_rate_limit_with_args():
+def test_rate_limit_with_args() -> None:
+
     """
     Test case 5: Function with positional arguments
     """
@@ -91,7 +96,8 @@ def test_rate_limit_with_args():
         function_with_args(5, 6)
 
 
-def test_rate_limit_with_kwargs():
+def test_rate_limit_with_kwargs() -> None:
+
     """
     Test case 6: Function with keyword arguments
     """
@@ -106,7 +112,8 @@ def test_rate_limit_with_kwargs():
         function_with_kwargs(5, b=6)
 
 
-def test_rate_limit_with_variable_length_args():
+def test_rate_limit_with_variable_length_args() -> None:
+
     """
     Test case 7: Function with variable length arguments (*args and **kwargs)
     """
@@ -127,7 +134,8 @@ def test_rate_limit_with_variable_length_args():
         function_with_var_args(1, "arg4", kwarg4=4.0)
 
 
-def test_rate_limit_exceeding_calls():
+def test_rate_limit_exceeding_calls() -> None:
+
     """
     Test case 8: Exceeding function call within the rate limit period
     """
@@ -141,7 +149,8 @@ def test_rate_limit_exceeding_calls():
         exceeding_function_call()
 
 
-def test_rate_limit_with_multiple_calls():
+def test_rate_limit_with_multiple_calls() -> None:
+
     """
     Test case 9: Function with multiple calls within the rate limit period
     """
@@ -157,7 +166,8 @@ def test_rate_limit_with_multiple_calls():
         multiple_call_function()
 
 
-def test_rate_limit_reset_after_period():
+def test_rate_limit_reset_after_period() -> None:
+
     """
     Test case 10: Ensure rate limit resets after the specified period
     """
@@ -180,7 +190,8 @@ def test_rate_limit_reset_after_period():
         reset_function()
 
 
-def test_invalid_max_calls():
+def test_invalid_max_calls() -> None:
+
     """
     Test case 11: Invalid max_calls parameter
     """
@@ -191,7 +202,8 @@ def test_invalid_max_calls():
             pass
 
 
-def test_invalid_period():
+def test_invalid_period() -> None:
+
     """
     Test case 12: Invalid period parameter
     """
@@ -202,7 +214,8 @@ def test_invalid_period():
             pass
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 13: Invalid logger type
     """
@@ -215,7 +228,8 @@ def test_invalid_logger_type():
             pass
 
 
-def test_invalid_max_calls_with_logger(caplog):
+def test_invalid_max_calls_with_logger(caplog) -> None:
+
     """
     Test case 14: Invalid max_calls parameter with logger
     """
@@ -229,7 +243,8 @@ def test_invalid_max_calls_with_logger(caplog):
             assert "max_calls must be a positive integer" in caplog.text
 
 
-def test_invalid_period_with_logger(caplog):
+def test_invalid_period_with_logger(caplog) -> None:
+
     """
     Test case 15: Invalid period parameter with logger
     """
@@ -243,7 +258,8 @@ def test_invalid_period_with_logger(caplog):
             assert "period must be a positive integer" in caplog.text
 
 
-def test_invalid_exception_message_type():
+def test_invalid_exception_message_type() -> None:
+
     """
     Test case 16: Invalid exception_message parameter type
     """
@@ -254,7 +270,8 @@ def test_invalid_exception_message_type():
             pass
 
 
-def test_invalid_exception_message_type_with_logger(caplog):
+def test_invalid_exception_message_type_with_logger(caplog) -> None:
+
     """
     Test case 17: Invalid exception_message parameter type with logger
     """

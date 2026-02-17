@@ -41,7 +41,8 @@ def return_chainable_with_exception():
     return ChainableWithException()
 
 
-def test_chain_method_called():
+def test_chain_method_called() -> None:
+
     """
     Test case 1: Chain method is called on the result.
     """
@@ -49,7 +50,8 @@ def test_chain_method_called():
     assert result == 10  # Chain method doubles the value
 
 
-def test_chain_method_not_called():
+def test_chain_method_not_called() -> None:
+
     """
     Test case 2: Chain method is not called on the result.
     """
@@ -57,7 +59,8 @@ def test_chain_method_not_called():
     assert result.value == 5  # Chain method does not exist
 
 
-def test_no_chain_method():
+def test_no_chain_method() -> None:
+
     """
     Test case 3: No chain method on the result.
     """
@@ -65,7 +68,8 @@ def test_no_chain_method():
     assert result == 5  # No chain method to call
 
 
-def test_chain_method_with_kwargs():
+def test_chain_method_with_kwargs() -> None:
+
     """
     Test case 4: Chain method with keyword arguments.
     """
@@ -85,7 +89,8 @@ def test_chain_method_with_kwargs():
     assert result == 10  # Default multiplier is 2
 
 
-def test_chain_method_with_args():
+def test_chain_method_with_args() -> None:
+
     """
     Test case 5: Chain method with positional arguments.
     """
@@ -106,7 +111,8 @@ def test_chain_method_with_args():
     assert result.value == 5  # chain is not called because required args are missing
 
 
-def test_chain_method_with_args_and_kwargs():
+def test_chain_method_with_args_and_kwargs() -> None:
+
     """
     Test case 6: Chain method with positional and keyword arguments.
     """
@@ -127,7 +133,8 @@ def test_chain_method_with_args_and_kwargs():
     assert result.value == 5  # chain is not called when required args are missing
 
 
-def test_chain_method_with_no_args():
+def test_chain_method_with_no_args() -> None:
+
     """
     Test case 7: Chain method with no arguments.
     """
@@ -147,7 +154,8 @@ def test_chain_method_with_no_args():
     assert result == 10  # No arguments are passed
 
 
-def test_chain_method_raises_exception():
+def test_chain_method_raises_exception() -> None:
+
     """
     Test case 8: Chain method raises an exception.
     """
@@ -158,7 +166,8 @@ def test_chain_method_raises_exception():
         return_chainable_with_exception()
 
 
-def test_chain_method_with_custom_exception():
+def test_chain_method_with_custom_exception() -> None:
+
     """
     Test case 9: Chain method raises a custom exception.
     """

@@ -48,7 +48,8 @@ def sample_function(a: int, b: int) -> int:
     return a + b
 
 
-def test_validate_args_success():
+def test_validate_args_success() -> None:
+
     """
     Test case 1: Function executes successfully with valid arguments
     """
@@ -56,7 +57,8 @@ def test_validate_args_success():
     assert result == 3
 
 
-def test_validate_args_with_kwargs():
+def test_validate_args_with_kwargs() -> None:
+
     """
     Test case 2: Function with keyword arguments
     """
@@ -69,7 +71,8 @@ def test_validate_args_with_kwargs():
     assert result == 3
 
 
-def test_validate_args_with_var_args():
+def test_validate_args_with_var_args() -> None:
+
     """
     Test case 3: Function with variable length arguments (*args and **kwargs)
     """
@@ -82,7 +85,8 @@ def test_validate_args_with_var_args():
     assert result == "1 - (2, 3) - {'kwarg1': 4, 'kwarg2': 5}"
 
 
-def test_validate_args_failure():
+def test_validate_args_failure() -> None:
+
     """
     Test case 4: Function raises ValueError with invalid arguments
     """
@@ -92,7 +96,8 @@ def test_validate_args_failure():
         sample_function(-1, 2)
 
 
-def test_validate_args_with_logger(caplog):
+def test_validate_args_with_logger(caplog) -> None:
+
     """
     Test case 5: Function raises ValueError and logs the validation failure message
     """
@@ -110,7 +115,8 @@ def test_validate_args_with_logger(caplog):
         )
 
 
-def test_invalid_validation_func():
+def test_invalid_validation_func() -> None:
+
     """
     Test case 6: Invalid validation function type
     """
@@ -121,7 +127,8 @@ def test_invalid_validation_func():
             pass
 
 
-def test_invalid_logger_type():
+def test_invalid_logger_type() -> None:
+
     """
     Test case 7: Invalid logger type
     """

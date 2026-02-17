@@ -18,8 +18,8 @@ def numerical_integration(
     y: list[float] | np.ndarray | None = None,
     a: float | None = None,
     b: float | None = None,
-    method: Literal["quad", "trapz", "simps", "romberg"] = "quad",
-    **kwargs,
+    method: Literal["quad", "trapz", "simps"] = "quad",
+    **kwargs: float,
 ) -> dict[str, float]:
     """
     Perform numerical integration with validation and multiple methods.
@@ -39,12 +39,11 @@ def numerical_integration(
         Lower integration limit (for quad, romberg methods).
     b : float | None, optional
         Upper integration limit (for quad, romberg methods).
-    method : {'quad', 'trapz', 'simps', 'romberg'}, optional
+    method : {'quad', 'trapz', 'simps'}, optional
         Integration method (by default 'quad').
         - quad: Adaptive quadrature (most accurate)
         - trapz: Trapezoidal rule (simple, requires data)
         - simps: Simpson's rule (better accuracy, requires data)
-        - romberg: Romberg integration (adaptive, requires function)
     **kwargs
         Additional arguments passed to integration method.
 
@@ -81,7 +80,6 @@ def numerical_integration(
     - quad: Best for smooth functions, adaptive
     - trapz: Simple, works with data points
     - simps: Better accuracy than trapz
-    - romberg: Good for smooth functions
 
     Complexity
     ----------
@@ -90,9 +88,9 @@ def numerical_integration(
     # Input validation
     if not isinstance(method, str):
         raise TypeError(f"method must be a string, got {type(method).__name__}")
-    if method not in ("quad", "trapz", "simps", "romberg"):
+    if method not in ("quad", "trapz", "simps"):
         raise ValueError(
-            f"method must be 'quad', 'trapz', 'simps', or 'romberg', got '{method}'"
+            f"method must be 'quad', 'trapz', or 'simps', got '{method}'"
         )
 
     # Method-specific validation and integration
@@ -116,29 +114,7 @@ def numerical_integration(
         return {
             "result": float(result),
             "error": float(error),
-            "method": method,
-        }
-
-    elif method == "romberg":
-        if func is None:
-            raise ValueError("func is required for romberg method")
-        if not callable(func):
-            raise TypeError("func must be callable")
-        if a is None or b is None:
-            raise ValueError("a and b are required for romberg method")
-        if not isinstance(a, (int, float)):
-            raise TypeError(f"a must be a number, got {type(a).__name__}")
-        if not isinstance(b, (int, float)):
-            raise TypeError(f"b must be a number, got {type(b).__name__}")
-
-        try:
-            result = integrate.romberg(func, a, b, **kwargs)
-        except Exception as e:
-            raise ValueError(f"integration failed: {e}") from e
-
-        return {
-            "result": float(result),
-            "method": method,
+            "method": method,  # type: ignore[dict-item]
         }
 
     elif method in ("trapz", "simps"):
@@ -186,7 +162,7 @@ def numerical_integration(
 
         return {
             "result": float(result),
-            "method": method,
+            "method": method,  # type: ignore[dict-item]
         }
 
     else:

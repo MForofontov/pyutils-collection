@@ -44,7 +44,8 @@ def raise_type_error_with_logging():
     raise TypeError("This is a TypeError")
 
 
-def test_handle_error_no_error():
+def test_handle_error_no_error() -> None:
+
     """
     Test case 1: No error occurs.
     """
@@ -52,7 +53,8 @@ def test_handle_error_no_error():
     assert return_value("test") == "test"
 
 
-def test_handle_error_add():
+def test_handle_error_add() -> None:
+
     """
     Test case 2: Adding two numbers.
     """
@@ -60,7 +62,8 @@ def test_handle_error_add():
     assert add(-1, 1) == 0
 
 
-def test_handle_error_with_kwargs():
+def test_handle_error_with_kwargs() -> None:
+
     """
     Test case 3: Function with keyword arguments.
     """
@@ -73,7 +76,8 @@ def test_handle_error_with_kwargs():
     assert with_kwargs(a=1, b=2) == 3
 
 
-def test_handle_error_with_multiple_args():
+def test_handle_error_with_multiple_args() -> None:
+
     """
     Test case 4: Function with multiple arguments.
     """
@@ -86,7 +90,8 @@ def test_handle_error_with_multiple_args():
     assert multiple_args("a", "b", "c") == "abc"
 
 
-def test_handle_error_value_error(capfd):
+def test_handle_error_value_error(capfd) -> None:
+
     """
     Test case 5: Handling ValueError.
     """
@@ -96,7 +101,8 @@ def test_handle_error_value_error(capfd):
     assert "An error occurred: This is a ValueError" in out
 
 
-def test_handle_error_type_error(capfd):
+def test_handle_error_type_error(capfd) -> None:
+
     """
     Test case 6: Handling TypeError.
     """
@@ -106,7 +112,8 @@ def test_handle_error_type_error(capfd):
     assert "An error occurred: This is a TypeError" in out
 
 
-def test_handle_error_with_exception_in_kwargs(capfd):
+def test_handle_error_with_exception_in_kwargs(capfd) -> None:
+
     """
     Test case 7: Function with keyword arguments that raises an exception.
     """
@@ -123,7 +130,8 @@ def test_handle_error_with_exception_in_kwargs(capfd):
     assert "An error occurred: b cannot be zero" in out
 
 
-def test_handle_error_with_custom_exception(capfd):
+def test_handle_error_with_custom_exception(capfd) -> None:
+
     """
     Test case 8: Function that raises a custom exception.
     """
@@ -141,7 +149,8 @@ def test_handle_error_with_custom_exception(capfd):
     assert "An error occurred: This is a CustomException" in out
 
 
-def test_handle_error_value_error_with_logging(caplog):
+def test_handle_error_value_error_with_logging(caplog) -> None:
+
     """
     Test case 9: Handling ValueError with logging.
     """
@@ -151,7 +160,8 @@ def test_handle_error_value_error_with_logging(caplog):
         assert "An error occurred: This is a ValueError" in caplog.text
 
 
-def test_handle_error_type_error_with_logging(caplog):
+def test_handle_error_type_error_with_logging(caplog) -> None:
+
     """
     Test case 10: Handling TypeError with logging.
     """
@@ -161,7 +171,8 @@ def test_handle_error_type_error_with_logging(caplog):
         assert "An error occurred: This is a TypeError" in caplog.text
 
 
-def test_handle_invalid_logger():
+def test_handle_invalid_logger() -> None:
+
     """
     Test case 11: Invalid logger.
     """

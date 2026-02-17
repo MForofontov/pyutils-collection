@@ -200,8 +200,8 @@ def numerical_derivative(
     return {
         "derivative": derivative,
         "x": x_arr,
-        "method": method,
-        "order": order,
+        "method": method,  # type: ignore[dict-item]
+        "order": order,  # type: ignore[dict-item]
     }
 
 

@@ -18,17 +18,30 @@ try:
     DEPENDENCIES_AVAILABLE = True
 except ImportError:
     DEPENDENCIES_AVAILABLE = False
-    matplotlib = None  # type: ignore
-    np = None  # type: ignore
-    smooth_timeseries = None  # type: ignore
-
-pytestmark = pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
-)
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_smooth_timeseries_basic():
+def _scipy_available() -> bool:
+    """Check if scipy is available."""
+    try:
+        import scipy.signal  # noqa: F401
+        return True
+    except ImportError:
+        return False
+    matplotlib = None
+    np = None
+    smooth_timeseries = None
+
+pytestmark = [
+    pytest.mark.skipif(
+        not DEPENDENCIES_AVAILABLE, reason="matplotlib and numpy not installed"
+    ),
+    pytest.mark.unit,
+    pytest.mark.data_visualization,
+]
+
+
+def test_smooth_timeseries_basic() -> None:
+
     """
     Test case 1: Smooth timeseries with default settings.
     """
@@ -43,7 +56,8 @@ def test_smooth_timeseries_basic():
     assert isinstance(smoothed, (list, np.ndarray))
 
 
-def test_smooth_timeseries_moving_average():
+def test_smooth_timeseries_moving_average() -> None:
+
     """
     Test case 2: Smooth using moving average method.
     """
@@ -58,7 +72,8 @@ def test_smooth_timeseries_moving_average():
     assert len(smoothed) == len(data)
 
 
-def test_smooth_timeseries_exponential():
+def test_smooth_timeseries_exponential() -> None:
+
     """
     Test case 3: Smooth using exponential smoothing.
     """
@@ -72,7 +87,12 @@ def test_smooth_timeseries_exponential():
     assert len(smoothed) == len(data)
 
 
-def test_smooth_timeseries_savitzky_golay():
+@pytest.mark.skipif(
+    not _scipy_available(),
+    reason="scipy not installed (moved to bioutils-collection)"
+)
+def test_smooth_timeseries_savitzky_golay() -> None:
+
     """
     Test case 4: Smooth using Savitzky-Golay filter.
     """
@@ -88,7 +108,8 @@ def test_smooth_timeseries_savitzky_golay():
     assert len(smoothed) == len(data)
 
 
-def test_smooth_timeseries_numpy_array():
+def test_smooth_timeseries_numpy_array() -> None:
+
     """
     Test case 5: Smooth numpy array data.
     """
@@ -103,7 +124,8 @@ def test_smooth_timeseries_numpy_array():
     assert len(smoothed) == len(data)
 
 
-def test_smooth_timeseries_empty_raises_error():
+def test_smooth_timeseries_empty_raises_error() -> None:
+
     """
     Test case 6: ValueError for empty data.
     """
@@ -115,7 +137,8 @@ def test_smooth_timeseries_empty_raises_error():
         smooth_timeseries([])
 
 
-def test_smooth_timeseries_invalid_window_raises_error():
+def test_smooth_timeseries_invalid_window_raises_error() -> None:
+
     """
     Test case 7: ValueError for invalid window size.
     """
@@ -128,7 +151,8 @@ def test_smooth_timeseries_invalid_window_raises_error():
         smooth_timeseries(data, window_size=0)
 
 
-def test_smooth_timeseries_invalid_method_raises_error():
+def test_smooth_timeseries_invalid_method_raises_error() -> None:
+
     """
     Test case 8: ValueError for invalid smoothing method.
     """
@@ -143,7 +167,8 @@ def test_smooth_timeseries_invalid_method_raises_error():
         smooth_timeseries(data, method="invalid", window_size=3)
 
 
-def test_smooth_timeseries_invalid_type_raises_error():
+def test_smooth_timeseries_invalid_type_raises_error() -> None:
+
     """
     Test case 9: TypeError for invalid data type.
     """

@@ -28,7 +28,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_apply_theme_basic():
+def test_apply_theme_basic() -> None:
+
     """
     Test case 1: Apply theme to current matplotlib settings.
     """
@@ -45,7 +46,8 @@ def test_apply_theme_basic():
     assert plt.rcParams["axes.titlesize"] == 14
 
 
-def test_apply_theme_dark():
+def test_apply_theme_dark() -> None:
+
     """
     Test case 2: Apply dark theme.
     """
@@ -62,7 +64,8 @@ def test_apply_theme_dark():
     assert plt.rcParams["axes.titlesize"] == 16
 
 
-def test_apply_theme_custom_fonts():
+def test_apply_theme_custom_fonts() -> None:
+
     """
     Test case 3: Apply theme with custom font sizes.
     """
@@ -85,7 +88,8 @@ def test_apply_theme_custom_fonts():
     assert plt.rcParams["xtick.labelsize"] == 12
 
 
-def test_apply_theme_color_cycle():
+def test_apply_theme_color_cycle() -> None:
+
     """
     Test case 4: Apply theme with custom color cycle.
     """
@@ -103,7 +107,8 @@ def test_apply_theme_color_cycle():
     assert "axes.prop_cycle" in plt.rcParams
 
 
-def test_apply_theme_invalid_type_raises_error():
+def test_apply_theme_invalid_type_raises_error() -> None:
+
     """
     Test case 5: TypeError for invalid theme type.
     """
@@ -116,7 +121,8 @@ def test_apply_theme_invalid_type_raises_error():
         apply_theme(invalid_theme)
 
 
-def test_apply_theme_none_raises_error():
+def test_apply_theme_none_raises_error() -> None:
+
     """
     Test case 6: TypeError for None theme.
     """
@@ -128,7 +134,8 @@ def test_apply_theme_none_raises_error():
         apply_theme(None)
 
 
-def test_apply_theme_grid_settings():
+def test_apply_theme_grid_settings() -> None:
+
     """
     Test case 7: Apply theme with grid settings.
     """

@@ -25,14 +25,16 @@ def sample_function_failure() -> None:
     raise Exception("Function failed")
 
 
-def test_retry_success():
+def test_retry_success() -> None:
+
     """
     Test case 1: Function executes successfully
     """
     assert sample_function_success() == "Function executed"
 
 
-def test_retry_with_args():
+def test_retry_with_args() -> None:
+
     """
     Test case 2: Function with positional arguments
     """
@@ -44,7 +46,8 @@ def test_retry_with_args():
     assert function_with_args(1, 2) == 3
 
 
-def test_retry_with_kwargs():
+def test_retry_with_kwargs() -> None:
+
     """
     Test case 3: Function with keyword arguments
     """
@@ -56,7 +59,8 @@ def test_retry_with_kwargs():
     assert function_with_kwargs(1, b=2) == 3
 
 
-def test_retry_with_var_args():
+def test_retry_with_var_args() -> None:
+
     """
     Test case 4: Function with variable length arguments (*args and **kwargs)
     """
@@ -71,7 +75,8 @@ def test_retry_with_var_args():
     )
 
 
-def test_retry_with_0_max_retries():
+def test_retry_with_0_max_retries() -> None:
+
     """
     Test case 5: Function with 0 max_retries
     """
@@ -83,7 +88,8 @@ def test_retry_with_0_max_retries():
     assert function_with_0_max_retries() == "Function executed"
 
 
-def test_retry_with_0_delay():
+def test_retry_with_0_delay() -> None:
+
     """
     Test case 6: Function with 0 delay
     """
@@ -95,7 +101,8 @@ def test_retry_with_0_delay():
     assert function_with_0_delay() == "Function executed"
 
 
-def test_retry_failure():
+def test_retry_failure() -> None:
+
     """
     Test case 7: Function fails after retries
     """
@@ -103,7 +110,8 @@ def test_retry_failure():
         sample_function_failure()
 
 
-def test_retry_with_logger(caplog):
+def test_retry_with_logger(caplog) -> None:
+
     """
     Test case 8: Logger functionality when function fails
     """
@@ -120,7 +128,8 @@ def test_retry_with_logger(caplog):
         assert "Attempt 3 failed for logged_function: Function failed" in caplog.text
 
 
-def test_retry_with_negative_retries():
+def test_retry_with_negative_retries() -> None:
+
     """
     Test case 9: Function with negative max_retries
     """
@@ -133,7 +142,8 @@ def test_retry_with_negative_retries():
         function_with_negative_retries()
 
 
-def test_retry_with_negative_delay():
+def test_retry_with_negative_delay() -> None:
+
     """
     Test case 10: Function with negative delay
     """
@@ -148,7 +158,8 @@ def test_retry_with_negative_delay():
         function_with_negative_delay()
 
 
-def test_retry_with_invalid_logger_type():
+def test_retry_with_invalid_logger_type() -> None:
+
     """
     Test case 11: Invalid logger type
     """
@@ -161,7 +172,8 @@ def test_retry_with_invalid_logger_type():
             pass
 
 
-def test_retry_with_invalid_max_retries_type():
+def test_retry_with_invalid_max_retries_type() -> None:
+
     """
     Test case 12: Invalid max_retries type
     """
@@ -172,7 +184,8 @@ def test_retry_with_invalid_max_retries_type():
             pass
 
 
-def test_retry_with_invalid_max_retries_type_with_logger(caplog):
+def test_retry_with_invalid_max_retries_type_with_logger(caplog) -> None:
+
     """
     Test case 13: Invalid max_retries type with logger
     """
@@ -188,7 +201,8 @@ def test_retry_with_invalid_max_retries_type_with_logger(caplog):
     assert "max_retries must be an positive integer or 0" in caplog.text
 
 
-def test_retry_with_invalid_delay_type():
+def test_retry_with_invalid_delay_type() -> None:
+
     """
     Test case 14: Invalid delay type
     """
@@ -201,7 +215,8 @@ def test_retry_with_invalid_delay_type():
             pass
 
 
-def test_retry_with_invalid_delay_type_with_logger(caplog):
+def test_retry_with_invalid_delay_type_with_logger(caplog) -> None:
+
     """
     Test case 15: Invalid delay type with logger
     """

@@ -7,9 +7,9 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    patch = None  # type: ignore
-    psutil = None  # type: ignore
-    get_default_gateway = None  # type: ignore
+    patch = None  # type: ignore[assignment]
+    psutil = None
+    get_default_gateway = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,

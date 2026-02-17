@@ -28,7 +28,8 @@ pytestmark = pytest.mark.skipif(
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.data_visualization]
 
 
-def test_configure_axes_style_basic():
+def test_configure_axes_style_basic() -> None:
+
     """
     Test case 1: Configure axes style with default settings.
     """
@@ -45,7 +46,8 @@ def test_configure_axes_style_basic():
     plt.close(fig)
 
 
-def test_configure_axes_style_with_grid():
+def test_configure_axes_style_with_grid() -> None:
+
     """
     Test case 2: Configure axes with grid enabled.
     """
@@ -62,7 +64,8 @@ def test_configure_axes_style_with_grid():
     plt.close(fig)
 
 
-def test_configure_axes_style_spine_visibility():
+def test_configure_axes_style_spine_visibility() -> None:
+
     """
     Test case 3: Configure spine visibility.
     """
@@ -80,7 +83,8 @@ def test_configure_axes_style_spine_visibility():
     plt.close(fig)
 
 
-def test_configure_axes_style_with_labels():
+def test_configure_axes_style_with_labels() -> None:
+
     """
     Test case 4: Configure axes with labels.
     """
@@ -99,7 +103,8 @@ def test_configure_axes_style_with_labels():
     plt.close(fig)
 
 
-def test_configure_axes_style_invalid_ax_raises_error():
+def test_configure_axes_style_invalid_ax_raises_error() -> None:
+
     """
     Test case 5: AttributeError for invalid axes object.
     """
@@ -111,7 +116,8 @@ def test_configure_axes_style_invalid_ax_raises_error():
         configure_axes_style(invalid_ax)
 
 
-def test_configure_axes_style_none_ax_raises_error():
+def test_configure_axes_style_none_ax_raises_error() -> None:
+
     """
     Test case 6: AttributeError for None axes.
     """
@@ -120,7 +126,8 @@ def test_configure_axes_style_none_ax_raises_error():
         configure_axes_style(None)
 
 
-def test_configure_axes_style_invalid_grid_alpha_raises_error():
+def test_configure_axes_style_invalid_grid_alpha_raises_error() -> None:
+
     """
     Test case 7: ValueError for invalid grid alpha.
     """

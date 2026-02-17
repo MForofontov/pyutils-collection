@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def get_foreign_key_dependencies(
     connection: Any,
     schema: str | None = None,
-) -> dict[str, list[str]]:
+) -> dict[str, Any]:
     """
     Get table dependency graph based on foreign key relationships.
 
@@ -29,7 +29,7 @@ def get_foreign_key_dependencies(
 
     Returns
     -------
-    dict[str, list[str]]
+    dict[str, Any]
         Dictionary with:
         - 'ordered_tables': List of tables in safe drop order
         - 'dependencies': Dict of table -> list of tables it depends on
@@ -67,8 +67,8 @@ def get_foreign_key_dependencies(
     tables = inspector.get_table_names(schema=schema)
 
     # Build dependency graph
-    dependencies = {table: set() for table in tables}
-    dependents = {table: set() for table in tables}
+    dependencies: dict[str, set[str]] = {table: set() for table in tables}
+    dependents: dict[str, set[str]] = {table: set() for table in tables}
 
     for table in tables:
         fks = inspector.get_foreign_keys(table, schema=schema)
@@ -79,10 +79,10 @@ def get_foreign_key_dependencies(
                 dependents[referred_table].add(table)
 
     # Topological sort to get safe order
-    ordered = []
-    visited = set()
-    temp_visited = set()
-    circular = set()
+    ordered: list[str] = []
+    visited: set[str] = set()
+    temp_visited: set[str] = set()
+    circular: set[str] = set()
 
     def visit(table: str) -> None:
         if table in temp_visited:

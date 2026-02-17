@@ -5,7 +5,7 @@ Apply a theme to matplotlib's global configuration.
 import logging
 
 import matplotlib.pyplot as plt
-from matplotlib import cycler
+from cycler import cycler
 
 from .chart_theme import ChartTheme
 

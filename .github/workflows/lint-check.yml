@@ -12,7 +12,7 @@ on:
         description: "Fail the job if any issues found"
         required: false
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: read

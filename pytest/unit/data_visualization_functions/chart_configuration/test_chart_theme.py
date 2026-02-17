@@ -20,7 +20,8 @@ pytestmark = [
 ]
 
 
-def test_chart_theme_default_values():
+def test_chart_theme_default_values() -> None:
+
     """
     Test case 1: Create ChartTheme with default values.
     """
@@ -34,7 +35,8 @@ def test_chart_theme_default_values():
     assert isinstance(theme.color_cycle, list)
 
 
-def test_chart_theme_custom_values():
+def test_chart_theme_custom_values() -> None:
+
     """
     Test case 2: Create ChartTheme with custom values.
     """
@@ -53,7 +55,8 @@ def test_chart_theme_custom_values():
     assert theme.title_fontsize == 16
 
 
-def test_chart_theme_font_sizes():
+def test_chart_theme_font_sizes() -> None:
+
     """
     Test case 3: Verify font size attributes.
     """
@@ -73,7 +76,8 @@ def test_chart_theme_font_sizes():
     assert theme.tick_fontsize == 10
 
 
-def test_chart_theme_invalid_font_size_raises_error():
+def test_chart_theme_invalid_font_size_raises_error() -> None:
+
     """
     Test case 4: ValueError for negative title font size.
     """
@@ -84,7 +88,8 @@ def test_chart_theme_invalid_font_size_raises_error():
         )
 
 
-def test_chart_theme_invalid_title_size_raises_error():
+def test_chart_theme_invalid_title_size_raises_error() -> None:
+
     """
     Test case 5: ValueError for zero label font size.
     """
@@ -95,7 +100,8 @@ def test_chart_theme_invalid_title_size_raises_error():
         )
 
 
-def test_chart_theme_invalid_label_size_raises_error():
+def test_chart_theme_invalid_label_size_raises_error() -> None:
+
     """
     Test case 6: ValueError for negative tick font size.
     """
@@ -106,7 +112,8 @@ def test_chart_theme_invalid_label_size_raises_error():
         )
 
 
-def test_chart_theme_empty_color_palette_raises_error():
+def test_chart_theme_empty_color_palette_raises_error() -> None:
+
     """
     Test case 7: ValueError for empty color cycle.
     """

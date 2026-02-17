@@ -1,4 +1,5 @@
 import socket
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
@@ -9,8 +10,8 @@ try:
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
-    psutil = None  # type: ignore
-    resolve_hostname = None  # type: ignore
+    psutil = None
+    resolve_hostname = None  # type: ignore[assignment]
 
 pytestmark = [
     pytest.mark.unit,
@@ -43,7 +44,7 @@ def test_resolve_hostname_type_error() -> None:
     Test case 3: TypeError for non-string hostname.
     """
     with pytest.raises(TypeError, match="hostname must be a string"):
-        resolve_hostname(123)
+        resolve_hostname(cast(Any, 123))
 
 
 def test_resolve_hostname_value_error_empty() -> None:

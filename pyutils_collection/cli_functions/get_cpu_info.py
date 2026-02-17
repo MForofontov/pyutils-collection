@@ -5,7 +5,7 @@ import os
 import psutil
 
 
-def get_cpu_info(interval: float = 0.1) -> dict[str, int | float | list[float]]:
+def get_cpu_info(interval: float = 0.1) -> dict[str, int | float | list[float] | tuple[float, float, float] | None]:
     """
     Get CPU information and usage statistics.
 
@@ -16,7 +16,7 @@ def get_cpu_info(interval: float = 0.1) -> dict[str, int | float | list[float]]:
 
     Returns
     -------
-    dict[str, int | float | list[float]]
+    dict[str, int | float | list[float] | tuple[float, float, float] | None]
         Dictionary containing CPU information including count, usage, and frequencies.
 
     Examples

@@ -123,7 +123,7 @@ def solve_linear_system(
     residual = A_arr @ solution - b_arr
     residual_norm = float(np.linalg.norm(residual))
 
-    result = {
+    result: dict[str, np.ndarray | float | bool] = {
         "solution": solution,
         "residual_norm": residual_norm,
         "well_conditioned": well_conditioned,
