@@ -10,7 +10,7 @@ def hash_password_bcrypt(password: str, rounds: int = 12) -> str:
     Parameters
     ----------
     password : str
-        The password to hash.
+        The password to hash, at most 72 bytes when encoded as UTF-8.
     rounds : int, optional
         The cost factor (number of rounds) for bcrypt hashing.
         Must be between 4 and 31. Higher values are more secure but slower
@@ -64,6 +64,8 @@ def hash_password_bcrypt(password: str, rounds: int = 12) -> str:
 
     # Convert password to bytes and hash
     password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        raise ValueError("password cannot be longer than 72 bytes")
     salt = bcrypt.gensalt(rounds=rounds)
     hashed = bcrypt.hashpw(password_bytes, salt)
 

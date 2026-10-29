@@ -12,7 +12,7 @@ from pathlib import Path
 def create_temp_file_fixture(
     content: str = "",
     suffix: str = ".txt",
-) -> Generator[Path, None, None]:
+) -> Generator[Path]:
     """
     Create a temporary file fixture for testing.
 

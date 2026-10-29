@@ -45,5 +45,5 @@ def safe_json_dump(
             if encoder
             else json.dumps(obj, **kwargs)
         )
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return default  # type: ignore[return-value]

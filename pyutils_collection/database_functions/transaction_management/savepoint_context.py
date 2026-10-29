@@ -7,6 +7,8 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import Any
 
+from .nested_transaction import _validate_savepoint_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +20,7 @@ def savepoint_context(
     create_savepoint_func: Callable[[str], None] | None = None,
     release_savepoint_func: Callable[[str], None] | None = None,
     rollback_savepoint_func: Callable[[str], None] | None = None,
-) -> Generator[Any, None, None]:
+) -> Generator[Any]:
     """
     Context manager for explicit savepoint management with error handling.
 
@@ -107,6 +109,7 @@ def savepoint_context(
         )
     if not savepoint_name:
         raise ValueError("savepoint_name cannot be empty")
+    _validate_savepoint_name(savepoint_name)
     if on_error not in ("rollback", "ignore"):
         raise ValueError(f"on_error must be 'rollback' or 'ignore', got {on_error!r}")
     if create_savepoint_func is not None and not callable(create_savepoint_func):

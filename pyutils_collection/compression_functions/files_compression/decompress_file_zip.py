@@ -3,6 +3,7 @@
 import os
 import stat
 import zipfile
+from pathlib import Path, PureWindowsPath
 
 
 def decompress_file_zip(input_zip: str, output_dir: str) -> None:
@@ -46,6 +47,21 @@ def decompress_file_zip(input_zip: str, output_dir: str) -> None:
 
         # Open the input zip-compressed file in read mode
         with zipfile.ZipFile(input_zip, "r") as zipf:
+            destination = Path(output_dir).resolve()
+            # Validate the complete member list before creating any files.
+            # ZIP's own name sanitization does not protect existing symlinks.
+            for member in zipf.infolist():
+                name = member.filename.replace("\\", "/")
+                relative = Path(name)
+                target = (destination / relative).resolve()
+                if (
+                    relative.is_absolute()
+                    or PureWindowsPath(name).drive
+                    or ".." in relative.parts
+                    or not target.is_relative_to(destination)
+                    or stat.S_ISLNK(member.external_attr >> 16)
+                ):
+                    raise ValueError(f"Unsafe ZIP member: {member.filename}")
             # Extract all files to the specified output directory
             zipf.extractall(output_dir)
     except FileNotFoundError as exc:

@@ -2,8 +2,10 @@
 
 import gc
 import logging
+import math
 import threading
 import time
+import warnings
 from collections.abc import Callable
 from functools import wraps
 from types import SimpleNamespace
@@ -58,6 +60,8 @@ def time_and_resource_function(
         Whether to monitor page faults. Default is True.
     interval : float
         The interval in seconds between each resource measurement. Default is 0.1.
+        Must be finite and positive. Shutdown waits at most one second for a
+        sample; a blocked OS query may finish later in the daemon thread.
 
     Returns
     -------
@@ -67,15 +71,21 @@ def time_and_resource_function(
     Raises
     ------
     TypeError
-        If logger is not an instance of logging.Logger or None.
+        If logger is not an instance of logging.Logger or None, or interval is
+        not a number.
+    ValueError
+        If interval is not finite and positive.
     """
     validate_logger(logger)
+    if not isinstance(interval, (int, float)) or isinstance(interval, bool):
+        raise TypeError("interval must be a number")
+    if not math.isfinite(interval) or interval <= 0:
+        raise ValueError("interval must be finite and positive")
 
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             process = psutil.Process()
-            start_time = time.time()
 
             # Initialize monitoring variables
             max_memory_usage = 0
@@ -89,6 +99,9 @@ def time_and_resource_function(
                 0,
                 0,
             ]  # [generation 0, generation 1, generation 2]
+            initial_gc_collections = (
+                [item["collections"] for item in gc.get_stats()] if monitor_gc else []
+            )
             total_voluntary_context_switches = 0
             total_involuntary_context_switches = 0
 
@@ -117,6 +130,9 @@ def time_and_resource_function(
             )
 
             stop_event = threading.Event()
+            sample_finished = threading.Event()
+            if monitor_cpu:
+                process.cpu_percent(interval=None)
 
             def monitor_resources() -> None:
                 nonlocal \
@@ -140,22 +156,28 @@ def time_and_resource_function(
                 while not stop_event.is_set():
                     try:
                         # Monitor main process
-                        total_memory_usage = process.memory_info().rss
-                        total_cpu_usage = process.cpu_percent(
-                            interval=0.025
-                        )  # For shorter runs use smaller interval e.g 0.025, because the children end quickly
-                        total_threads = process.num_threads()
+                        total_memory_usage = (
+                            process.memory_info().rss if monitor_memory else 0
+                        )
+                        total_cpu_usage = (
+                            process.cpu_percent(interval=None) if monitor_cpu else 0.0
+                        )
+                        total_threads = process.num_threads() if monitor_threads else 0
                         open_files = (
                             len(process.open_files())
-                            if hasattr(process, "open_files")
+                            if monitor_open_files and hasattr(process, "open_files")
                             else 0
                         )
-                        if hasattr(process, "memory_full_info"):
+                        if monitor_page_faults and hasattr(process, "memory_full_info"):
                             memory_info: Any = process.memory_full_info()
-                        else:
+                        elif monitor_page_faults:
                             memory_info = process.memory_info()
+                        else:
+                            memory_info = SimpleNamespace(pfaults=0)
                         page_faults = getattr(memory_info, "pfaults", 0)
-                        if hasattr(process, "num_ctx_switches"):
+                        if monitor_context_switches and hasattr(
+                            process, "num_ctx_switches"
+                        ):
                             context_switches: Any = process.num_ctx_switches()
                         else:
                             context_switches = SimpleNamespace(
@@ -164,10 +186,12 @@ def time_and_resource_function(
 
                         # Monitor GC statistics
                         if monitor_gc:
-                            gc.collect()
                             gc_stats = gc.get_stats()
                             for i in range(3):
-                                total_gc_collections[i] += gc_stats[i]["collections"]
+                                total_gc_collections[i] = (
+                                    gc_stats[i]["collections"]
+                                    - initial_gc_collections[i]
+                                )
 
                         # Monitor child processes
                         for child in process.children(recursive=True):
@@ -175,9 +199,7 @@ def time_and_resource_function(
                                 if monitor_memory:
                                     total_memory_usage += child.memory_info().rss
                                 if monitor_cpu:
-                                    total_cpu_usage += child.cpu_percent(
-                                        interval=0.025
-                                    )  # For shorter runs use smaller interval e.g 0.025, because the children end quickly
+                                    total_cpu_usage += child.cpu_percent(interval=None)
                                 if monitor_threads:
                                     total_threads += child.num_threads()
                                 if monitor_io and hasattr(child, "io_counters"):
@@ -205,7 +227,7 @@ def time_and_resource_function(
                                     total_involuntary_context_switches += (
                                         child_context_switches.involuntary
                                     )
-                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                            except psutil.NoSuchProcess, psutil.AccessDenied:
                                 continue
 
                         # Update maximums
@@ -230,22 +252,39 @@ def time_and_resource_function(
                                 context_switches.involuntary
                             )
 
-                        time.sleep(interval)
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        continue
+                        stop_event.wait(interval)
+                    except psutil.NoSuchProcess, psutil.AccessDenied:
+                        stop_event.wait(interval)
 
-            # Start resource monitoring in a separate thread
-            resource_thread = threading.Thread(target=monitor_resources, daemon=True)
+            def sample_until_stopped() -> None:
+                try:
+                    monitor_resources()
+                finally:
+                    sample_finished.set()
+
+            # Wait for Python sampling to finish rather than an OS thread join.
+            # A timed native join can itself stall during Windows thread teardown.
+            resource_thread = threading.Thread(
+                target=sample_until_stopped,
+                daemon=True,
+                name="pyutils-resource-monitor",
+            )
             resource_thread.start()
 
+            start_time = time.perf_counter()
             try:
                 result = func(*args, **kwargs)
             finally:
+                end_time = time.perf_counter()
                 stop_event.set()
-                resource_thread.join()
+                if not sample_finished.wait(timeout=1.0):
+                    warnings.warn(
+                        "Resource monitor is waiting on an OS query; measurements may be incomplete",
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
 
             # End time
-            end_time = time.time()
             execution_time = end_time - start_time
 
             # Final counters

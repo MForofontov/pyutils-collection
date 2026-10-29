@@ -25,11 +25,15 @@ def test_get_network_speed_normal() -> None:
     """
     mock_response = MagicMock()
     mock_response.iter_content.return_value = [b"a" * 8192] * 10
-    with patch("requests.get", return_value=mock_response):
+    with patch("requests.get", return_value=mock_response), patch(
+        "pyutils_collection.network_functions.get_network_speed.time.perf_counter",
+        side_effect=[10.0, 10.5],
+    ):
         result = get_network_speed("http://test", timeout=1)
         assert isinstance(result, dict)
         assert "download_mbps" in result
-        assert result["download_mbps"] > 0
+        assert result["download_mbps"] == pytest.approx(1.31072)
+    mock_response.close.assert_called_once()
 
 
 def test_get_network_speed_edge_case_empty_content() -> None:

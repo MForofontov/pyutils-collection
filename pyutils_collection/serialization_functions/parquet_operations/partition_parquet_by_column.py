@@ -2,11 +2,16 @@
 Partition Parquet data into multiple files by column values.
 """
 
+import math
+import os
+import re
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+
+from pyutils_collection.serialization_functions._staged_output import staged_output
 
 
 def partition_parquet_by_column(
@@ -74,7 +79,14 @@ def partition_parquet_by_column(
     Notes
     -----
     Output files are named: {partition_value}.parquet
+    Characters invalid in Windows filenames are replaced with underscores.
+    Partition values producing the same filename raise ValueError before any
+    partition files are written.
     Creates output_dir if it doesn't exist.
+    Null and floating-point NaN values retain their own partition rows.
+    Each output is staged before replacement; a failure preserves the affected
+    existing file, but earlier completed partitions are not rolled back.
+    Destination symlinks are replaced rather than followed.
     Efficient for organizing data by categorical or temporal dimensions.
 
     Complexity
@@ -140,20 +152,42 @@ def partition_parquet_by_column(
             f"max_partitions ({max_partitions})"
         )
 
+    # Validate all filenames before writing to avoid overwriting another group.
+    partitions: list[tuple[Any, Path]] = []
+    used_names: set[str] = set()
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {
+        f"{prefix}{number}" for prefix in ("COM", "LPT") for number in range(1, 10)
+    }
+    for value in partition_values:
+        safe_value = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", str(value)).replace(" ", "_")
+        safe_value = safe_value.rstrip(".") or "_"
+        if safe_value.split(".", 1)[0].upper() in reserved:
+            safe_value = f"_{safe_value}"
+        filename = f"{safe_value}.parquet"
+        key = os.path.normcase(filename)
+        if key in used_names:
+            raise ValueError(
+                f"Partition values produce colliding filenames: {filename}"
+            )
+        used_names.add(key)
+        partitions.append((value, output_path / filename))
+
     # Partition data and write files
     partition_counts: dict[Any, int] = {}
-
-    for value in partition_values:
+    for value, output_file_path in partitions:
         # Filter rows for this partition
-        mask = pa.compute.equal(table.column(partition_column), value)
+        column = table.column(partition_column)
+        if value is None:
+            mask = pa.compute.is_null(column)
+        elif isinstance(value, float) and math.isnan(value):
+            mask = pa.compute.is_nan(column)
+        else:
+            mask = pa.compute.equal(column, value)
         partition_table = table.filter(mask)
 
-        # Generate safe filename from partition value
-        safe_value = str(value).replace("/", "_").replace("\\", "_").replace(" ", "_")
-        output_file_path = output_path / f"{safe_value}.parquet"
-
         # Write partition file
-        pq.write_table(partition_table, output_file_path, compression=compression)
+        with staged_output(output_file_path) as temporary:
+            pq.write_table(partition_table, temporary, compression=compression)
 
         partition_counts[value] = len(partition_table)
 

@@ -69,7 +69,7 @@ async def async_cancellable_task(
         if not done:
             task_future.cancel()
             cancel_future.cancel()
-            raise asyncio.TimeoutError("async_cancellable_task timed out.")
+            raise TimeoutError("async_cancellable_task timed out.")
 
         if cancel_future in done:
             task_future.cancel()

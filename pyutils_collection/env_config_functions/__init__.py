@@ -11,8 +11,10 @@ from .load_dotenv import load_dotenv
 from .parse_ini_config import parse_ini_config
 from .parse_toml_config import parse_toml_config
 from .parse_yaml_config import parse_yaml_config
+from .validate_env_vars import validate_env_vars
 
 __all__ = [
+    "validate_env_vars",
     "load_dotenv",
     "parse_yaml_config",
     "parse_toml_config",

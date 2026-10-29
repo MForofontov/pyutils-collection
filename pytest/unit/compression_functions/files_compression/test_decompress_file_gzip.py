@@ -151,7 +151,7 @@ def test_decompress_file_gzip_io_error_on_output_file(tmp_path) -> None:
         os.chmod(tmp_path, 0o600)
 
 
-def test_decompress_file_gzip_no_permission_on_input_file(tmp_path) -> None:
+def test_decompress_file_gzip_no_permission_on_input_file(tmp_path, deny_read_access) -> None:
     """
     Test case 8: Test the decompress_file_gzip function with no permission on input file.
     """
@@ -164,7 +164,7 @@ def test_decompress_file_gzip_no_permission_on_input_file(tmp_path) -> None:
         f.write(data)
 
     # Remove all permissions from the input file
-    os.chmod(compressed_file, 0o000)
+    deny_read_access(compressed_file)
 
     try:
         with pytest.raises(OSError):

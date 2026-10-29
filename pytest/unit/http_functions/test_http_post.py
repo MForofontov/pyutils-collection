@@ -8,7 +8,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.http_functions]
 from pyutils_collection.http_functions.http_post import http_post
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_no_data(mock_urlopen) -> None:
 
     """Test case 1: Test HTTP POST request with no data payload."""
@@ -30,7 +30,7 @@ def test_http_post_no_data(mock_urlopen) -> None:
     assert request.data is None
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_with_dict_data(mock_urlopen) -> None:
 
     """Test case 2: Test HTTP POST request with dictionary data gets JSON encoded."""
@@ -53,7 +53,7 @@ def test_http_post_with_dict_data(mock_urlopen) -> None:
     assert request.get_header("Content-type") == "application/json"
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_with_string_data(mock_urlopen) -> None:
 
     """Test case 3: Test HTTP POST request with string data uses form encoding."""
@@ -76,7 +76,7 @@ def test_http_post_with_string_data(mock_urlopen) -> None:
     assert request.get_header("Content-type") == "application/x-www-form-urlencoded"
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_with_custom_headers(mock_urlopen) -> None:
 
     """Test case 4: Test HTTP POST request with custom headers are properly set."""
@@ -98,7 +98,7 @@ def test_http_post_with_custom_headers(mock_urlopen) -> None:
     assert result["status_code"] == 200
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_with_custom_timeout(mock_urlopen) -> None:
 
     """Test case 5: Test HTTP POST request with custom timeout value."""
@@ -116,7 +116,7 @@ def test_http_post_with_custom_timeout(mock_urlopen) -> None:
     assert mock_urlopen.call_args[1]["timeout"] == 60
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_default_timeout(mock_urlopen) -> None:
 
     """Test case 6: Test that default timeout is 30 seconds when not specified."""
@@ -133,7 +133,7 @@ def test_http_post_default_timeout(mock_urlopen) -> None:
     assert mock_urlopen.call_args[1]["timeout"] == 30
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_http_error_with_response_body(mock_urlopen) -> None:
 
     """Test case 7: Test HTTP POST request with HTTP error that includes response body."""
@@ -155,7 +155,7 @@ def test_http_post_http_error_with_response_body(mock_urlopen) -> None:
     assert result["url"] == "https://example.com"
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_complex_nested_data(mock_urlopen) -> None:
 
     """Test case 8: Test HTTP POST request with complex nested dictionary data."""
@@ -182,7 +182,7 @@ def test_http_post_complex_nested_data(mock_urlopen) -> None:
     assert sent_data == data
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_post.open_http")
 def test_http_post_url_error(mock_urlopen) -> None:
 
     """Test case 9: Test HTTP POST request handles URLError correctly."""

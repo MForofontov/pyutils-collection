@@ -74,7 +74,7 @@ def calculate_md5_hash(
         raise ValueError(f"chunk_size must be positive, got {chunk_size}")
 
     # Calculate MD5 hash
-    md5_hash = hashlib.md5()
+    md5_hash = hashlib.md5(usedforsecurity=False)
 
     try:
         with open(path, "rb") as file:

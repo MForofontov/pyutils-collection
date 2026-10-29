@@ -122,17 +122,17 @@ def normalize_url(
         # Use hostname and rebuild netloc (this lowercases the host)
         netloc = parsed.hostname or ""
         netloc = netloc.lower()
+        if ":" in netloc:
+            netloc = f"[{netloc}]"
 
         # Add port if present and not removed
         if port is not None:
             netloc = f"{netloc}:{port}"
 
         # Add username/password if present
-        if parsed.username:
-            user_pass = parsed.username
-            if parsed.password:
-                user_pass = f"{user_pass}:{parsed.password}"
-            netloc = f"{user_pass}@{netloc}"
+        if "@" in parsed.netloc:
+            user_info = parsed.netloc.rsplit("@", 1)[0]
+            netloc = f"{user_info}@{netloc}"
     else:
         # Use original netloc to preserve case
         # But need to handle port removal if requested

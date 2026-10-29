@@ -228,6 +228,55 @@ def test_merge_query_params_empty_list() -> None:
     assert "tags=" not in result
 
 
+@pytest.mark.parametrize("separator", [None, "", ","])
+def test_merge_query_params_empty_list_with_separator(separator: str | None) -> None:
+    assert (
+        merge_query_params(
+            "https://example.com?tags=old&keep=1",
+            {"tags": []},
+            list_separator=separator,
+        )
+        == "https://example.com?keep=1"
+    )
+
+
+def test_merge_query_params_empty_separator_joins_values() -> None:
+    assert (
+        merge_query_params(
+            "https://example.com",
+            {"tags": ["a", "b"]},
+            list_separator="",
+        )
+        == "https://example.com?tags=ab"
+    )
+
+
+def test_merge_query_params_preserves_generated_nested_keys() -> None:
+    assert (
+        merge_query_params(
+            "https://example.com?keep=1&filter=old",
+            {"filter": {"name": "a"}, "other": "b"},
+        )
+        == "https://example.com?keep=1&filter%5Bname%5D=a&other=b"
+    )
+
+
+@pytest.mark.parametrize(
+    ("params", "expected"),
+    [
+        ({"filter": {"name": "a"}, "filter[name]": "b"}, "filter%5Bname%5D=b"),
+        (
+            {"filter[name]": "b", "filter": {"name": "a"}},
+            "filter%5Bname%5D=b&filter%5Bname%5D=a",
+        ),
+        ({"filter": {"name": "a"}, "filter[name]": None}, ""),
+    ],
+)
+def test_merge_query_params_nested_key_overrides(params, expected: str) -> None:
+    result = merge_query_params("https://example.com?filter%5Bname%5D=old", params)
+    assert result == "https://example.com" + (f"?{expected}" if expected else "")
+
+
 def test_merge_query_params_boolean_values() -> None:
     """
     Test case 15: Convert boolean values to strings.

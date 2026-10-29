@@ -17,7 +17,7 @@ def atomic_transaction(
     rollback_func: Callable[[], None] | None = None,
     begin_func: Callable[[], None] | None = None,
     auto_commit: bool = True,
-) -> Generator[Any, None, None]:
+) -> Generator[Any]:
     """
     Context manager for atomic database transactions with automatic rollback.
 

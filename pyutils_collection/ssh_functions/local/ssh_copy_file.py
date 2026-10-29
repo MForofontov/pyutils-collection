@@ -1,7 +1,10 @@
 """SSH file transfer utilities."""
 
 import subprocess
+from pathlib import Path
 from typing import Any
+
+from ._validation import validate_target
 
 
 def ssh_copy_file(
@@ -76,8 +79,14 @@ def ssh_copy_file(
     if timeout <= 0:
         raise ValueError(f"timeout must be positive, got {timeout}")
 
-    scp_target = f"{user + '@' if user else ''}{host}:{remote_path}"
-    scp_cmd = ["scp", "-P", str(port), local_path, scp_target]
+    validate_target(host, user, timeout)
+    if not local_path or not remote_path or "\x00" in remote_path:
+        raise ValueError("local_path and remote_path must be non-empty paths")
+    # Brackets disambiguate IPv6 addresses from SCP's path separator.
+    scp_host = f"[{host}]" if ":" in host and not host.startswith("[") else host
+    scp_target = f"{user + '@' if user else ''}{scp_host}:{remote_path}"
+    # Absolute local paths cannot be interpreted as SCP options or remote hosts.
+    scp_cmd = ["scp", "-P", str(port), str(Path(local_path).absolute()), scp_target]
     try:
         proc = subprocess.run(scp_cmd, capture_output=True, text=True, timeout=timeout)
         return {

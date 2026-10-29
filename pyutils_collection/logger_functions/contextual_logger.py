@@ -24,7 +24,7 @@ class LogContext:
     operation: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self: "LogContext") -> dict[str, Any]:
+    def to_dict(self: LogContext) -> dict[str, Any]:
         """Convert context to dictionary."""
         return {
             k: v
@@ -32,7 +32,7 @@ class LogContext:
             if v or k == "metadata"  # Include metadata even if empty
         }
 
-    def update(self: "LogContext", **kwargs: Any) -> None:
+    def update(self: LogContext, **kwargs: Any) -> None:
         """Update context with new values."""
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -41,9 +41,7 @@ class LogContext:
                 self.metadata[key] = value
 
 
-def contextual_logger(
-    name: str, context: LogContext | None = None
-) -> "ContextualLogger":
+def contextual_logger(name: str, context: LogContext | None = None) -> ContextualLogger:
     """
     Create a logger with built-in context support.
 
@@ -94,7 +92,7 @@ class ContextualLogger:
         self._local.context = context
 
     @contextmanager
-    def context_scope(self, **kwargs: Any) -> Generator[None, Any, None]:
+    def context_scope(self, **kwargs: Any) -> Generator[None, Any]:
         """
         Context manager for temporary context changes.
 
@@ -104,7 +102,10 @@ class ContextualLogger:
             Context fields to temporarily set
         """
         old_context = self._get_context()
-        new_context = LogContext(**old_context.to_dict())
+        # Isolate metadata updates as well as the context object itself.
+        new_context = LogContext(
+            **{**old_context.to_dict(), "metadata": old_context.metadata.copy()}
+        )
         new_context.update(**kwargs)
 
         self._set_context(new_context)

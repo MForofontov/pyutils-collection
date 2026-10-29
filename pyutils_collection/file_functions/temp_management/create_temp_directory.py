@@ -15,7 +15,7 @@ def create_temp_directory(
     prefix: str = "tmp",
     dir: str | Path | None = None,
     delete: bool = True,
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """
     Create a temporary directory with automatic cleanup.
 

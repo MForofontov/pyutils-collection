@@ -79,7 +79,7 @@ def test_kill_process_with_different_signals() -> None:
 
     # These should all return False for non-existent PID without raising
     result1 = kill_process(999999, signal.SIGTERM)
-    result2 = kill_process(999999, signal.SIGKILL)
+    result2 = kill_process(999999, getattr(signal, "SIGKILL", signal.SIGTERM))
 
     assert result1 is False
     assert result2 is False

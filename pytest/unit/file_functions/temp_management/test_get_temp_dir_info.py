@@ -146,13 +146,18 @@ def test_get_temp_dir_info_statvfs_not_available() -> None:
     """
     # Arrange
     with tempfile.TemporaryDirectory() as controlled_temp:
-        with patch("os.statvfs", side_effect=AttributeError("statvfs not available")):
+        with patch(
+            "os.statvfs",
+            side_effect=AttributeError("statvfs not available"),
+            create=True,
+        ), patch("shutil.disk_usage") as disk_usage:
+            disk_usage.return_value.free = 12345
             with patch("tempfile.gettempdir", return_value=controlled_temp):
                 # Act
                 info = get_temp_dir_info()
 
                 # Assert
-                assert info["available_space_bytes"] == 0
+                assert info["available_space_bytes"] == 12345
 
 
 def test_get_temp_dir_info_file_access_error_handling() -> None:
@@ -187,7 +192,6 @@ def test_get_temp_dir_info_file_access_error_handling() -> None:
                 assert result["total_size_bytes"] == len("accessible content")
 
 
-
 def test_get_temp_dir_info_directory_access_error() -> None:
     """
     Test case 10: OSError handling during directory access.
@@ -195,11 +199,35 @@ def test_get_temp_dir_info_directory_access_error() -> None:
     # Arrange
     with tempfile.TemporaryDirectory() as controlled_temp:
         # Mock rglob to raise OSError
-        with patch("tempfile.gettempdir", return_value=controlled_temp):
+        with patch("tempfile.gettempdir", return_value=controlled_temp), patch.object(
+            Path, "rglob", side_effect=OSError("directory denied")
+        ):
+            with pytest.raises(OSError, match="Error accessing temporary directory"):
+                get_temp_dir_info()
 
-            def mock_stat(self, *args, **kwargs):
-                # Act & Assert
-                with pytest.raises(
-                    OSError, match="Error accessing temporary directory"
-                ):
-                    get_temp_dir_info()
+
+def test_get_temp_dir_info_stats_each_file_once(tmp_path, monkeypatch) -> None:
+    candidate = tmp_path / "file.txt"
+    candidate.write_bytes(b"content")
+    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))
+    original_stat = Path.stat
+    calls = []
+
+    def stat(path, *args, **kwargs):
+        if path == candidate:
+            calls.append(path)
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", stat)
+    result = get_temp_dir_info()
+    assert result["total_files"] == 1
+    assert result["total_size_bytes"] == 7
+    assert len(calls) == 1
+
+
+def test_get_temp_dir_info_handles_failed_space_query(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path))
+    with patch("os.statvfs", side_effect=OSError("unavailable"), create=True), patch(
+        "shutil.disk_usage", side_effect=OSError("unavailable")
+    ):
+        assert get_temp_dir_info()["available_space_bytes"] == 0

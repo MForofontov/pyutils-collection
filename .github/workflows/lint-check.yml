@@ -1,6 +1,10 @@
 name: lint-check
 
+env:
+  PYYAML_FORCE_LIBYAML: '0'
+
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       run_pylint:
@@ -12,7 +16,7 @@ on:
         description: "Fail the job if any issues found"
         required: false
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: read
@@ -29,23 +33,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.15'
           cache: 'pip'
 
       - name: Install tools
         run: |
           python -m pip install --upgrade pip
-          pip install ruff mypy
-          if [ "${{ inputs.run_pylint }}" = "true" ]; then
-            pip install pylint
-          fi
+          python -m pip install -e ".[dev,playwright]"
 
       - name: Ruff - format check (formatter)
         id: ruff_fmt
         run: |
           set +e
-          ruff format --check . | tee ruff_format.txt
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          ruff format --check pyutils_collection scripts | tee ruff_format.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
           set -e
         continue-on-error: true
 
@@ -54,8 +55,8 @@ jobs:
         id: ruff_lint
         run: |
           set +e
-          ruff check --output-format=github --force-exclude . | tee ruff_lint.txt
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          ruff check --output-format=github --force-exclude pyutils_collection scripts | tee ruff_lint.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
           set -e
         continue-on-error: true
 
@@ -63,8 +64,8 @@ jobs:
         id: mypy
         run: |
           set +e
-          mypy . --install-types --non-interactive --cache-dir .mypy_cache | tee mypy.txt
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          mypy pyutils_collection --install-types --non-interactive --cache-dir .mypy_cache | tee mypy.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
           set -e
         continue-on-error: true
 
@@ -88,6 +89,7 @@ jobs:
 
       # Upload artifacts (logs)
       - name: Upload reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lint-mypy-reports
@@ -99,6 +101,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Summary & final status
+        if: always()
         run: |
           echo "## Lint & Types Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Ruff format:        ${{ steps.ruff_fmt.outputs.exit_code }}" >> $GITHUB_STEP_SUMMARY
@@ -116,6 +119,6 @@ jobs:
           [ "${{ steps.mypy.outputs.exit_code }}" != "0" ] && FAIL=1
           if [ "${{ inputs.run_pylint }}" = "true" ] && [ "${{ steps.pylint.outputs.exit_code }}" != "0" ]; then FAIL=1; fi
 
-          if [ "${{ inputs.fail_on_any_issue }}" = "true" ] && [ "$FAIL" -ne 0 ]; then
-            exit 1
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.fail_on_any_issue }}" = "true" ]; then
+            if [ "$FAIL" -ne 0 ]; then exit 1; fi
           fi

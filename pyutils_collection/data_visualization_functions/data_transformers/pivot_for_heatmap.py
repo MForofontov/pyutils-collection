@@ -124,6 +124,7 @@ def pivot_for_heatmap(
 
     # Apply aggregation function
     from collections.abc import Callable
+
     agg_functions: dict[str, Callable[[list[float]], float]] = {
         "mean": lambda x: float(np.mean(x)),
         "sum": lambda x: float(np.sum(x)),

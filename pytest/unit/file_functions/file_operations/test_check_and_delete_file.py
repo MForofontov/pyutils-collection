@@ -24,7 +24,12 @@ def test_check_and_delete_file_symlink(tmp_path: Path) -> None:
     target: Path = tmp_path / "target.txt"
     target.write_text("content")
     link: Path = tmp_path / "link.txt"
-    os.symlink(target, link)
+    try:
+        os.symlink(target, link)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows account lacks symlink creation privileges")
+        raise
     check_and_delete_file(str(link))
     assert not link.exists(), "Symlink should be removed"
     assert target.exists(), "Target file should remain"

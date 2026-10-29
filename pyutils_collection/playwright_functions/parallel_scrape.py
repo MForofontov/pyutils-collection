@@ -10,7 +10,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from playwright.sync_api import Browser, sync_playwright
+from playwright.sync_api import sync_playwright
 
 
 def parallel_scrape(
@@ -73,7 +73,7 @@ def parallel_scrape(
     ...         'title': page.title(),
     ...         'text': page.evaluate("() => document.body.innerText")
     ...     }
-    
+
     >>> urls = [
     ...     "https://example.com/page1",
     ...     "https://example.com/page2",
@@ -123,14 +123,20 @@ def parallel_scrape(
         raise TypeError("scrape_function must be callable")
 
     if not isinstance(max_workers, int):
-        raise TypeError(f"max_workers must be an integer, got {type(max_workers).__name__}")
+        raise TypeError(
+            f"max_workers must be an integer, got {type(max_workers).__name__}"
+        )
     if max_workers <= 0:
         raise ValueError(f"max_workers must be positive, got {max_workers}")
 
     if not isinstance(browser_type, str):
-        raise TypeError(f"browser_type must be a string, got {type(browser_type).__name__}")
+        raise TypeError(
+            f"browser_type must be a string, got {type(browser_type).__name__}"
+        )
     if browser_type not in ("chromium", "firefox", "webkit"):
-        raise ValueError(f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}")
+        raise ValueError(
+            f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}"
+        )
 
     if not isinstance(headless, bool):
         raise TypeError(f"headless must be a boolean, got {type(headless).__name__}")
@@ -144,7 +150,9 @@ def parallel_scrape(
         raise TypeError("logger must be an instance of logging.Logger or None")
 
     if logger:
-        logger.info(f"Starting parallel scrape of {len(urls)} URLs with {max_workers} workers")
+        logger.info(
+            f"Starting parallel scrape of {len(urls)} URLs with {max_workers} workers"
+        )
 
     # Launch single browser (shared by all workers)
     playwright_instance = sync_playwright().start()
@@ -210,8 +218,7 @@ def parallel_scrape(
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all jobs
             futures = {
-                executor.submit(scrape_url, i, url): i
-                for i, url in enumerate(urls)
+                executor.submit(scrape_url, i, url): i for i, url in enumerate(urls)
             }
 
             # Collect results as they complete
@@ -237,7 +244,9 @@ def parallel_scrape(
     failed = len(results) - successful
 
     if logger:
-        logger.info(f"Parallel scrape complete: {successful} succeeded, {failed} failed")
+        logger.info(
+            f"Parallel scrape complete: {successful} succeeded, {failed} failed"
+        )
 
     return results
 

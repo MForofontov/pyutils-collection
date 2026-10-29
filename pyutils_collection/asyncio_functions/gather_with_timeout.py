@@ -18,7 +18,9 @@ async def gather_with_timeout(
     ----------
     awaitables : Iterable[Awaitable[T]]
         Iterable of awaitable objects (e.g., coroutines) to execute. Each
-        awaitable is wrapped in an ``asyncio.Task`` via ``asyncio.create_task``.
+        awaitable is scheduled via ``asyncio.ensure_future``. Existing tasks
+        and futures are accepted. Failure or cancellation cancels and awaits
+        all scheduled work before propagating the original exception.
     timeout : float
         The maximum time in seconds to wait for the awaitables to complete.
 
@@ -41,14 +43,16 @@ async def gather_with_timeout(
     >>> asyncio.run(gather_with_timeout(coros, timeout=1.0))
     [1, 2]
     """
-    tasks: list[asyncio.Task[T]] = [asyncio.create_task(aw) for aw in awaitables]  # type: ignore[arg-type]
+    tasks: list[asyncio.Future[T]] = []
     try:
+        for awaitable in awaitables:
+            tasks.append(asyncio.ensure_future(awaitable))
         return await asyncio.wait_for(asyncio.gather(*tasks), timeout=timeout)
-    except asyncio.TimeoutError:
-        # Cancel all running tasks before re-raising
+    except BaseException:
         for task in tasks:
             if not task.done():
                 task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
         raise
 
 

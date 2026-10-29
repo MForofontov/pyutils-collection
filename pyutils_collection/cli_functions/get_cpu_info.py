@@ -5,7 +5,9 @@ import os
 import psutil
 
 
-def get_cpu_info(interval: float = 0.1) -> dict[str, int | float | list[float] | tuple[float, float, float] | None]:
+def get_cpu_info(
+    interval: float = 0.1,
+) -> dict[str, int | float | list[float] | tuple[float, float, float] | None]:
     """
     Get CPU information and usage statistics.
 

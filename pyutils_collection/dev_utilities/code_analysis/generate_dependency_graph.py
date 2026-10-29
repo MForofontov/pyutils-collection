@@ -128,7 +128,7 @@ def generate_dependency_graph(
             if imports:
                 dependencies[module_name] = imports
 
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError, UnicodeDecodeError:
             # Skip files with syntax errors or encoding issues
             continue
 

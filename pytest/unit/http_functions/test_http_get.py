@@ -7,7 +7,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.http_functions]
 from pyutils_collection.http_functions.http_get import http_get
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_successful_request(mock_urlopen) -> None:
 
     """
@@ -29,7 +29,7 @@ def test_http_get_successful_request(mock_urlopen) -> None:
     assert result["url"] == "https://example.com/api"
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_with_custom_headers(mock_urlopen) -> None:
 
     """
@@ -53,7 +53,7 @@ def test_http_get_with_custom_headers(mock_urlopen) -> None:
     assert result["status_code"] == 200
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_with_custom_timeout(mock_urlopen) -> None:
 
     """
@@ -73,7 +73,7 @@ def test_http_get_with_custom_timeout(mock_urlopen) -> None:
     assert mock_urlopen.call_args[1]["timeout"] == 60
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_default_timeout(mock_urlopen) -> None:
 
     """
@@ -119,7 +119,7 @@ def test_http_get_with_none_url() -> None:
         http_get(None)
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_http_error_with_response_body(mock_urlopen) -> None:
 
     """
@@ -140,7 +140,7 @@ def test_http_get_http_error_with_response_body(mock_urlopen) -> None:
     assert result["content"] == "Not found"
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_http_error_without_response_body(mock_urlopen) -> None:
 
     """
@@ -156,7 +156,7 @@ def test_http_get_http_error_without_response_body(mock_urlopen) -> None:
     assert result["content"] == ""
 
 
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.http_get.open_http")
 def test_http_get_url_error(mock_urlopen) -> None:
 
     """

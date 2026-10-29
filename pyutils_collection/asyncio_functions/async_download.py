@@ -2,6 +2,8 @@
 
 import aiohttp
 
+from ._download_writer import download_writer
+
 
 async def async_download(url: str, dest_path: str, timeout: float = 30.0) -> None:
     """
@@ -24,6 +26,13 @@ async def async_download(url: str, dest_path: str, timeout: float = 30.0) -> Non
         If url is empty.
     RuntimeError
         If download fails.
+
+    Notes
+    -----
+    Output is staged beside the destination and replaced only after a complete
+    download and successful flush. Failures and cancellation remove the staging
+    file and preserve an existing destination. Replacement uses temporary-file
+    permissions and replaces a destination symlink itself.
 
     Examples
     --------
@@ -50,7 +59,7 @@ async def async_download(url: str, dest_path: str, timeout: float = 30.0) -> Non
         ) as session:
             async with session.get(url) as resp:
                 resp.raise_for_status()
-                with open(dest_path, "wb") as f:
+                with download_writer(dest_path) as f:
                     async for chunk in resp.content.iter_chunked(8192):
                         f.write(chunk)
     except Exception as exc:

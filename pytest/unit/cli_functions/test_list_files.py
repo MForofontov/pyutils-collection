@@ -93,6 +93,7 @@ def test_list_files_not_a_directory_error() -> None:
             with pytest.raises(NotADirectoryError, match="Path is not a directory"):
                 list_files(temp_file.name)
         finally:
+            temp_file.close()
             os.unlink(temp_file.name)
 
 

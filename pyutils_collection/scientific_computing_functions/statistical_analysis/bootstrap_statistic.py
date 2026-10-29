@@ -121,7 +121,7 @@ def bootstrap_statistic(
     # Select statistic function
     from collections.abc import Callable
     from typing import Any
-    
+
     stat_funcs: dict[str, Callable[[np.ndarray], Any]] = {
         "mean": lambda x: np.mean(x),
         "median": lambda x: np.median(x),

@@ -43,7 +43,7 @@ def safe_json_load(
         if decoder is not None:
             kwargs["cls"] = decoder
         return json.loads(json_string, **kwargs)
-    except (json.JSONDecodeError, TypeError, ValueError):
+    except json.JSONDecodeError, TypeError, ValueError:
         return default
 
 

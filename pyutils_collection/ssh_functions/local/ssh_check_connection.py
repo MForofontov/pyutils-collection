@@ -3,6 +3,8 @@
 import subprocess
 from typing import Any
 
+from ._validation import validate_target
+
 
 def ssh_check_connection(
     host: str,
@@ -64,6 +66,7 @@ def ssh_check_connection(
     if timeout <= 0:
         raise ValueError(f"timeout must be positive, got {timeout}")
 
+    validate_target(host, user, timeout)
     ssh_target = f"{user + '@' if user else ''}{host}"
     ssh_cmd = ["ssh", "-p", str(port), ssh_target, "exit"]
     try:

@@ -1,5 +1,4 @@
 import os
-import pwd
 from pathlib import Path
 
 import pytest
@@ -71,6 +70,7 @@ def test_permission_error_read_only_parent(tmp_path: Path) -> None:
     """
     Test case 5: Attempting to create a directory in a read-only parent should raise PermissionError.
     """
+    pwd = pytest.importorskip("pwd", reason="Unix ownership test")
     parent_dir: Path = tmp_path / "parent"
     parent_dir.mkdir()
     parent_dir.chmod(0o555)

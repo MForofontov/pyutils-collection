@@ -42,6 +42,11 @@ def measure_memory_usage(
     >>> 'peak_bytes' in result
     True
 
+    Notes
+    -----
+    If the caller already owns an active tracing session, leave it active and
+    report its current and peak totals without resetting that shared session.
+
     Complexity
     ----------
     Time: O(f), Space: O(f), where f is function complexity
@@ -49,13 +54,16 @@ def measure_memory_usage(
     if not callable(func):
         raise TypeError(f"func must be callable, got {type(func).__name__}")
 
-    tracemalloc.start()
+    owns_tracing = not tracemalloc.is_tracing()
+    if owns_tracing:
+        tracemalloc.start()
 
     try:
         result = func(*args, **kwargs)
         current, peak = tracemalloc.get_traced_memory()
     finally:
-        tracemalloc.stop()
+        if owns_tracing:
+            tracemalloc.stop()
 
     return {
         "current_bytes": current,

@@ -1,10 +1,29 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
+
+
+@pytest.mark.parametrize(
+    ("days", "expected"),
+    [
+        (28, "in 4 weeks"),
+        (29, "in 4 weeks"),
+        (30, "in 1 month"),
+        (359, "in 11 months"),
+        (360, "in 12 months"),
+        (364, "in 12 months"),
+        (365, "in 1 year"),
+    ],
+)
+def test_time_until_unit_boundaries(days: int, expected: str) -> None:
+    reference = datetime(2025, 1, 1)
+    assert time_until(reference + timedelta(days=days), reference) == expected
+
 
 try:
     import pytz
     from pyutils_collection.datetime_functions.time_until import time_until
+
     PYTZ_AVAILABLE = True
 except ImportError:
     PYTZ_AVAILABLE = False

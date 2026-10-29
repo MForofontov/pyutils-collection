@@ -22,7 +22,11 @@ def test_get_default_gateway_normal() -> None:
     """
     Test case 1: Normal operation returns a string IP or empty string.
     """
-    gateway = get_default_gateway()
+    with patch(
+        "pyutils_collection.network_functions.get_default_gateway._gateway_from_proc",
+        return_value="192.168.1.1",
+    ):
+        gateway = get_default_gateway()
     assert isinstance(gateway, str)
     if gateway:
         parts = gateway.split(".")
@@ -48,7 +52,11 @@ def test_get_default_gateway_type() -> None:
     """
     Test case 3: Return type is always string.
     """
-    gateway = get_default_gateway()
+    with patch(
+        "pyutils_collection.network_functions.get_default_gateway._gateway_from_proc",
+        return_value="192.168.1.1",
+    ):
+        gateway = get_default_gateway()
     assert isinstance(gateway, str)
 
 

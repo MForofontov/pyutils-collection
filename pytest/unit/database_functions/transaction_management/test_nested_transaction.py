@@ -321,6 +321,7 @@ def test_nested_transaction_fallback_to_sql_release() -> None:
     from unittest.mock import Mock
 
     mock_conn = Mock()
+    mock_conn.begin_nested.side_effect = AttributeError("No begin_nested method")
     mock_conn.commit = Mock(side_effect=AttributeError("No commit method"))
     mock_conn.execute = Mock()
 
@@ -342,6 +343,7 @@ def test_nested_transaction_fallback_rollback_to_sql() -> None:
     from unittest.mock import Mock
 
     mock_conn = Mock()
+    mock_conn.begin_nested.side_effect = AttributeError("No begin_nested method")
     mock_conn.rollback = Mock(side_effect=AttributeError("No rollback method"))
     mock_conn.execute = Mock()
 

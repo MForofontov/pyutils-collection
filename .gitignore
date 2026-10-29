@@ -161,6 +161,11 @@ cython_debug/
 # VS Code
 .vscode/
 
+# Local Python migration environments and validation reports
+.python315/
+.venv315/
+.major-check/
+
 # macOS
 .DS_Store
 .AppleDouble

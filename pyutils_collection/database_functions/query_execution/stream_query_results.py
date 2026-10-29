@@ -15,7 +15,7 @@ def stream_query_results(
     execute_func: Callable[[], Any],
     fetch_size: int = 1000,
     transform_func: Callable[[Any], T] | None = None,
-) -> Generator[T, None, None]:
+) -> Generator[T]:
     """
     Stream query results in batches to avoid loading all data into memory.
 

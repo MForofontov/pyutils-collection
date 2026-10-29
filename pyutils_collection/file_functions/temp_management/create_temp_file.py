@@ -16,7 +16,7 @@ def create_temp_file(
     dir: str | Path | None = None,
     text: bool = True,
     delete: bool = True,
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """
     Create a temporary file with automatic cleanup.
 

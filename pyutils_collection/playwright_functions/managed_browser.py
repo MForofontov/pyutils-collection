@@ -11,8 +11,12 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Literal
 
-from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
-
+from playwright.sync_api import (
+    Browser,
+    BrowserContext,
+    Page,
+    sync_playwright,
+)
 
 BrowserType = Literal["chromium", "firefox", "webkit"]
 
@@ -27,7 +31,7 @@ def managed_browser(
     downloads_path: str | None = None,
     timeout: float = 30000,
     logger: logging.Logger | None = None,
-) -> Generator[tuple[Browser, BrowserContext, Page], None, None]:
+) -> Generator[tuple[Browser, BrowserContext, Page]]:
     """
     Context manager for Playwright browser with automatic lifecycle management.
 
@@ -94,28 +98,40 @@ def managed_browser(
     """
     # Input validation
     if not isinstance(browser_type, str):
-        raise TypeError(f"browser_type must be a string, got {type(browser_type).__name__}")
+        raise TypeError(
+            f"browser_type must be a string, got {type(browser_type).__name__}"
+        )
     if browser_type not in ("chromium", "firefox", "webkit"):
-        raise ValueError(f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}")
+        raise ValueError(
+            f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}"
+        )
 
     if not isinstance(headless, bool):
         raise TypeError(f"headless must be a boolean, got {type(headless).__name__}")
 
     if not isinstance(viewport_width, int):
-        raise TypeError(f"viewport_width must be an integer, got {type(viewport_width).__name__}")
+        raise TypeError(
+            f"viewport_width must be an integer, got {type(viewport_width).__name__}"
+        )
     if viewport_width <= 0:
         raise ValueError(f"viewport_width must be positive, got {viewport_width}")
 
     if not isinstance(viewport_height, int):
-        raise TypeError(f"viewport_height must be an integer, got {type(viewport_height).__name__}")
+        raise TypeError(
+            f"viewport_height must be an integer, got {type(viewport_height).__name__}"
+        )
     if viewport_height <= 0:
         raise ValueError(f"viewport_height must be positive, got {viewport_height}")
 
     if user_agent is not None and not isinstance(user_agent, str):
-        raise TypeError(f"user_agent must be a string or None, got {type(user_agent).__name__}")
+        raise TypeError(
+            f"user_agent must be a string or None, got {type(user_agent).__name__}"
+        )
 
     if downloads_path is not None and not isinstance(downloads_path, str):
-        raise TypeError(f"downloads_path must be a string or None, got {type(downloads_path).__name__}")
+        raise TypeError(
+            f"downloads_path must be a string or None, got {type(downloads_path).__name__}"
+        )
 
     if not isinstance(timeout, (int, float)):
         raise TypeError(f"timeout must be a number, got {type(timeout).__name__}")
@@ -161,7 +177,9 @@ def managed_browser(
         context.set_default_timeout(timeout)
 
         if logger:
-            logger.debug(f"Context created with viewport {viewport_width}x{viewport_height}")
+            logger.debug(
+                f"Context created with viewport {viewport_width}x{viewport_height}"
+            )
 
         # Create page
         page = context.new_page()

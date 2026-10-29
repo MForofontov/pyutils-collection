@@ -38,7 +38,7 @@ def robust_statistics(
     Raises
     ------
     TypeError
-        If data is not a list or numpy array.
+        If data is not a one-dimensional list or numpy array.
     ValueError
         If data is empty or contains non-numeric values.
 
@@ -74,6 +74,9 @@ def robust_statistics(
 
     if arr.size == 0:
         raise ValueError("data cannot be empty")
+
+    if arr.ndim != 1:
+        raise TypeError("data must be one-dimensional")
 
     # Remove NaN values with warning
     if np.isnan(arr).any():
