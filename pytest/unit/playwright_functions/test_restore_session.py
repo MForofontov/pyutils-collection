@@ -106,7 +106,7 @@ def test_restore_session_uses_existing_page(tmp_path: Path) -> None:
     mock_page.goto.assert_called_once()
 
 
-def test_restore_session_storage_without_url() -> None:
+def test_restore_session_storage_without_url(tmp_path: Path) -> None:
     """
     Test case 4: ValueError when storage exists but no URL provided.
     """
@@ -121,7 +121,7 @@ def test_restore_session_storage_without_url() -> None:
         },
     }
     
-    session_file = Path("/tmp/session.json")
+    session_file = tmp_path / "session.json"
     with open(session_file, "w") as f:
         json.dump(session_data, f)
     
