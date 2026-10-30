@@ -1,6 +1,7 @@
 """Parse human-readable size strings into bytes."""
 
 import re
+from fractions import Fraction
 
 
 def parse_size(size_str: str, binary: bool = True) -> int:
@@ -51,7 +52,7 @@ def parse_size(size_str: str, binary: bool = True) -> int:
 
     Complexity
     ----------
-    Time: O(1), Space: O(1)
+    Time and space depend on input length and numeric precision.
     """
     # Input validation
     if not isinstance(size_str, str):
@@ -73,7 +74,7 @@ def parse_size(size_str: str, binary: bool = True) -> int:
 
     # Parse number
     try:
-        number = float(number_str)
+        number = Fraction(number_str)
     except ValueError:
         raise ValueError(f"Invalid number in size string: {number_str}") from None
 

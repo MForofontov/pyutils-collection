@@ -54,6 +54,9 @@ def cleanup_temp_files(
     -----
     Only files (not directories) are deleted by default.
     The function uses modification time to determine file age.
+    Matches whose parent resolves outside the selected directory are skipped,
+    including paths through directory symlinks and Windows junctions. This check
+    assumes directory links are not concurrently replaced by another process.
     Be careful with the pattern to avoid deleting system files.
 
     Complexity
@@ -94,6 +97,7 @@ def cleanup_temp_files(
         raise ValueError(f"Directory does not exist: {temp_dir}")
     if not dir_path.is_dir():
         raise ValueError(f"Path is not a directory: {temp_dir}")
+    resolved_root = dir_path.resolve()
 
     # Calculate cutoff time
     current_time = time.time()
@@ -105,6 +109,10 @@ def cleanup_temp_files(
         # Find matching files
         for file_path in dir_path.glob(pattern):
             try:
+                # A relative glob can still escape through a directory link.
+                # Check the parent: unlinking a file symlink itself is safe.
+                if not file_path.parent.resolve().is_relative_to(resolved_root):
+                    continue
                 file_info = file_path.stat()
                 if stat.S_ISREG(file_info.st_mode):
                     file_mtime = file_info.st_mtime

@@ -3,6 +3,118 @@
 This plan covers the full library. Changes already made in this checkout stay in
 place; each new fix should have a reproducible failure or measured benefit.
 
+## Full-library audit and 0.2.0 release candidate — 2026-10-30
+
+Fresh evidence starts at `b27c11f96f8498cd0f20399cbabff334d21dc0c9` in
+`.major-check/2026-10-29-full-audit-174621/`. This directory preserves baseline
+and final JUnit/coverage reports, failure reproductions, source hashes, public
+API comparison, dependencies, benchmarks, profiles, and integration diagnostics.
+The working tree was clean at baseline. Reports from earlier audits remain
+historical evidence rather than certification of the new changes.
+
+### Corrections and optimization
+
+- Reproduced 28 failing cases before their fixes: directory-link cleanup escapes,
+  unsafe Windows filename results, pagination fragments/parameter delimiters,
+  Playwright thread ownership/resource failures, decimal size rounding, and
+  Windows dependency-graph paths. Added 29 unit cases including a normal nested
+  cleanup control. Public function/class-method signatures and exports match
+  the baseline; nested private implementation helpers are excluded from that
+  comparison.
+- Cleanup now checks resolved parent containment for relative glob matches,
+  including Windows junctions and dry runs. It still assumes links are not
+  concurrently replaced by a hostile process; it is not a race-proof sandbox.
+- Filename sanitization rejects unsafe replacements and handles reserved stems
+  before multiple extensions and after truncation, preserving the length limit.
+  Pagination adds encoded parameters to the query before the fragment.
+- Each parallel scraper worker owns and reuses its own Playwright driver/browser,
+  with a fresh context per URL. Launch, page-creation, and browser-close failure
+  tests verify cleanup; real browser tests exercise one and two workers, isolated
+  cookies, ordered results, and a failing callback without external page traffic.
+- Size parsing uses exact rational arithmetic before byte truncation. Dependency
+  graphs normalize Windows separators before discovering nested package imports.
+- SQLite migrations no longer allocate unused CASE strings/parameter dictionaries.
+  Five paired 5,000-row measurements reduced median Python allocation peaks from
+  4,727,304 to 3,148,865 bytes (33.4%). Timing varied substantially, so this is a
+  memory improvement, not a claimed portable speedup. Four additional dialect
+  cases verify bound values, quoted identifiers, and absent row counts for the
+  PostgreSQL/MySQL CASE path that SQLite now bypasses.
+
+### Validation and evidence boundaries
+
+- Baseline: **5,827 passed, 5 skipped, 12 numerical warnings**, 424.99 seconds.
+  Full final suite: **5,856 passed, 5 skipped, the same 12 warnings**, 418.55
+  seconds. The four additional dialect cases pass separately; their coverage is
+  appended to the full run, not represented as another full-suite execution.
+- Combined line coverage increases from **13,711 / 15,105 (90.77%)** to
+  **13,728 / 15,115 (90.82%)**. The initial final run exposed the untested
+  non-SQLite branch after removing eager allocations; the four dialect cases
+  close that gap. No thresholds or exclusions were weakened.
+- Skips are three Windows symlink-privilege cases, one Unix ownership case, and
+  one existing package without `__all__`. Real Windows junction regressions run
+  without symlink privileges. All 31 families have passing test outcomes.
+- Ruff lint/formatting, strict Mypy over 603 package sources, Bandit, dependency
+  consistency, and the installed-environment vulnerability audit pass. The
+  dependency declarations are unchanged from the maintenance branch.
+- Seven real Chromium/HTTP integration cases pass. Initial memory-pressure and
+  deadline-interrupted benchmark/service attempts remain in separate logs. The
+  interrupted Compose project was explicitly removed, including its containers,
+  network, anonymous volumes, and task-built SSH image. A second local attempt
+  stopped before running tests when MySQL became unhealthy during initialization;
+  its diagnostics and cleanup are retained. The final remote service job must
+  pass before publishing; local startup failures are not counted as passing tests.
+- `scripts/benchmark_audit_pair.py` compares a specified Git revision with the
+  checkout using alternating paired samples, output digests, and separate timing,
+  tracemalloc, RSS, and optional profiling invocations. RSS is sampled every 50 ms;
+  child RSS is sampled only for multiprocessing and can double-count shared pages.
+  Sampling failures are recorded, not treated as zero-memory success.
+  The final run completed all ten small/large cases with five samples per version,
+  matching outputs, zero RSS sampling errors, and separate candidate profiles.
+- Clean artifact checks compare all 603 installed Python sources with the checkout,
+  verify package version, metadata, dependencies, exports, README examples, and
+  `py.typed`. Final remote checks must cover the actual pushed release candidate;
+  earlier successful checks for `b27c11f9` do not certify these changes.
+- Version **0.2.0** explicitly marks the Python 3.15+ floor; PyPI 0.1.5 supported
+  Python 3.10+. Publishing is gated on final artifact and platform CI checks.
+  Exact remote outcomes are recorded on PR #534 and in the release workflow.
+
+### Family review register
+
+`review-register.json` contains public-definition/export inventories, conventional
+test filename gaps, per-family outcomes and coverage, and individual review notes.
+Source review is risk-based and does not claim exhaustive manual certification of
+every function. The reviewed groups cover all 31 families:
+
+- `asyncio_functions`, `multiprocessing_functions`: bounded work, cancellation,
+  result ordering, pool/connection ownership, and small/large workload measurements.
+- `batch_processing_functions`, `iterable_functions`: chunk/window boundaries,
+  streaming statistics, iterator consumption, nested conflicts and mutation ownership.
+- `file_functions`, `serialization_functions`, `compression_functions`: destination
+  preservation, archive containment, link traversal, Parquet groups and Excel memory.
+- `http_functions`, `network_functions`, `ssh_functions`: redirect credentials,
+  short downloads, socket cleanup, gateway failures, multiplexed SSH deadlines.
+- `playwright_functions`, `web_scraping_functions`, `url_functions`: browser thread
+  affinity, context lifecycle, pagination, selectors and URL components.
+- `security_functions`, `data_validation`, `env_config_functions`: signed claims,
+  authenticated encryption/password checks, collection/schema constraints, safe
+  configuration loading and environment error redaction.
+- `scientific_computing_functions`, `mathematical_functions`,
+  `machine_learning_functions`: known answers, finite numerical boundaries,
+  statistical intervals, cloned model ownership and prediction shapes.
+- `data_visualization_functions`, `formatting_functions`, `regex_functions`,
+  `strings_utility`: plot/transform validation, exact units, filename safety,
+  replacements and documented empty/boundary behavior.
+- `database_functions`, `decorators`, `logger_functions`: bound migrations,
+  transactions and health checks, caching/retries/timeouts and scoped metadata.
+- `cli_functions`, `dev_utilities`, `testing_functions`, `json_functions`: platform
+  capabilities, dependency graphs, inventories, tracing ownership, assertions,
+  JSON merge ownership and error fallbacks.
+
+Filename gaps were reviewed rather than filled mechanically: hostname tests use
+`test_network_get_hostname.py`; root SSH modules simply re-export their tested
+local implementations. Existing cyclic-input policies, archive extraction quotas,
+thread termination limits, and undefined numerical-data warnings are unchanged.
+
 ## Platform CI — 2026-10-29
 
 The validated checkout is now on `codex/major-check-validation`, with draft

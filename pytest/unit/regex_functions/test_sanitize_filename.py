@@ -77,3 +77,27 @@ def test_sanitize_filename_empty_result() -> None:
     """Test ValueError for empty sanitized filename."""
     with pytest.raises(ValueError, match="empty or invalid"):
         sanitize_filename("///")
+
+
+@pytest.mark.parametrize("filename", ["CON.tar.gz", "aux.backup.txt", "NUL .txt"])
+def test_reserved_name_before_first_extension(filename):
+    assert sanitize_filename(filename).startswith("_")
+
+
+@pytest.mark.parametrize("replacement", ["", ".", " "])
+def test_reserved_name_with_nonprotective_replacement(replacement):
+    assert sanitize_filename("CON.txt", replacement=replacement) == "_CON.txt"
+
+
+def test_truncation_cannot_create_reserved_name():
+    assert sanitize_filename("CONifer", max_length=3) == "_CO"
+
+
+def test_truncation_cannot_leave_trailing_dot():
+    assert sanitize_filename("ab.longextension", max_length=3) == "ab"
+
+
+@pytest.mark.parametrize("replacement", ["/", "\\", ":", "\x00", "*"])
+def test_unsafe_replacement_is_rejected(replacement):
+    with pytest.raises(ValueError, match="replacement"):
+        sanitize_filename("file:name", replacement=replacement)

@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.2.0] - 2026-10-30
+
+### Changed
+- Require Python 3.15+ (the previous published release supported Python 3.10+).
+  Public signatures and exports are preserved; dependency pins remain unchanged
+  from the validated Python 3.15 maintenance branch.
+
+### Fixed
+- Generate dotted dependency-graph module names on Windows, retaining nested
+  package imports when external dependencies are excluded.
+- Parse size strings with exact decimal arithmetic before converting to bytes,
+  avoiding float rounding above 2**53 and at fractional-byte boundaries.
+- Create and reuse Playwright drivers/browsers on each scraper worker's own
+  thread. Close contexts when page creation fails and stop drivers even after
+  browser launch/close errors, preserving ordered per-URL results.
+- Keep pagination parameters in the URL query before fragments and encode custom
+  parameter names so delimiter characters cannot introduce extra parameters.
+- Keep temporary-file cleanup inside its selected root when relative glob
+  patterns traverse directory symlinks or Windows junctions, including dry runs.
+- Sanitize Windows device names before multiple extensions and after truncation;
+  reject unsafe replacement characters and remove trailing truncation dots/spaces.
+
+### Tests
+- Validate bound migration values and quoted identifiers on PostgreSQL/MySQL
+  dialects, including drivers that do not report an affected-row count.
+- Exercise real parallel Chromium workers with context isolation and a failing
+  callback; add deterministic thread-ownership and startup/cleanup regressions.
+- Cover exact size parsing and Windows dependency-graph paths.
+- Add alternating baseline/candidate benchmarks against a specified local Git
+  revision, with five samples, output checks, Python allocation peaks, and
+  separately sampled parent/child RSS for all five major-check workload families.
+- Add regressions for cleanup through real directory links and filename safety
+  with custom replacements, multiple extensions, and short length limits.
+
+### Enhanced
+- Avoid constructing unused CASE SQL strings and parameter dictionaries for
+  SQLite ID migration batches; retain the indexed, bound temporary-table update.
+
 ## Platform portability follow-up — 2026-10-29
 
 ### Fixed
