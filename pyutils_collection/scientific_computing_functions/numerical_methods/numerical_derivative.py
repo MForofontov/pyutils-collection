@@ -67,12 +67,13 @@ def numerical_derivative(
     >>> y = [0, 1, 4, 9, 16]  # y = x^2, dy/dx = 2x
     >>> result = numerical_derivative(x, y, method='central')
     >>> result['derivative']
-    array([0., 2., 4., 6., 8.])
+    array([1., 2., 4., 6., 7.])
 
     Notes
     -----
     Central difference is most accurate for interior points.
-    Forward/backward used at boundaries.
+    First-order forward/backward differences are used at boundaries, so the
+    quadratic example has approximate endpoint derivatives of 1 and 7.
 
     Complexity
     ----------

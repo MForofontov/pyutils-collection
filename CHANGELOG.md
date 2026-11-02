@@ -1,5 +1,32 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.2.1] - 2026-11-02
+
+### Fixed
+- Release owned savepoints after rollback or ignored body failures without
+  committing the caller's outer transaction. Propagate setup/release failures
+  in ignore mode and preserve original body errors when rollback cleanup fails.
+- Roll back and release savepoints on cancellation, KeyboardInterrupt, and
+  SystemExit even in ignore mode; propagate the original interruption.
+- Correct the numerical-derivative docstring example to show the first-order
+  endpoint differences actually returned by the central method.
+
+### Added
+- Shared repository guidance, maintenance/documentation skills, and concise
+  Codex, Cursor, Claude, Gemini, and Copilot entry points.
+- Read-only pull-request documentation-impact checks with reviewed exceptions
+  and regression coverage for merge bases, renames, deletions, and fork events.
+
+### Documentation
+- Require documentation updates based on changes and one consistent package
+  version update per completed changeset in repository rules and shared skills.
+- Replace outdated AI instructions and contributor guidance with current package
+  layout, supported Python, validation commands, and documentation requirements.
+- Separate current maintenance evidence and outstanding checks from historical
+  audit records. Preserve published 0.2.0 notes.
+
 ## [0.2.0] - 2026-10-30
 
 ### Changed
