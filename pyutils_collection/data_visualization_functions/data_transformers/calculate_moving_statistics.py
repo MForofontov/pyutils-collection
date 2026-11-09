@@ -23,7 +23,8 @@ def calculate_moving_statistics(
     data : ArrayLike
         Input timeseries data.
     window_size : int
-        Window size for rolling calculations.
+        Number of samples in a full rolling window. Even widths include the
+        extra sample on the left of the current sample.
     statistics : list[str] | None, optional
         Statistics to calculate (by default ['mean', 'std']):
         - 'mean': Moving average
@@ -58,6 +59,8 @@ def calculate_moving_statistics(
     Notes
     -----
     Uses centered windows where possible. Edge values use partial windows.
+    For an even width, the current sample is the right of the two central
+    samples. Standard deviation uses the population definition (``ddof=0``).
 
     Complexity
     ----------
@@ -116,7 +119,7 @@ def calculate_moving_statistics(
         for i in range(len(data_array)):
             # Determine window bounds
             start = max(0, i - window_size // 2)
-            end = min(len(data_array), i + window_size // 2 + 1)
+            end = min(len(data_array), i + (window_size - 1) // 2 + 1)
 
             window_data = data_array[start:end]
 

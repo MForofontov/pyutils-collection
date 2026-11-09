@@ -18,7 +18,7 @@ def sanitize_filename(
     filename : str
         Input filename to sanitize.
     replacement : str, optional
-        Character to replace invalid chars with (by default '_').
+        Safe character to replace invalid chars with (by default '_'), or empty.
     max_length : int, optional
         Maximum filename length (by default 255).
 
@@ -76,6 +76,8 @@ def sanitize_filename(
         raise ValueError(f"max_length must be positive, got {max_length}")
     if len(replacement) > 1:
         raise ValueError(f"replacement must be single character, got '{replacement}'")
+    if re.search(r'[<>:"/\\|?*\x00-\x1f]', replacement):
+        raise ValueError("replacement must not contain invalid filename characters")
 
     # Remove path separators and get just the filename
     filename = filename.replace("\\", "/").split("/")[-1]
@@ -122,9 +124,11 @@ def sanitize_filename(
         "LPT8",
         "LPT9",
     }
-    name_without_ext = filename.rsplit(".", 1)[0].upper()
+    # Windows device names remain reserved before any number of extensions.
+    name_without_ext = filename.split(".", 1)[0].rstrip(" ").upper()
+    safe_prefix = replacement if replacement not in {"", ".", " "} else "_"
     if name_without_ext in reserved_names:
-        filename = replacement + filename
+        filename = safe_prefix + filename
 
     # Truncate to max_length while preserving extension
     if len(filename) > max_length:
@@ -138,6 +142,11 @@ def sanitize_filename(
                 filename = filename[:max_length]
         else:
             filename = filename[:max_length]
+
+    # Truncation may expose a trailing dot/space or create a device name.
+    filename = filename.rstrip(". ")
+    if filename.split(".", 1)[0].rstrip(" ").upper() in reserved_names:
+        filename = (safe_prefix + filename)[:max_length].rstrip(". ")
 
     # Final validation
     if not filename or filename == replacement:

@@ -1,10 +1,13 @@
 """SSH script execution using paramiko."""
 
 import getpass
+import math
 import os
 from typing import Any
 
 import paramiko
+
+from pyutils_collection.ssh_functions.remote._output import read_command_output
 
 _ALLOWED_INTERPRETERS = frozenset(
     {"bash", "sh", "python", "python3", "perl", "ruby", "node", "php"}
@@ -95,8 +98,8 @@ def ssh_execute_script(
         raise ValueError(f"port must be in 1-65535, got {port}")
     if not isinstance(timeout, (int, float)):
         raise TypeError(f"timeout must be a number, got {type(timeout).__name__}")
-    if timeout <= 0:
-        raise ValueError(f"timeout must be positive, got {timeout}")
+    if timeout <= 0 or not math.isfinite(timeout):
+        raise ValueError(f"timeout must be positive and finite, got {timeout}")
     if not isinstance(interpreter, str):
         raise TypeError(
             f"interpreter must be a string, got {type(interpreter).__name__}"
@@ -117,9 +120,10 @@ def ssh_execute_script(
         user = getpass.getuser()
 
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
         # Connect to the remote host
         client.connect(
             hostname=host,
@@ -136,16 +140,16 @@ def ssh_execute_script(
 
         # Execute the script by piping it to the interpreter
         command = f"{interpreter} -s"
-        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
+        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)  # nosec B601 # Interpreter is allowlisted; script is supplied on stdin.
 
-        # Send script content to stdin
-        stdin.write(script_content)
-        stdin.close()
-
-        # Get results
-        stdout_data = stdout.read().decode("utf-8").strip()
-        stderr_data = stderr.read().decode("utf-8").strip()
-        exit_code = stdout.channel.recv_exit_status()
+        # Send input while collecting both output streams. A script can write
+        # output before reading all of stdin, so sequential writes can deadlock.
+        try:
+            stdout_data, stderr_data, exit_code = read_command_output(
+                stdout, stderr, timeout, script_content.encode("utf-8")
+            )
+        finally:
+            stdin.close()
 
         return {
             "stdout": stdout_data,

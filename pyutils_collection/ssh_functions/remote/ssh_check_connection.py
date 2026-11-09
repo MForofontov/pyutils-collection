@@ -1,6 +1,7 @@
 """SSH connection verification using paramiko."""
 
 import getpass
+import math
 from typing import Any
 
 import paramiko
@@ -78,17 +79,18 @@ def ssh_check_connection(
         raise ValueError(f"port must be in 1-65535, got {port}")
     if not isinstance(timeout, (int, float)):
         raise TypeError(f"timeout must be a number, got {type(timeout).__name__}")
-    if timeout <= 0:
-        raise ValueError(f"timeout must be positive, got {timeout}")
+    if timeout <= 0 or not math.isfinite(timeout):
+        raise ValueError(f"timeout must be positive and finite, got {timeout}")
 
     # Default to current user if not specified
     if user is None:
         user = getpass.getuser()
 
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
         # Attempt to connect
         client.connect(
             hostname=host,

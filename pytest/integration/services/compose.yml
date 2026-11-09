@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: audit
+      POSTGRES_PASSWORD: pyutils_test_only
+      POSTGRES_DB: pyutils_audit
+    ports:
+      - "127.0.0.1::5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "audit", "-d", "pyutils_audit"]
+      interval: 2s
+      timeout: 3s
+      retries: 90
+      start_period: 120s
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: pyutils_root_test_only
+      MYSQL_USER: audit
+      MYSQL_PASSWORD: pyutils_test_only
+      MYSQL_DATABASE: pyutils_audit
+    ports:
+      - "127.0.0.1::3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 90
+      start_period: 120s
+  ssh:
+    build:
+      context: .
+      dockerfile: ssh.Dockerfile
+    ports:
+      - "127.0.0.1::22"
+    healthcheck:
+      test: ["CMD", "/usr/sbin/sshd", "-t"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

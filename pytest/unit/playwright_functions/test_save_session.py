@@ -224,7 +224,7 @@ def test_save_session_multiple_cookies(tmp_path: Path) -> None:
     assert len(data["cookies"]) == 10
 
 
-def test_save_session_write_failure() -> None:
+def test_save_session_write_failure(tmp_path: Path) -> None:
     """
     Test case 11: RuntimeError when file write fails.
     """
@@ -234,8 +234,49 @@ def test_save_session_write_failure() -> None:
     mock_context.pages = []
     
     # Act & Assert
-    with pytest.raises(RuntimeError, match="Failed to save session"):
-        save_session(mock_context, "/invalid/path/that/does/not/exist/file.json")
+    with patch(
+        "pyutils_collection.playwright_functions.save_session.json.dump",
+        side_effect=OSError("disk full"),
+    ), pytest.raises(RuntimeError, match="Failed to save session"):
+        save_session(mock_context, str(tmp_path / "session.json"))
+
+
+def test_save_session_partial_write_preserves_original(tmp_path: Path) -> None:
+    mock_context = MagicMock()
+    mock_context.cookies.return_value = []
+    mock_context.pages = []
+    session = tmp_path / "session.json"
+    session.write_text("original", encoding="utf-8")
+
+    def fail_after_write(data, stream, **kwargs):
+        stream.write("partial")
+        raise OSError("disk full")
+
+    with patch(
+        "pyutils_collection.playwright_functions.save_session.json.dump",
+        side_effect=fail_after_write,
+    ), pytest.raises(RuntimeError, match="disk full"):
+        save_session(mock_context, str(session))
+
+    assert session.read_text(encoding="utf-8") == "original"
+    assert list(tmp_path.iterdir()) == [session]
+
+
+def test_save_session_replacement_failure_preserves_original(tmp_path: Path) -> None:
+    mock_context = MagicMock()
+    mock_context.cookies.return_value = []
+    mock_context.pages = []
+    session = tmp_path / "session.json"
+    session.write_text("original", encoding="utf-8")
+
+    with patch(
+        "pyutils_collection.playwright_functions.save_session.os.replace",
+        side_effect=PermissionError("replacement denied"),
+    ), pytest.raises(RuntimeError, match="replacement denied"):
+        save_session(mock_context, str(session))
+
+    assert session.read_text(encoding="utf-8") == "original"
+    assert list(tmp_path.iterdir()) == [session]
 
 
 def test_save_session_invalid_logger_type() -> None:

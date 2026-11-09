@@ -7,6 +7,8 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import Any
 
+from .nested_transaction import _validate_savepoint_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +20,7 @@ def savepoint_context(
     create_savepoint_func: Callable[[str], None] | None = None,
     release_savepoint_func: Callable[[str], None] | None = None,
     rollback_savepoint_func: Callable[[str], None] | None = None,
-) -> Generator[Any, None, None]:
+) -> Generator[Any]:
     """
     Context manager for explicit savepoint management with error handling.
 
@@ -90,8 +92,14 @@ def savepoint_context(
     -----
     - This function is library-agnostic through callable injection
     - Requires database support for savepoints
-    - "rollback" mode: Rollback to savepoint and re-raise exception
-    - "ignore" mode: Ignore errors and continue (savepoint is released)
+    - "rollback" mode: Roll back to and release the savepoint, then re-raise.
+    - "ignore" mode: Ignore body errors, retain partial work, and release the
+      savepoint. Database errors that abort the transaction may prevent release.
+    - Setup and release failures propagate even in "ignore" mode. If rollback
+      fails, log the cleanup failure and preserve the original body exception;
+      do not release a savepoint whose rollback failed.
+    - Cancellation, KeyboardInterrupt, and SystemExit always roll back and
+      release the savepoint, then propagate, even in "ignore" mode.
     - If callables not provided, falls back to standard SQL commands
 
     Complexity
@@ -107,6 +115,7 @@ def savepoint_context(
         )
     if not savepoint_name:
         raise ValueError("savepoint_name cannot be empty")
+    _validate_savepoint_name(savepoint_name)
     if on_error not in ("rollback", "ignore"):
         raise ValueError(f"on_error must be 'rollback' or 'ignore', got {on_error!r}")
     if create_savepoint_func is not None and not callable(create_savepoint_func):
@@ -116,47 +125,43 @@ def savepoint_context(
     if rollback_savepoint_func is not None and not callable(rollback_savepoint_func):
         raise TypeError("rollback_savepoint_func must be callable or None")
 
-    try:
-        # Create savepoint
-        if create_savepoint_func is not None:
-            create_savepoint_func(savepoint_name)
-            logger.debug(
-                f"Savepoint '{savepoint_name}' created via create_savepoint_func"
-            )
-        else:
-            connection.execute(f"SAVEPOINT {savepoint_name}")
-            logger.debug(f"Savepoint '{savepoint_name}' created via SQL")
+    # Setup failures must propagate; there is no owned savepoint to clean up yet.
+    if create_savepoint_func is not None:
+        create_savepoint_func(savepoint_name)
+    else:
+        connection.execute(f"SAVEPOINT {savepoint_name}")
 
-        yield connection
-
-        # Release savepoint on success
+    def release() -> None:
         if release_savepoint_func is not None:
             release_savepoint_func(savepoint_name)
-            logger.debug(
-                f"Savepoint '{savepoint_name}' released via release_savepoint_func"
-            )
         else:
             connection.execute(f"RELEASE SAVEPOINT {savepoint_name}")
-            logger.debug(f"Savepoint '{savepoint_name}' released via SQL")
 
-    except Exception as e:
-        if on_error == "rollback":
-            logger.warning(f"Rolling back to savepoint '{savepoint_name}': {e}")
+    try:
+        yield connection
+    except BaseException as error:
+        if on_error == "rollback" or not isinstance(error, Exception):
+            logger.warning("Rolling back to savepoint '%s': %s", savepoint_name, error)
             try:
                 if rollback_savepoint_func is not None:
                     rollback_savepoint_func(savepoint_name)
-                    logger.debug(
-                        f"Rolled back to savepoint '{savepoint_name}' via rollback_savepoint_func"
-                    )
                 else:
                     connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
-                    logger.debug(f"Rolled back to savepoint '{savepoint_name}' via SQL")
             except Exception as rollback_error:
-                logger.error(f"Savepoint rollback failed: {rollback_error}")
+                # Releasing after a failed rollback could retain unwanted writes.
+                logger.error("Savepoint rollback failed: %s", rollback_error)
+            else:
+                try:
+                    release()
+                except Exception as release_error:
+                    logger.error("Savepoint release failed: %s", release_error)
             raise
-        else:  # on_error == "ignore"
-            logger.warning(f"Error in savepoint '{savepoint_name}' (ignored): {e}")
-            # Don't raise, continue execution
+        logger.warning("Error in savepoint '%s' (ignored): %s", savepoint_name, error)
+        # Ignore body failures, retaining partial work as documented. Lifecycle
+        # failures still propagate so callers can repair the transaction state.
+        release()
+    else:
+        release()
 
 
 __all__ = ["savepoint_context"]

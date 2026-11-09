@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 try:
@@ -32,7 +34,7 @@ def test_execute_command_list_command() -> None:
     """
     Test case 2: Execute command as list without shell.
     """
-    result = execute_command(["echo", "hello"])
+    result = execute_command([sys.executable, "-c", "print('hello')"])
 
     assert result["success"] is True
     assert result["return_code"] == 0

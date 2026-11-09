@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -139,26 +140,20 @@ async def test_async_retry_with_backoff_exponential_backoff() -> None:
     Test case 6: Verify exponential backoff delays are applied.
     """
     # Arrange
-    call_times = []
+    call_count = []
 
     async def failing_task() -> None:
-        call_times.append(asyncio.get_event_loop().time())
+        call_count.append(1)
         raise ValueError("Fail")
 
     # Act & Assert
-    with pytest.raises(ValueError):
+    with patch(
+        "pyutils_collection.asyncio_functions.async_retry_with_backoff.asyncio.sleep",
+        new_callable=AsyncMock,
+    ) as sleep, pytest.raises(ValueError):
         await async_retry_with_backoff(
             failing_task, retries=3, initial_delay=0.05, backoff_factor=2
         )
 
-    # Verify backoff timing
-    assert len(call_times) == 3
-    if len(call_times) >= 2:
-        # First delay should be ~0.05
-        delay1 = call_times[1] - call_times[0]
-        assert 0.04 <= delay1 <= 0.07
-
-    if len(call_times) >= 3:
-        # Second delay should be ~0.1 (0.05 * 2)
-        delay2 = call_times[2] - call_times[1]
-        assert 0.08 <= delay2 <= 0.12
+    assert len(call_count) == 3
+    assert [call.args[0] for call in sleep.await_args_list] == pytest.approx([0.05, 0.1])

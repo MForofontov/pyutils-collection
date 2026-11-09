@@ -102,7 +102,7 @@ def execute_command(
         command = command.split()
 
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B602 # Shell execution requires explicit shell=True.
             command,
             shell=shell,
             timeout=timeout,

@@ -124,11 +124,11 @@ def constrained_least_squares(
     ub_val: float | list[float] | np.ndarray
     lb_val, ub_val = bounds
     if np.isscalar(lb_val):
-        lb = np.full(A_array.shape[1], float(lb_val))  # type: ignore[arg-type]
+        lb = np.full(A_array.shape[1], float(lb_val))
     else:
         lb = np.asarray(lb_val, dtype=float)
     if np.isscalar(ub_val):
-        ub = np.full(A_array.shape[1], float(ub_val))  # type: ignore[arg-type]
+        ub = np.full(A_array.shape[1], float(ub_val))
     else:
         ub = np.asarray(ub_val, dtype=float)
 

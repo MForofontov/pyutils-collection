@@ -74,7 +74,7 @@ def calculate_sha1_hash(
         raise ValueError(f"chunk_size must be positive, got {chunk_size}")
 
     # Calculate SHA1 hash
-    sha1_hash = hashlib.sha1()
+    sha1_hash = hashlib.sha1(usedforsecurity=False)
 
     try:
         with open(path, "rb") as file:

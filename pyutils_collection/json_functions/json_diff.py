@@ -1,5 +1,6 @@
 """JSON difference comparison utilities."""
 
+from itertools import chain
 from typing import Any
 
 
@@ -20,6 +21,7 @@ def json_diff(a: Any, b: Any, path: str = "") -> list[tuple[str, Any, Any]]:
     -------
     list of tuple
         List of (path, a_value, b_value) for changed/added/removed fields.
+        Dictionary keys follow a's insertion order, then keys added by b.
 
     Examples
     --------
@@ -33,9 +35,7 @@ def json_diff(a: Any, b: Any, path: str = "") -> list[tuple[str, Any, Any]]:
         diffs.append((path, a, b))
         return diffs
     if isinstance(a, dict):
-        a_keys = set(a.keys())
-        b_keys = set(b.keys())
-        for k in a_keys | b_keys:
+        for k in chain(a, (key for key in b if key not in a)):
             new_path = f"{path}.{k}" if path else k
             if k in a and k in b:
                 diffs.extend(json_diff(a[k], b[k], new_path))

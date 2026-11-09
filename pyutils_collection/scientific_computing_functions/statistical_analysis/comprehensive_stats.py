@@ -92,7 +92,7 @@ def comprehensive_stats(
     if arr.size == 0:
         raise ValueError("data cannot be empty")
 
-    if confidence_level <= 0 or confidence_level >= 1:
+    if not 0 < confidence_level < 1:
         raise ValueError(
             f"confidence_level must be between 0 and 1, got {confidence_level}"
         )
@@ -136,7 +136,7 @@ def comprehensive_stats(
     kurt = float(stats.kurtosis(arr)) if arr.size > 3 else 0.0
 
     # Confidence interval for mean
-    if arr.size > 1:
+    if arr.size > 1 and std_val != 0:
         ci = stats.t.interval(
             confidence_level,
             df=arr.size - 1,

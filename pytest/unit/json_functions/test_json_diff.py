@@ -4,6 +4,16 @@ pytestmark = [pytest.mark.unit, pytest.mark.json_functions]
 from pyutils_collection.json_functions.json_diff import json_diff
 
 
+def test_json_diff_dictionary_order_is_stable() -> None:
+    a = {"z": 1, "nested": {"b": 1, "a": 1}, "removed": 3}
+    b = {"new2": 4, "nested": {"a": 2, "b": 2, "new": 5}, "z": 2, "new1": 6}
+    assert json_diff(a, b) == [
+        ("z", 1, 2), ("nested.b", 1, 2), ("nested.a", 1, 2),
+        ("nested.new", None, 5), ("removed", 3, None),
+        ("new2", None, 4), ("new1", None, 6),
+    ]
+
+
 def test_json_diff_dicts() -> None:
     """Test case 1: Test json_diff with dictionary differences."""
     a = {"a": 1, "b": 2}

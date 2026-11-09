@@ -3,6 +3,8 @@
 import subprocess
 from typing import Any
 
+from ._validation import validate_target
+
 
 def ssh_execute_script(
     host: str,
@@ -71,10 +73,11 @@ def ssh_execute_script(
     if timeout <= 0:
         raise ValueError(f"timeout must be positive, got {timeout}")
 
+    validate_target(host, user, timeout)
     ssh_target = f"{user + '@' if user else ''}{host}"
     ssh_cmd = ["ssh", "-p", str(port), ssh_target, "bash -s"]
     try:
-        with open(script_path, "rb") as script_file:
+        with open(script_path, encoding="utf-8") as script_file:
             proc = subprocess.run(
                 ssh_cmd,
                 input=script_file.read(),

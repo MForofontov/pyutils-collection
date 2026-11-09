@@ -89,9 +89,7 @@ def numerical_integration(
     if not isinstance(method, str):
         raise TypeError(f"method must be a string, got {type(method).__name__}")
     if method not in ("quad", "trapz", "simps"):
-        raise ValueError(
-            f"method must be 'quad', 'trapz', or 'simps', got '{method}'"
-        )
+        raise ValueError(f"method must be 'quad', 'trapz', or 'simps', got '{method}'")
 
     # Method-specific validation and integration
     if method == "quad":

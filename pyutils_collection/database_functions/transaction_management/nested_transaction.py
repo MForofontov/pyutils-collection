@@ -15,7 +15,7 @@ _SAVEPOINT_NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 def _validate_savepoint_name(savepoint_name: str) -> None:
-    if not _SAVEPOINT_NAME_PATTERN.match(savepoint_name):
+    if not _SAVEPOINT_NAME_PATTERN.fullmatch(savepoint_name):
         raise ValueError(
             "savepoint_name must contain only letters, digits, and underscores "
             "and start with a letter or underscore"
@@ -29,7 +29,7 @@ def nested_transaction(
     create_savepoint_func: Callable[[str], None] | None = None,
     release_savepoint_func: Callable[[str], None] | None = None,
     rollback_savepoint_func: Callable[[str], None] | None = None,
-) -> Generator[Any, None, None]:
+) -> Generator[Any]:
     """
     Context manager for nested transactions using savepoints.
 
@@ -133,6 +133,7 @@ def nested_transaction(
         _validate_savepoint_name(savepoint_name)
 
     used_sql_savepoint = False
+    nested_handle = None
 
     try:
         # Create savepoint
@@ -148,7 +149,7 @@ def nested_transaction(
         else:
             # Fallback: try connection.begin_nested() or manual SQL
             try:
-                connection.begin_nested()
+                nested_handle = connection.begin_nested()
                 logger.debug(
                     f"Savepoint '{savepoint_name}' created via connection.begin_nested()"
                 )
@@ -172,6 +173,8 @@ def nested_transaction(
                 )
             except Exception as e:
                 logger.warning(f"Failed to release savepoint: {e}")
+        elif nested_handle is not None:
+            nested_handle.commit()
         else:
             # Fallback: try SQL release before committing the outer transaction
             if used_sql_savepoint or hasattr(connection, "execute"):
@@ -211,6 +214,11 @@ def nested_transaction(
                 )
             except Exception as rollback_error:
                 logger.error(f"Savepoint rollback failed: {rollback_error}")
+        elif nested_handle is not None:
+            try:
+                nested_handle.rollback()
+            except Exception as rollback_error:
+                logger.error(f"Savepoint rollback failed: {rollback_error}")
         else:
             # Fallback: prefer savepoint rollback over full transaction rollback
             if used_sql_savepoint or hasattr(connection, "execute"):
@@ -236,7 +244,9 @@ def nested_transaction(
                 except AttributeError:
                     try:
                         connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
-                        logger.debug(f"Rolled back to savepoint '{savepoint_name}' via SQL")
+                        logger.debug(
+                            f"Rolled back to savepoint '{savepoint_name}' via SQL"
+                        )
                     except Exception as rollback_error:
                         logger.error(f"Savepoint rollback failed: {rollback_error}")
 

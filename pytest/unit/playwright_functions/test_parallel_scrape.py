@@ -48,7 +48,8 @@ def test_parallel_scrape_basic_success(mock_sync_playwright: Mock) -> None:
     assert all(r["success"] for r in results)
     assert results[0]["url"] == urls[0]
     assert results[1]["url"] == urls[1]
-    mock_browser.close.assert_called_once()
+    assert mock_browser.close.call_count == 2
+    assert mock_playwright.stop.call_count == 2
 
 
 @patch("pyutils_collection.playwright_functions.parallel_scrape.sync_playwright")

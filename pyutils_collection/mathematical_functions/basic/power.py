@@ -29,7 +29,8 @@ def power(base: int | float, exponent: int | float) -> int | float:
     TypeError
         If base or exponent is not numeric.
     ValueError
-        If computation would overflow or consume excessive memory.
+        If computation would overflow, consume excessive memory, produce a
+        complex value, or raise zero to a negative exponent.
         Base must be in range [-10^308, 10^308] and exponent in range [-10000, 10000].
 
     Examples
@@ -50,6 +51,10 @@ def power(base: int | float, exponent: int | float) -> int | float:
     - Memory exhaustion from large integer results
     - Hanging operations from extreme computations
 
+    Results are real-valued. Negative bases require integer-valued exponents.
+    Arithmetic overflow and zero-to-negative-power errors are reported as
+    ValueError with the original arithmetic exception retained as the cause.
+
     Complexity
     ----------
     Time: O(log exponent) for integer exponentiation, O(1) for float
@@ -64,9 +69,7 @@ def power(base: int | float, exponent: int | float) -> int | float:
     # Check for NaN and Inf
     if isinstance(base, float) and (math.isnan(base) or math.isinf(base)):
         raise ValueError("base cannot be NaN or Inf")
-    if isinstance(exponent, float) and (
-        math.isnan(exponent) or math.isinf(exponent)
-    ):
+    if isinstance(exponent, float) and (math.isnan(exponent) or math.isinf(exponent)):
         raise ValueError("exponent cannot be NaN or Inf")
 
     # Safety limits to prevent overflow/memory exhaustion
@@ -89,7 +92,15 @@ def power(base: int | float, exponent: int | float) -> int | float:
                 "risking overflow or memory exhaustion"
             )
 
-    result = base**exponent
+    if base < 0 and isinstance(exponent, float) and not exponent.is_integer():
+        raise ValueError("negative bases require an integer-valued exponent")
+
+    try:
+        result = base**exponent
+    except OverflowError as exc:
+        raise ValueError("computation resulted in overflow") from exc
+    except ZeroDivisionError as exc:
+        raise ValueError("zero cannot be raised to a negative exponent") from exc
 
     # Check if result overflowed to inf
     if isinstance(result, float) and math.isinf(result):

@@ -2,9 +2,32 @@ import asyncio
 
 import pytest
 
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("batch_size", [0, -1, -100])
+@pytest.mark.parametrize("items", [[], [1, 2]])
+async def test_async_batch_rejects_nonpositive_sizes(batch_size, items) -> None:
+    async def process_batch(batch):
+        pytest.fail("processor must not run for an invalid batch size")
+
+    with pytest.raises(ValueError, match="batch_size must be positive"):
+        await async_batch(process_batch, items, batch_size)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("batch_size", [True, False, 1.5, "2", None])
+async def test_async_batch_rejects_invalid_size_types(batch_size) -> None:
+    async def process_batch(batch):
+        pytest.fail("processor must not run for an invalid batch size")
+
+    with pytest.raises(TypeError, match="batch_size must be an integer"):
+        await async_batch(process_batch, [1], batch_size)
+
+
 try:
     import aiohttp
     from pyutils_collection.asyncio_functions.async_batch import async_batch
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False

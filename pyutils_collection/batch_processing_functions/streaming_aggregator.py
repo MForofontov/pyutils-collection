@@ -238,7 +238,7 @@ class StreamingAggregator:
         self._mean = 0.0
         self._m2 = 0.0
 
-    def merge(self, other: "StreamingAggregator") -> None:
+    def merge(self, other: StreamingAggregator) -> None:
         """
         Merge statistics from another aggregator.
 

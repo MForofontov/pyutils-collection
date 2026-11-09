@@ -4,7 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 
@@ -77,7 +77,7 @@ def generate_jwt_token(
     header = {"alg": "HS256", "typ": "JWT"}
 
     # Create payload with timestamps
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     exp_time = now + timedelta(hours=expires_in_hours)
 
     full_payload = {

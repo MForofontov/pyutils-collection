@@ -1,10 +1,11 @@
+from functools import partial
 import bz2
 import gzip
 import lzma
 
 try:
     import snappy
-    import zstandard as zstd
+    from compression import zstd
     from pyutils_collection.compression_functions.binary_compression.compress_data import compress_data
 
     COMPRESSION_LIBS_AVAILABLE = True
@@ -17,7 +18,7 @@ except ImportError:
 import pytest
 
 pytestmark = pytest.mark.skipif(
-    not COMPRESSION_LIBS_AVAILABLE, reason="snappy and/or zstandard not installed"
+    not COMPRESSION_LIBS_AVAILABLE, reason="snappy and/or standard-library Zstandard unavailable"
 )
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.compression]
 
@@ -77,8 +78,8 @@ def test_compress_data_zstd() -> None:
     """
     data: bytes = b"hello world"
     compressed_data: bytes = compress_data(data, algorithm="zstd", level=4)
-    compressor = zstd.ZstdCompressor(level=4)
-    expected_compressed_data: bytes = compressor.compress(data)
+    compressor = partial(zstd.compress, level=4)
+    expected_compressed_data: bytes = compressor(data)
     assert compressed_data == expected_compressed_data, (
         "Compressed data should match expected zstd compression"
     )

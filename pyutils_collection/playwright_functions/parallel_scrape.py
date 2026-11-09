@@ -10,7 +10,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from playwright.sync_api import Browser, sync_playwright
+from playwright.sync_api import sync_playwright
 
 
 def parallel_scrape(
@@ -26,8 +26,8 @@ def parallel_scrape(
     Scrape multiple URLs in parallel with browser context pooling.
 
     Launches multiple browser contexts in parallel for efficient scraping.
-    Each worker gets its own context but shares the same browser instance,
-    reducing resource usage while maintaining isolation.
+    Each worker owns its Playwright driver and browser on its own thread.
+    Browsers are reused within each worker, with a fresh context for every URL.
 
     Parameters
     ----------
@@ -73,7 +73,7 @@ def parallel_scrape(
     ...         'title': page.title(),
     ...         'text': page.evaluate("() => document.body.innerText")
     ...     }
-    
+
     >>> urls = [
     ...     "https://example.com/page1",
     ...     "https://example.com/page2",
@@ -102,7 +102,7 @@ def parallel_scrape(
     Notes
     -----
     - Each worker gets isolated browser context (separate cookies/storage)
-    - All workers share same browser instance (efficient resource usage)
+    - Each worker reuses its own browser without sharing Playwright objects across threads
     - Failed scrapes return error dict instead of raising exception
     - Results maintain order matching input URL list
     - Consider rate limiting for production use
@@ -123,14 +123,20 @@ def parallel_scrape(
         raise TypeError("scrape_function must be callable")
 
     if not isinstance(max_workers, int):
-        raise TypeError(f"max_workers must be an integer, got {type(max_workers).__name__}")
+        raise TypeError(
+            f"max_workers must be an integer, got {type(max_workers).__name__}"
+        )
     if max_workers <= 0:
         raise ValueError(f"max_workers must be positive, got {max_workers}")
 
     if not isinstance(browser_type, str):
-        raise TypeError(f"browser_type must be a string, got {type(browser_type).__name__}")
+        raise TypeError(
+            f"browser_type must be a string, got {type(browser_type).__name__}"
+        )
     if browser_type not in ("chromium", "firefox", "webkit"):
-        raise ValueError(f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}")
+        raise ValueError(
+            f"browser_type must be 'chromium', 'firefox', or 'webkit', got {browser_type}"
+        )
 
     if not isinstance(headless, bool):
         raise TypeError(f"headless must be a boolean, got {type(headless).__name__}")
@@ -144,100 +150,75 @@ def parallel_scrape(
         raise TypeError("logger must be an instance of logging.Logger or None")
 
     if logger:
-        logger.info(f"Starting parallel scrape of {len(urls)} URLs with {max_workers} workers")
+        logger.info(
+            f"Starting parallel scrape of {len(urls)} URLs with {max_workers} workers"
+        )
 
-    # Launch single browser (shared by all workers)
-    playwright_instance = sync_playwright().start()
-    browser_launcher = getattr(playwright_instance, browser_type)
-    browser = browser_launcher.launch(headless=headless)
+    # Playwright objects must be created, used, and stopped on their owner thread.
+    worker_count = min(max_workers, len(urls))
+    results: list[dict[str, Any]] = [{} for _ in urls]
 
-    if logger:
-        logger.debug(f"{browser_type} browser launched (headless={headless})")
-
-    try:
-        # Create result storage (maintains URL order)
-        results: list[dict[str, Any]] = [None] * len(urls)  # type: ignore
-
-        # Worker function
-        def scrape_url(index: int, url: str) -> tuple[int, dict[str, Any]]:
-            """Scrape single URL in isolated context."""
+    def scrape_batch(start: int) -> list[tuple[int, dict[str, Any]]]:
+        playwright_instance = sync_playwright().start()
+        try:
+            browser_launcher = getattr(playwright_instance, browser_type)
+            browser = browser_launcher.launch(headless=headless)
             try:
-                if logger:
-                    logger.debug(f"Worker starting: {url}")
+                batch_results = []
+                for index in range(start, len(urls), worker_count):
+                    url = urls[index]
+                    try:
+                        context = browser.new_context()
+                        try:
+                            context.set_default_timeout(timeout)
+                            page = context.new_page()
+                            data = scrape_function(page, url)
+                            result = {
+                                "url": url,
+                                "success": True,
+                                "data": data,
+                                "error": None,
+                            }
+                        finally:
+                            context.close()
+                    except Exception as exc:
+                        if logger:
+                            logger.error(f"Worker failed for {url}: {exc}")
+                        result = {
+                            "url": url,
+                            "success": False,
+                            "data": None,
+                            "error": str(exc),
+                        }
+                    batch_results.append((index, result))
+                return batch_results
+            finally:
+                browser.close()
+        finally:
+            # Stop the driver even if launching or closing its browser failed.
+            playwright_instance.stop()
 
-                # Create isolated context for this worker
-                context = browser.new_context()
-                context.set_default_timeout(timeout)
-
-                # Create page
-                page = context.new_page()
-
-                try:
-                    # Call user's scrape function
-                    data = scrape_function(page, url)
-
-                    result = {
-                        "url": url,
-                        "success": True,
-                        "data": data,
-                        "error": None,
-                    }
-
-                    if logger:
-                        logger.debug(f"Worker completed successfully: {url}")
-
-                    return index, result
-
-                finally:
-                    # Cleanup context (page closes automatically)
-                    context.close()
-
-            except Exception as e:
-                error_msg = str(e)
-                if logger:
-                    logger.error(f"Worker failed for {url}: {error_msg}")
-
-                result = {
-                    "url": url,
-                    "success": False,
-                    "data": None,
-                    "error": error_msg,
-                }
-
-                return index, result
-
-        # Execute scraping in parallel
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all jobs
-            futures = {
-                executor.submit(scrape_url, i, url): i
-                for i, url in enumerate(urls)
-            }
-
-            # Collect results as they complete
-            for future in as_completed(futures):
-                index, result = future.result()
+    with ThreadPoolExecutor(max_workers=worker_count) as executor:
+        futures = [
+            executor.submit(scrape_batch, start) for start in range(worker_count)
+        ]
+        completed = 0
+        for future in as_completed(futures):
+            for index, result in future.result():
                 results[index] = result
-
+                completed += 1
                 if logger:
                     status = "✓" if result["success"] else "✗"
-                    completed = sum(1 for r in results if r is not None)
                     logger.info(f"{status} [{completed}/{len(urls)}] {result['url']}")
-
-    finally:
-        # Cleanup browser and playwright
-        browser.close()
-        playwright_instance.stop()
-
-        if logger:
-            logger.debug("Browser closed, playwright stopped")
 
     # Calculate stats
     successful = sum(1 for r in results if r["success"])
     failed = len(results) - successful
 
     if logger:
-        logger.info(f"Parallel scrape complete: {successful} succeeded, {failed} failed")
+        logger.info(
+            f"Parallel scrape complete: {successful} succeeded, {failed} failed"
+        )
 
     return results
 

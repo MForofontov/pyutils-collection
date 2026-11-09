@@ -11,7 +11,6 @@ from typing import Any, Literal
 
 from playwright.sync_api import Page
 
-
 ScreenshotType = Literal["png", "jpeg"]
 
 
@@ -123,13 +122,19 @@ def smart_screenshot(
         raise ValueError("path cannot be empty")
 
     if selector is not None and not isinstance(selector, str):
-        raise TypeError(f"selector must be a string or None, got {type(selector).__name__}")
+        raise TypeError(
+            f"selector must be a string or None, got {type(selector).__name__}"
+        )
 
     if wait_for_selector is not None and not isinstance(wait_for_selector, str):
-        raise TypeError(f"wait_for_selector must be a string or None, got {type(wait_for_selector).__name__}")
+        raise TypeError(
+            f"wait_for_selector must be a string or None, got {type(wait_for_selector).__name__}"
+        )
 
     if not isinstance(wait_timeout, (int, float)):
-        raise TypeError(f"wait_timeout must be a number, got {type(wait_timeout).__name__}")
+        raise TypeError(
+            f"wait_timeout must be a number, got {type(wait_timeout).__name__}"
+        )
     if wait_timeout <= 0:
         raise ValueError(f"wait_timeout must be positive, got {wait_timeout}")
 
@@ -143,7 +148,9 @@ def smart_screenshot(
 
     if quality is not None:
         if not isinstance(quality, int):
-            raise TypeError(f"quality must be an integer or None, got {type(quality).__name__}")
+            raise TypeError(
+                f"quality must be an integer or None, got {type(quality).__name__}"
+            )
         if not 0 <= quality <= 100:
             raise ValueError(f"quality must be between 0-100, got {quality}")
         if image_type != "jpeg":
@@ -155,7 +162,9 @@ def smart_screenshot(
         raise ValueError(f"retries must be non-negative, got {retries}")
 
     if not isinstance(retry_delay, (int, float)):
-        raise TypeError(f"retry_delay must be a number, got {type(retry_delay).__name__}")
+        raise TypeError(
+            f"retry_delay must be a number, got {type(retry_delay).__name__}"
+        )
     if retry_delay < 0:
         raise ValueError(f"retry_delay must be non-negative, got {retry_delay}")
 
@@ -167,10 +176,13 @@ def smart_screenshot(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if logger:
-        logger.debug(f"Preparing screenshot: path={path}, selector={selector}, full_page={full_page}")
+        logger.debug(
+            f"Preparing screenshot: path={path}, selector={selector}, full_page={full_page}"
+        )
 
     # Retry logic
     import time
+
     last_error = None
 
     for attempt in range(retries + 1):
@@ -205,7 +217,9 @@ def smart_screenshot(
                 if logger:
                     logger.debug(f"Taking element screenshot: {selector}")
                 element = page.locator(selector).first
-                element.screenshot(**{k: v for k, v in screenshot_options.items() if k != "full_page"})
+                element.screenshot(
+                    **{k: v for k, v in screenshot_options.items() if k != "full_page"}
+                )
             else:
                 # Screenshot page
                 if logger:
@@ -220,7 +234,9 @@ def smart_screenshot(
         except Exception as e:
             last_error = e
             if logger:
-                logger.warning(f"Screenshot attempt {attempt + 1}/{retries + 1} failed: {e}")
+                logger.warning(
+                    f"Screenshot attempt {attempt + 1}/{retries + 1} failed: {e}"
+                )
 
             if attempt < retries:
                 if logger:
@@ -228,7 +244,9 @@ def smart_screenshot(
                 time.sleep(retry_delay)
             else:
                 # Final attempt failed
-                error_msg = f"Screenshot failed after {retries + 1} attempts: {last_error}"
+                error_msg = (
+                    f"Screenshot failed after {retries + 1} attempts: {last_error}"
+                )
                 if logger:
                     logger.error(error_msg)
                 raise RuntimeError(error_msg) from last_error

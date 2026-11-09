@@ -9,8 +9,8 @@ T = TypeVar("T")
 
 
 async def async_throttle(
-    generator: AsyncGenerator[T, None], delay: float
-) -> AsyncGenerator[T, None]:
+    generator: AsyncGenerator[T], delay: float
+) -> AsyncGenerator[T]:
     """
     Throttle an asynchronous generator by adding a delay between items.
 

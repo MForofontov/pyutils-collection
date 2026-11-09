@@ -1,10 +1,20 @@
 """Generic data compression with algorithm selection."""
 
-from pyutils_collection.compression_functions.binary_compression.compress_bz2 import compress_bz2
-from pyutils_collection.compression_functions.binary_compression.compress_gzip import compress_gzip
-from pyutils_collection.compression_functions.binary_compression.compress_lzma import compress_lzma
-from pyutils_collection.compression_functions.binary_compression.compress_snappy import compress_snappy
-from pyutils_collection.compression_functions.binary_compression.compress_zstd import compress_zstd
+from pyutils_collection.compression_functions.binary_compression.compress_bz2 import (
+    compress_bz2,
+)
+from pyutils_collection.compression_functions.binary_compression.compress_gzip import (
+    compress_gzip,
+)
+from pyutils_collection.compression_functions.binary_compression.compress_lzma import (
+    compress_lzma,
+)
+from pyutils_collection.compression_functions.binary_compression.compress_snappy import (
+    compress_snappy,
+)
+from pyutils_collection.compression_functions.binary_compression.compress_zstd import (
+    compress_zstd,
+)
 
 
 def compress_data(data: bytes, algorithm: str = "gzip", level: int = 3) -> bytes:

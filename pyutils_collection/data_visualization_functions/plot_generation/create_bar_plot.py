@@ -134,7 +134,7 @@ def create_bar_plot(
     # Handle multiple series
     value_series: list[list[float]]
     if len(values) > 0 and isinstance(values[0], list):
-        value_series = [list(v) for v in values]  # type: ignore[arg-type]
+        value_series = [list(v) for v in values]
     else:
         value_series = [values]  # type: ignore[list-item]
 

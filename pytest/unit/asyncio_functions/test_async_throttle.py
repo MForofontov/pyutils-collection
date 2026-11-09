@@ -6,6 +6,7 @@ import pytest
 try:
     import aiohttp
     from pyutils_collection.asyncio_functions.async_throttle import async_throttle
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False
@@ -107,9 +108,9 @@ async def test_async_throttle_different_data_types() -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_throttle_verify_timing() -> None:
+async def test_async_throttle_verify_timing(monkeypatch: pytest.MonkeyPatch) -> None:
     """
-    Test case 5: Verify timing accuracy of throttling.
+    Test case 5: Delay only between items, without relying on OS scheduling.
     """
 
     # Arrange
@@ -117,18 +118,20 @@ async def test_async_throttle_verify_timing() -> None:
         for i in range(4):
             yield i
 
-    timestamps = []
+    from unittest.mock import AsyncMock, call
+
+    sleep = AsyncMock()
+    monkeypatch.setattr(asyncio, "sleep", sleep)
+    results = []
 
     # Act
-    async for _ in async_throttle(generate_items(), delay=0.02):
-        timestamps.append(asyncio.get_event_loop().time())
+    async for item in async_throttle(generate_items(), delay=0.02):
+        results.append(item)
+        assert sleep.await_count == item
 
     # Assert
-    assert len(timestamps) == 4
-    # Check timing between consecutive items
-    for i in range(1, len(timestamps)):
-        delay = timestamps[i] - timestamps[i - 1]
-        assert 0.015 <= delay <= 0.03  # Allow some tolerance
+    assert results == [0, 1, 2, 3]
+    assert sleep.await_args_list == [call(0.02)] * 3
 
 
 @pytest.mark.asyncio

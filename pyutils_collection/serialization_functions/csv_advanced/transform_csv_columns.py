@@ -7,6 +7,8 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
+from pyutils_collection.serialization_functions._staged_output import staged_output
+
 
 def transform_csv_columns(
     input_file: str | Path,
@@ -98,6 +100,9 @@ def transform_csv_columns(
     -----
     Operations are applied in order: mapping → selection → transformation → filtering.
     Transformers receive string values from CSV and should handle conversion.
+    Output is staged beside the destination and replaced only after success,
+    allowing input_file and output_file to be the same path. Existing permission
+    bits are preserved; a destination symlink is replaced rather than followed.
 
     Complexity
     ----------
@@ -136,7 +141,10 @@ def transform_csv_columns(
 
     rows_written = 0
 
-    with open(input_file, encoding=encoding, newline="") as infile:
+    with (
+        staged_output(output_file) as temporary,
+        open(input_file, encoding=encoding, newline="") as infile,
+    ):
         reader = csv.DictReader(infile, **kwargs)
 
         if reader.fieldnames is None:
@@ -163,7 +171,7 @@ def transform_csv_columns(
                     )
             output_fieldnames = selected
 
-        with open(output_file, "w", encoding=encoding, newline="") as outfile:
+        with open(temporary, "w", encoding=encoding, newline="") as outfile:
             writer = csv.DictWriter(outfile, fieldnames=output_fieldnames, **kwargs)
             writer.writeheader()
 

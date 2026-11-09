@@ -150,7 +150,7 @@ def test_compress_file_lzma_io_error_on_output_file(tmp_path) -> None:
         os.chmod(tmp_path, 0o600)
 
 
-def test_compress_file_lzma_no_permission_on_input_file(tmp_path) -> None:
+def test_compress_file_lzma_no_permission_on_input_file(tmp_path, deny_read_access) -> None:
     """
     Test case 8: Test the compress_file_lzma function with no permission on input file.
     """
@@ -162,7 +162,7 @@ def test_compress_file_lzma_no_permission_on_input_file(tmp_path) -> None:
         f.write(data)
 
     # Remove all permissions from the input file
-    os.chmod(input_file, 0o000)
+    deny_read_access(input_file)
 
     try:
         with pytest.raises(OSError):

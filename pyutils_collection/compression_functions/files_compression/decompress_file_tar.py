@@ -61,6 +61,9 @@ def decompress_file_tar(input_tar: str, output_dir: str) -> None:
 
         # Open the input tar-compressed file in read mode with gzip compression
         with tarfile.open(input_tar, "r:gz") as tar:
+            # Reject unsafe later members before writing any earlier members.
+            for member in tar.getmembers():
+                tarfile.data_filter(member, output_dir)
             # Extract all files to the specified output directory
             tar.extractall(path=output_dir, filter="data")
     except FileNotFoundError as exc:

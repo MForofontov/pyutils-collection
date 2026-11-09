@@ -1,10 +1,29 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
+
+
+@pytest.mark.parametrize(
+    ("days", "expected"),
+    [
+        (28, "4 weeks ago"),
+        (29, "4 weeks ago"),
+        (30, "1 month ago"),
+        (359, "11 months ago"),
+        (360, "12 months ago"),
+        (364, "12 months ago"),
+        (365, "1 year ago"),
+    ],
+)
+def test_time_ago_unit_boundaries(days: int, expected: str) -> None:
+    reference = datetime(2025, 1, 1)
+    assert time_ago(reference - timedelta(days=days), reference) == expected
+
 
 try:
     import pytz
     from pyutils_collection.datetime_functions.time_ago import time_ago
+
     PYTZ_AVAILABLE = True
 except ImportError:
     PYTZ_AVAILABLE = False

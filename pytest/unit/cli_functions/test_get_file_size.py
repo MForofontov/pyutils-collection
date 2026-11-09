@@ -34,6 +34,7 @@ def test_get_file_size_valid_file() -> None:
             assert size == len(content)
             assert isinstance(size, int)
         finally:
+            temp_file.close()
             os.unlink(temp_file.name)
 
 
@@ -46,6 +47,7 @@ def test_get_file_size_empty_file() -> None:
             size = get_file_size(temp_file.name)
             assert size == 0
         finally:
+            temp_file.close()
             os.unlink(temp_file.name)
 
 
@@ -92,4 +94,5 @@ def test_get_file_size_large_file() -> None:
             assert size == len(content)
             assert size == 1024 * 1024
         finally:
+            temp_file.close()
             os.unlink(temp_file.name)

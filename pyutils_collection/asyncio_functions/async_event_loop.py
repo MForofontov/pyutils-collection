@@ -42,17 +42,13 @@ def async_event_loop(func: Callable[[], Awaitable[T]]) -> T:
     async def wrapper() -> T:
         return await func()
 
-    # Run the provided asynchronous function in an event loop and return the result
     try:
+        asyncio.get_running_loop()
+    except RuntimeError:
         return asyncio.run(wrapper())
-    except RuntimeError as exc:
-        if "asyncio.run() cannot be called from a running event loop" not in str(exc):
-            raise
-        loop = asyncio.new_event_loop()
-        try:
-            return loop.run_until_complete(wrapper())
-        finally:
-            loop.close()
+    raise RuntimeError(
+        "async_event_loop cannot run inside a running event loop; await func() instead"
+    )
 
 
 __all__ = ["async_event_loop"]

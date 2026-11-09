@@ -3,7 +3,7 @@ Unit tests for check_encoding_issues function.
 """
 
 from conftest import Base, Product
-from sqlalchemy import Column, Integer, Text, create_engine
+from sqlalchemy import Column, Integer, Text
 from sqlalchemy.engine import Engine
 
 import pytest
@@ -174,13 +174,12 @@ def test_check_encoding_issues_invalid_connection_type_error() -> None:
         check_encoding_issues(None)
 
 
-def test_check_encoding_issues_invalid_tables_type_error() -> None:
+def test_check_encoding_issues_invalid_tables_type_error(memory_engine: Engine) -> None:
     """
     Test case 7: TypeError for invalid tables parameter.
     """
     # Arrange
-    engine = create_engine("sqlite:///:memory:")
-    conn = engine.connect()
+    conn = memory_engine.connect()
     expected_message = "tables must be list or None"
 
     # Act & Assert
@@ -190,13 +189,12 @@ def test_check_encoding_issues_invalid_tables_type_error() -> None:
     conn.close()
 
 
-def test_check_encoding_issues_invalid_schema_type_error() -> None:
+def test_check_encoding_issues_invalid_schema_type_error(memory_engine: Engine) -> None:
     """
     Test case 8: TypeError for invalid schema parameter.
     """
     # Arrange
-    engine = create_engine("sqlite:///:memory:")
-    conn = engine.connect()
+    conn = memory_engine.connect()
     expected_message = "schema must be str or None"
 
     # Act & Assert
@@ -206,13 +204,12 @@ def test_check_encoding_issues_invalid_schema_type_error() -> None:
     conn.close()
 
 
-def test_check_encoding_issues_invalid_sample_limit_type_error() -> None:
+def test_check_encoding_issues_invalid_sample_limit_type_error(memory_engine: Engine) -> None:
     """
     Test case 9: TypeError for invalid sample_limit parameter.
     """
     # Arrange
-    engine = create_engine("sqlite:///:memory:")
-    conn = engine.connect()
+    conn = memory_engine.connect()
     expected_message = "sample_limit must be int"
 
     # Act & Assert
@@ -222,13 +219,12 @@ def test_check_encoding_issues_invalid_sample_limit_type_error() -> None:
     conn.close()
 
 
-def test_check_encoding_issues_negative_sample_limit_value_error() -> None:
+def test_check_encoding_issues_negative_sample_limit_value_error(memory_engine: Engine) -> None:
     """
     Test case 10: ValueError for negative sample_limit.
     """
     # Arrange
-    engine = create_engine("sqlite:///:memory:")
-    conn = engine.connect()
+    conn = memory_engine.connect()
     expected_message = "sample_limit must be non-negative"
 
     # Act & Assert

@@ -96,7 +96,7 @@ def generate_dependency_graph(
     # First pass: collect all module names in project
     for py_file in python_files:
         rel_path = py_file.relative_to(project_path)
-        module_name = str(rel_path.with_suffix("")).replace("/", ".")
+        module_name = rel_path.with_suffix("").as_posix().replace("/", ".")
         if module_name.endswith(".__init__"):
             module_name = module_name[:-9]
         modules_in_project.add(module_name)
@@ -104,7 +104,7 @@ def generate_dependency_graph(
     # Second pass: extract imports
     for py_file in python_files:
         rel_path = py_file.relative_to(project_path)
-        module_name = str(rel_path.with_suffix("")).replace("/", ".")
+        module_name = rel_path.with_suffix("").as_posix().replace("/", ".")
         if module_name.endswith(".__init__"):
             module_name = module_name[:-9]
 
@@ -128,7 +128,7 @@ def generate_dependency_graph(
             if imports:
                 dependencies[module_name] = imports
 
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError, UnicodeDecodeError:
             # Skip files with syntax errors or encoding issues
             continue
 

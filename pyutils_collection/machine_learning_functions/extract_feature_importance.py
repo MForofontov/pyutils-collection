@@ -149,8 +149,7 @@ def extract_feature_importance(
 
     # Create result dictionary
     result = {
-        name: float(imp)
-        for name, imp in zip(feature_names, importances, strict=True)
+        name: float(imp) for name, imp in zip(feature_names, importances, strict=True)
     }
 
     return result

@@ -2,9 +2,49 @@ import asyncio
 
 import pytest
 
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("retries", "delay", "error"),
+    [
+        (0, 0, ValueError),
+        (-1, 0, ValueError),
+        (True, 0, TypeError),
+        (1.5, 0, TypeError),
+        (1, -1, ValueError),
+        (1, float("nan"), ValueError),
+        (1, float("inf"), ValueError),
+        (1, "1", TypeError),
+        (1, True, TypeError),
+    ],
+)
+async def test_retry_async_rejects_invalid_configuration(retries, delay, error) -> None:
+    async def task():
+        pytest.fail("task must not run for invalid retry settings")
+
+    with pytest.raises(error):
+        await retry_async(task, retries, delay)
+
+
+@pytest.mark.asyncio
+async def test_retry_async_single_attempt_does_not_sleep(monkeypatch) -> None:
+    from unittest.mock import AsyncMock
+
+    sleep = AsyncMock()
+    monkeypatch.setattr(asyncio, "sleep", sleep)
+    error = ValueError("failure")
+    task = AsyncMock(side_effect=error)
+    with pytest.raises(ValueError) as caught:
+        await retry_async(task, 1, 0)
+    assert caught.value is error
+    task.assert_awaited_once()
+    sleep.assert_not_awaited()
+
+
 try:
     import aiohttp
     from pyutils_collection.asyncio_functions.retry_async import retry_async
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False
@@ -126,24 +166,23 @@ async def test_retry_async_fails_all_retries() -> None:
 
 
 @pytest.mark.asyncio
-async def test_retry_async_delay_between_retries() -> None:
+async def test_retry_async_delay_between_retries(monkeypatch) -> None:
     """
     Test case 6: Verify delay is applied between retries.
     """
-    # Arrange
-    call_times = []
+    from unittest.mock import AsyncMock, call
+
+    requested_sleep = AsyncMock()
+    monkeypatch.setattr(asyncio, "sleep", requested_sleep)
+    attempts = []
 
     async def failing_task() -> None:
-        call_times.append(asyncio.get_event_loop().time())
+        attempts.append(len(attempts))
         raise ValueError("Fail")
 
     # Act & Assert
     with pytest.raises(ValueError):
         await retry_async(failing_task, retries=3, delay=0.05)
 
-    # Verify timing
-    assert len(call_times) == 3
-    if len(call_times) >= 2:
-        # Check delay between first and second call
-        delay = call_times[1] - call_times[0]
-        assert 0.04 <= delay <= 0.07
+    assert len(attempts) == 3
+    assert requested_sleep.await_args_list == [call(0.05), call(0.05)]

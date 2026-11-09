@@ -1,6 +1,7 @@
 """Rate-limited async function execution."""
 
 import asyncio
+import math
 import time
 from collections import deque
 from collections.abc import Awaitable, Callable, Iterable
@@ -52,9 +53,14 @@ async def async_rate_limited(
     >>> asyncio.run(async_rate_limited(double, [1, 2, 3], max_calls=2, period=1))
     [2, 4, 6]
     """
-    if not isinstance(max_calls, int) or max_calls <= 0:
+    if not isinstance(max_calls, int) or isinstance(max_calls, bool) or max_calls <= 0:
         raise ValueError("max_calls must be a positive integer")
-    if not isinstance(period, (int, float)) or period <= 0:
+    if (
+        not isinstance(period, (int, float))
+        or isinstance(period, bool)
+        or not math.isfinite(period)
+        or period <= 0
+    ):
         raise ValueError("period must be a positive number")
 
     results: list[R] = []
@@ -64,7 +70,8 @@ async def async_rate_limited(
         now = time.monotonic()
         while timestamps and now - timestamps[0] >= period:
             timestamps.popleft()
-        if len(timestamps) >= max_calls:
+        # A timer may wake early; keep waiting until capacity actually expires.
+        while len(timestamps) >= max_calls:
             await asyncio.sleep(period - (now - timestamps[0]))
             now = time.monotonic()
             while timestamps and now - timestamps[0] >= period:

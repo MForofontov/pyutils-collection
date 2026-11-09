@@ -148,7 +148,7 @@ def count_code_lines(file_path: str | Path) -> CodeLineCount:
         non_source_lines = blank_lines + comment_lines + docstring_lines
         source_lines = max(0, total_lines - non_source_lines)
 
-    except (tokenize.TokenError, UnicodeDecodeError):
+    except tokenize.TokenError, UnicodeDecodeError:
         # If tokenization fails, fall back to simple counting
         source_lines = total_lines - blank_lines
 
@@ -229,7 +229,7 @@ def count_code_lines_directory(
         try:
             counts = count_code_lines(py_file)
             results[str(py_file)] = counts
-        except (ValueError, FileNotFoundError):
+        except ValueError, FileNotFoundError:
             # Skip files that can't be processed
             continue
 

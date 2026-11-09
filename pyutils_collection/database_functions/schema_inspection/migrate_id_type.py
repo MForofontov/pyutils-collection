@@ -7,11 +7,13 @@ handling all foreign key relationships.
 """
 
 import logging
-from collections.abc import Callable
+import uuid
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from typing import Any
 
 from sqlalchemy import MetaData, inspect, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -201,7 +203,7 @@ def migrate_id_type(
         )
         logger.info(f"Found {len(fk_relationships)} foreign key relationships")
 
-        with engine.begin() as conn:
+        with _migration_connection(engine) as conn:
             # Disable foreign key constraints (database-specific)
             _disable_fk_constraints(conn, engine.dialect.name)
 
@@ -349,7 +351,8 @@ def _create_id_mapping(
         Mapping of old ID strings to new ID strings.
     """
     # Fetch all existing IDs
-    query = text(f"SELECT {id_column} FROM {table_name}")
+    quote = conn.dialect.identifier_preparer.quote
+    query = text(f"SELECT {quote(id_column)} FROM {quote(table_name)}")
     result = conn.execute(query)
 
     id_mapping = {}
@@ -451,6 +454,33 @@ def _update_foreign_key_table(
     return rows_updated
 
 
+@contextmanager
+def _migration_connection(engine: Engine) -> Generator[Connection]:
+    if engine.dialect.name != "sqlite":
+        with engine.begin() as connection:
+            yield connection
+        return
+    with engine.connect() as connection:
+        original_fk_state = connection.exec_driver_sql(
+            "PRAGMA foreign_keys"
+        ).scalar_one()
+        connection.commit()
+        connection.exec_driver_sql("PRAGMA foreign_keys = OFF")
+        connection.commit()
+        try:
+            with connection.begin():
+                # Include temporary DDL in the same physical transaction as data.
+                connection.exec_driver_sql("BEGIN")
+                yield connection
+        finally:
+            connection.exec_driver_sql(
+                "PRAGMA foreign_keys = ON"
+                if original_fk_state
+                else "PRAGMA foreign_keys = OFF"
+            )
+            connection.commit()
+
+
 def _execute_batch_update(
     conn: Any,
     table_name: str,
@@ -476,17 +506,47 @@ def _execute_batch_update(
     int
         Number of rows updated.
     """
-    # Build CASE statement for batch update
+    if not batch:
+        return 0
+    quote = conn.dialect.identifier_preparer.quote
+    table_name = quote(table_name)
+    column_name = quote(column_name)
+    if conn.dialect.name == "sqlite":
+        # Indexed lookups avoid a linear CASE scan per matched row, including
+        # foreign-key columns without their own index. One bound pair per insert
+        # also avoids SQLite's per-statement parameter limit on large batches.
+        mapping = quote(f"_pyutils_id_map_{uuid.uuid4().hex}")
+        conn.exec_driver_sql(
+            f"CREATE TEMP TABLE {mapping} (old_id TEXT PRIMARY KEY, new_id TEXT NOT NULL) WITHOUT ROWID"
+        )
+        try:
+            conn.execute(
+                text(
+                    f"INSERT INTO {mapping} (old_id, new_id) VALUES (:old_id, :new_id)"
+                ),
+                [{"old_id": old, "new_id": new} for new, old in batch],
+            )
+            result = conn.execute(
+                text(
+                    f"UPDATE {table_name} SET {column_name} = "
+                    f"(SELECT new_id FROM {mapping} WHERE old_id = {table_name}.{column_name}) "
+                    f"WHERE {column_name} IN (SELECT old_id FROM {mapping})"
+                )
+            )
+            return int(result.rowcount or 0)
+        finally:
+            conn.exec_driver_sql(f"DROP TABLE {mapping}")
+    # Only CASE-based dialects need these strings and bound parameters.
     case_parts = []
     old_ids = []
-
-    for new_id, old_id in batch:
-        case_parts.append(f"WHEN '{old_id}' THEN '{new_id}'")
-        old_ids.append(f"'{old_id}'")
-
+    parameters: dict[str, str] = {}
+    for index, (new_id, old_id) in enumerate(batch):
+        case_parts.append(f"WHEN :old_{index} THEN :new_{index}")
+        old_ids.append(f":old_{index}")
+        parameters[f"old_{index}"] = old_id
+        parameters[f"new_{index}"] = new_id
     case_statement = " ".join(case_parts)
     where_clause = ", ".join(old_ids)
-
     query = text(
         f"""
         UPDATE {table_name}
@@ -497,7 +557,7 @@ def _execute_batch_update(
         """
     )
 
-    result = conn.execute(query)
+    result = conn.execute(query, parameters)
     return result.rowcount or 0
 
 

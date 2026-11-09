@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 try:
     import requests
@@ -23,7 +23,9 @@ def test_get_public_ip_type() -> None:
     """
     Test case 1: get_public_ip returns a string.
     """
-    ip = get_public_ip()
+    response = MagicMock(text="203.0.113.7")
+    with patch("requests.get", return_value=response):
+        ip = get_public_ip()
     assert isinstance(ip, str)
 
 
@@ -31,7 +33,9 @@ def test_get_public_ip_format() -> None:
     """
     Test case 2: IP address format is correct (IPv4).
     """
-    ip = get_public_ip()
+    response = MagicMock(text="203.0.113.7")
+    with patch("requests.get", return_value=response):
+        ip = get_public_ip()
     parts = ip.split(".")
     assert len(parts) == 4
     assert all(part.isdigit() and 0 <= int(part) <= 255 for part in parts)

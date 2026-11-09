@@ -1,8 +1,9 @@
 """Parallel async download with chunking support."""
 
-import asyncio
-
 import aiohttp
+
+from ._download_writer import download_writer
+from .gather_with_timeout import gather_with_timeout
 
 
 async def async_parallel_download(
@@ -39,6 +40,9 @@ async def async_parallel_download(
     Notes
     -----
     Requires server support for HTTP Range requests.
+    Every response must report the requested range and length. Output is staged
+    beside the destination and replaced only after all chunks succeed. Failed
+    work is cancelled and awaited before returning; existing files survive errors.
 
     Complexity
     ----------
@@ -68,7 +72,7 @@ async def async_parallel_download(
                 resp.raise_for_status()
                 size = int(resp.headers.get("Content-Length", 0))
                 accept_ranges = resp.headers.get("Accept-Ranges", "none")
-                if size == 0 or accept_ranges.lower() != "bytes":
+                if size <= 0 or accept_ranges.lower() != "bytes":
                     raise RuntimeError(
                         "Server does not support range requests or file size unknown"
                     )
@@ -89,16 +93,25 @@ async def async_parallel_download(
                 headers = {"Range": f"bytes={start}-{end}"}
                 async with session.get(url, headers=headers) as resp:
                     resp.raise_for_status()
+                    if resp.status != 206:
+                        raise RuntimeError("Server did not honor the requested range")
+                    if (
+                        resp.headers.get("Content-Range")
+                        != f"bytes {start}-{end}/{size}"
+                    ):
+                        raise RuntimeError("Server returned a different range")
                     data = await resp.content.read()
+                    if len(data) != end - start + 1:
+                        raise RuntimeError("Range response has an unexpected length")
                     return idx, data
 
             tasks = [
                 fetch_chunk(start, end, idx) for idx, (start, end) in enumerate(ranges)
             ]
-            results = await asyncio.gather(*tasks)
+            results = await gather_with_timeout(tasks, timeout)
             # Write chunks in order
             results.sort()
-            with open(dest_path, "wb") as f:
+            with download_writer(dest_path) as f:
                 for _, data in results:
                     f.write(data)
     except Exception as exc:
