@@ -72,14 +72,15 @@ async def test_stream_download_preserves_original(tmp_path, monkeypatch, failure
 
         response.iter_chunked = chunks
     monkeypatch.setattr(module.aiohttp, "ClientSession", lambda **_: Session(response))
-    if failure in {"sync", "replace"}:
-        monkeypatch.setattr(
-            writer.os,
-            "fsync" if failure == "sync" else "replace",
-            Mock(side_effect=OSError("failed")),
-        )
-    with pytest.raises(asyncio.CancelledError if failure == "cancel" else RuntimeError):
-        await module.async_download("https://example.com", str(destination))
+    with monkeypatch.context() as operation_patch:
+        if failure in {"sync", "replace"}:
+            operation_patch.setattr(
+                writer.os,
+                "fsync" if failure == "sync" else "replace",
+                Mock(side_effect=OSError("failed")),
+            )
+        with pytest.raises(asyncio.CancelledError if failure == "cancel" else RuntimeError):
+            await module.async_download("https://example.com", str(destination))
     assert destination.read_bytes() == b"original"
     assert list(tmp_path.iterdir()) == [destination]
 
