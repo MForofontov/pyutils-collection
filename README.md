@@ -11,7 +11,7 @@
 A collection of **500+ utility functions** across **31 specialized modules**, designed for **copy-paste reuse** or **pip install**. Functions include type hints, docstrings, and focused tests.
 
 **Philosophy:**
-- 📋 **Copy-paste friendly** - Functions work standalone
+- 📋 **Copy-paste friendly** - Copy utilities with their imports and supporting helpers
 - 🔒 **Type-safe** - Complete type hints (Python 3.15+)
 - 📝 **Self-documenting** - NumPy-style docstrings with examples
 - ✅ **Tested** - 5,500+ unit tests; measured coverage and skips are recorded in the maintenance plan
@@ -19,18 +19,20 @@ A collection of **500+ utility functions** across **31 specialized modules**, de
 
 ## 📦 Quick Start
 
-Use **Python 3.15+** for the current release. Earlier Python versions require an
-older compatible release; see the [changelog](CHANGELOG.md). The PyPI badges show
-the published package, while this checkout may contain unreleased maintenance.
+Version **0.2.2** requires **Python 3.15+** with `compression.zstd`. Release
+0.1.5 declared Python 3.10+ support. See the
+[changelog](CHANGELOG.md) for release history. The PyPI badges show the published
+package; development checkouts may contain changes listed under `Unreleased`.
 
 
 ```bash
 # Install from PyPI
-pip install pyutils-collection
+python -m pip install pyutils-collection==0.2.2
 
 # Or clone and copy what you need
 git clone https://github.com/MForofontov/pyutils-collection.git
-cd pyutils-collection/pyutils_collection
+cd pyutils-collection
+# Copy utilities from the pyutils_collection/ directory as needed.
 
 # Or install the checked-out version for development
 python -m pip install -e ".[dev]"
@@ -74,32 +76,36 @@ values; malformed present values raise an error instead of using a default.
 
 ### Selected utility families
 
-| Module | Count | Description |
+Counts below are public names exported by each family's top-level module,
+including classes and submodules, excluding `__version__`. Some families also
+provide utilities through nested modules. Playwright exports require its extra.
+
+| Module | Exports | Description |
 |--------|-------|-------------|
-| 🔄 **asyncio_functions** | 17 | Async/await, connection pools, rate limiting, HTTP |
+| 🔄 **asyncio_functions** | 20 | Async/await, connection pools, rate limiting, HTTP |
 | 🗜️ **compression_functions** | 27 | GZIP, BZ2, LZMA, Snappy, Zstandard, polyline encoding |
-| 🗄️ **database_functions** | 23 | SQLAlchemy utils, transactions, schema inspection |
+| 🗄️ **database_functions** | 14 | SQLAlchemy utils, transactions, schema inspection |
 | 📅 **datetime_functions** | 27 | Timezone conversion, business days, humanization |
-| 🎨 **decorators** | 50+ | Caching, retry, timeout, type checking, profiling |
-| 📁 **file_functions** | 32 | I/O, hashing, search, temp files, format conversion |
+| 🎨 **decorators** | 31 | Caching, retry, timeout, type checking, profiling |
+| 📁 **file_functions** | 33 | I/O, hashing, search, temp files, format conversion |
 | 🌐 **http_functions** | 9 | REST operations, downloads, query strings |
-| 🔄 **iterable_functions** | 55 | Chunking, filtering, grouping, flattening |
-| 🧮 **mathematical_functions** | 5 | GCD, LCM, primes, factorial, fibonacci |
+| 🔄 **iterable_functions** | 58 | Chunking, filtering, grouping, flattening |
+| 🧮 **mathematical_functions** | 5 | Real-valued powers and random sampling |
 | 🔐 **security_functions** | 12 | Encryption (AES/RSA), hashing, JWT tokens |
 | 📊 **serialization_functions** | 28 | CSV, Excel, Parquet with streaming & conversion |
-| 🔌 **ssh_functions** | 12 | Remote execution, SFTP, key generation |
-| 🧪 **testing_functions** | 24 | Fixtures, mocks, assertions, test data generators |
-| 🌍 **network_functions** | 28 | IP utilities, DNS, port scanning, connectivity |
+| 🔌 **ssh_functions** | 6 | SSH commands and local/remote implementation modules |
+| 🧪 **testing_functions** | 29 | Fixtures, mocks, assertions, test data generators |
+| 🌍 **network_functions** | 19 | IP utilities, DNS, port scanning, connectivity |
 | 🌐 **web_scraping_functions** | 18 | HTML/CSS/XPath parsing, table extraction |
 | 🎭 **playwright_functions** | 6 | Browser automation, screenshots, session management |
-| 🔗 **url_functions** | 8 | Parse, build, validate, normalize URLs |
+| 🔗 **url_functions** | 7 | Parse, build, validate, normalize URLs |
 |  **regex_functions** | 5 | Email/phone/URL validation & extraction |
-| ⚙️ **cli_functions** | 16 | System info, process management, environment vars |
+| ⚙️ **cli_functions** | 15 | System info, process management, environment vars |
 | 📝 **logger_functions** | 7 | Logger setup, function logging, rotation |
-| 🔄 **multiprocessing_functions** | 19 | Parallel processing, pool management |
-| 🔧 **batch_processing_functions** | 2 | Chunked processing, streaming aggregation |
-| 🌿 **env_config_functions** | 6 | Config loading (env, YAML, TOML) |
-| ✅ **data_validation** | Many | Type/schema validation, Pydantic/Cerberus support |
+| 🔄 **multiprocessing_functions** | 13 | Parallel processing, pool management |
+| 🔧 **batch_processing_functions** | 3 | Chunked processing, streaming aggregation |
+| 🌿 **env_config_functions** | 7 | Environment validation and config loading (env, YAML, TOML, INI) |
+| ✅ **data_validation** | 7 | Type/schema validation, Pydantic/Cerberus support |
 
 ## 🔑 Key Features
 
@@ -183,6 +189,28 @@ def fetch_user_data(user_id: int) -> dict:
     # Function logic here
     return {"id": user_id, "name": "John"}
 ```
+
+`cache` and `cache_with_expiration` require hashable arguments and treat keyword
+insertion order as part of the call. Wrapped exceptions propagate unchanged and
+are not cached. Expiring caches use monotonic elapsed seconds, so changing the
+system clock does not change cache lifetimes; a zero lifetime disables reuse.
+
+### Numerical Results and Diagnostics
+
+`calculate_moving_statistics` uses exactly the requested width. Even widths place
+the extra sample on the left of the current sample; edges use partial windows.
+Standard deviation uses the population definition. `power` returns real numbers
+and raises `ValueError` for negative bases with fractional exponents, overflow,
+and zero raised to negative exponents.
+
+`smooth_timeseries` also places the extra sample on the left for even moving
+averages, preserving original boundary values where a complete window cannot
+fit. Moving-average windows must fit the series; exponential smoothing allows
+larger windows because its window controls the smoothing factor.
+
+`ContextualLogger.exception()` includes the active exception and traceback by
+default. Pass `exc_info=False` to suppress them, or supply saved exception
+information using `exc_info`. Context and additional metadata remain attached.
 
 ### File Operations
 ```python

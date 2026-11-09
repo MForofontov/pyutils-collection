@@ -29,7 +29,8 @@ def smooth_timeseries(
         - 'exponential': Exponential moving average
         - 'savgol': Savitzky-Golay filter (requires scipy)
     window_size : int, optional
-        Window size for smoothing (by default 5).
+        Window size for smoothing (by default 5). Moving-average windows must
+        not exceed the number of samples.
     polynomial_order : int, optional
         Polynomial order for Savitzky-Golay filter (by default 2).
 
@@ -58,7 +59,9 @@ def smooth_timeseries(
 
     Notes
     -----
-    Moving average uses 'valid' convolution, padding edges with original values.
+    Moving averages use complete windows and retain original values at boundary
+    positions without a complete window. Even widths place the extra sample on
+    the left of the current sample. Output length matches input length.
     Exponential moving average uses alpha = 2 / (window_size + 1).
 
     Complexity
@@ -94,6 +97,11 @@ def smooth_timeseries(
     if window_size < 1:
         raise ValueError(f"window_size must be positive, got {window_size}")
 
+    if method == "moving_average" and window_size > data_array.size:
+        raise ValueError(
+            f"window_size ({window_size}) cannot exceed data length ({data_array.size})"
+        )
+
     if method == "savgol" and window_size % 2 == 0:
         raise ValueError(
             f"window_size must be odd for savgol method, got {window_size}"
@@ -111,10 +119,12 @@ def smooth_timeseries(
         kernel = np.ones(window_size) / window_size
         smoothed = np.convolve(data_array, kernel, mode="same")
 
-        # Fix edge effects by using original values
+        # Retain originals only where no complete window fits.
         half_window = window_size // 2
         smoothed[:half_window] = data_array[:half_window]
-        smoothed[-half_window:] = data_array[-half_window:]
+        right_window = (window_size - 1) // 2
+        if right_window:
+            smoothed[-right_window:] = data_array[-right_window:]
 
     elif method == "exponential":
         # Exponential moving average
