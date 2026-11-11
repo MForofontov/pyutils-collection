@@ -35,7 +35,7 @@ cd pyutils-collection
 # Copy utilities from the pyutils_collection/ directory as needed.
 
 # Or install the checked-out version for development
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,playwright]"
 ```
 
 ## 📦 Modules Overview
@@ -274,7 +274,7 @@ interruptions always attempt rollback and release before propagating.
 
 ```bash
 # Install development dependencies
-python -m pip install -e '.[dev]'
+python -m pip install -e '.[dev,playwright]'
 
 # Unit tests and package coverage
 python scripts/run_with_deadline.py --seconds 900 --log .major-check/unit.log -- python -m pytest pytest/unit --cov=pyutils_collection --cov-report=html --junitxml=.major-check/unit.xml

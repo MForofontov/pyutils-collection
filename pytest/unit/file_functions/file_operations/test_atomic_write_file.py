@@ -40,9 +40,10 @@ def test_failure_preserves_destination_and_cleans_temporary_file(
     def fail(*args):
         raise OSError("simulated failure")
 
-    monkeypatch.setattr(os, failure_point, fail)
-    with pytest.raises(OSError, match="simulated failure"):
-        atomic_write_file(destination, b"replacement")
+    with monkeypatch.context() as operation_patch:
+        operation_patch.setattr(os, failure_point, fail)
+        with pytest.raises(OSError, match="simulated failure"):
+            atomic_write_file(destination, b"replacement")
     assert destination.exists() is existing
     if existing:
         assert destination.read_bytes() == b"original"

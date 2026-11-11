@@ -105,9 +105,10 @@ def test_csv_publish_failure_preserves_destination(tmp_path, monkeypatch, failur
     def fail(*args):
         raise OSError("publish failed")
 
-    monkeypatch.setattr("os.fsync" if failure == "sync" else "os.replace", fail)
-    with pytest.raises(OSError, match="publish failed"):
-        transform_csv_columns(source, destination)
+    with monkeypatch.context() as operation_patch:
+        operation_patch.setattr("os.fsync" if failure == "sync" else "os.replace", fail)
+        with pytest.raises(OSError, match="publish failed"):
+            transform_csv_columns(source, destination)
     assert destination.read_bytes() == b"previous output"
     assert sorted(path.name for path in tmp_path.iterdir()) == [
         "output.csv",
