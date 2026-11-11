@@ -1,9 +1,12 @@
 """SSH command execution using paramiko."""
 
 import getpass
+import math
 from typing import Any
 
 import paramiko
+
+from pyutils_collection.ssh_functions.remote._output import read_command_output
 
 
 def ssh_execute_command(
@@ -60,6 +63,8 @@ def ssh_execute_command(
     -----
     Uses paramiko for SSH connectivity. Either password or key_filename should be provided
     for authentication. If neither is provided, attempts to use default SSH keys.
+    Output streams are drained together with a finite output-collection deadline;
+    large stderr output cannot block stdout. Unused command stdin is closed.
 
     Complexity
     ----------
@@ -86,17 +91,18 @@ def ssh_execute_command(
         raise ValueError(f"port must be in 1-65535, got {port}")
     if not isinstance(timeout, (int, float)):
         raise TypeError(f"timeout must be a number, got {type(timeout).__name__}")
-    if timeout <= 0:
-        raise ValueError(f"timeout must be positive, got {timeout}")
+    if timeout <= 0 or not math.isfinite(timeout):
+        raise ValueError(f"timeout must be positive and finite, got {timeout}")
 
     # Default to current user if not specified
     if user is None:
         user = getpass.getuser()
 
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
         # Connect to the remote host
         client.connect(
             hostname=host,
@@ -108,12 +114,13 @@ def ssh_execute_command(
         )
 
         # Execute the command
-        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
+        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)  # nosec B601 # Runs the caller's requested remote command.
 
         # Get results
-        stdout_data = stdout.read().decode("utf-8").strip()
-        stderr_data = stderr.read().decode("utf-8").strip()
-        exit_code = stdout.channel.recv_exit_status()
+        stdin.close()
+        stdout_data, stderr_data, exit_code = read_command_output(
+            stdout, stderr, timeout
+        )
 
         return {
             "stdout": stdout_data,

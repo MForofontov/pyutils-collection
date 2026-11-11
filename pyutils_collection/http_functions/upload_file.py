@@ -7,6 +7,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from ._transport import open_http
+
 
 def upload_file(
     url: str,
@@ -58,6 +60,8 @@ def upload_file(
     """
     if not isinstance(url, str) or not url.strip():
         raise ValueError("URL must be a non-empty string")
+    if urllib.parse.urlsplit(url).scheme.lower() not in {"http", "https"}:
+        raise ValueError("URL must use http or https")
 
     if not isinstance(file_path, str) or not file_path.strip():
         raise ValueError("file_path must be a non-empty string")
@@ -118,7 +122,7 @@ def upload_file(
             req.add_header(key, value)
 
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with open_http(req, timeout=timeout) as response:
             content = response.read().decode("utf-8")
             return {
                 "status_code": response.getcode(),

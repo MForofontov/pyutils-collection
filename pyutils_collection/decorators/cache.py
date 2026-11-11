@@ -7,6 +7,7 @@ from typing import Any, ParamSpec, TypeVar, cast
 
 P = ParamSpec("P")
 R = TypeVar("R")
+_MISSING = object()
 
 
 def cache(func: Callable[P, R]) -> Callable[P, R]:
@@ -28,6 +29,11 @@ def cache(func: Callable[P, R]) -> Callable[P, R]:
     TypeError
         If the decorated function is later called with unhashable arguments.
 
+    Notes
+    -----
+    Keyword insertion order is part of the cache key. Exceptions from the
+    wrapped function propagate unchanged and are never cached.
+
     Examples
     --------
     >>> @cache
@@ -40,7 +46,7 @@ def cache(func: Callable[P, R]) -> Callable[P, R]:
     >>> add.cache_clear()
     """
 
-    cached_results: dict[tuple[tuple[Any, ...], frozenset[tuple[str, Any]]], Any] = {}
+    cached_results: dict[tuple[tuple[Any, ...], tuple[tuple[str, Any], ...]], Any] = {}
     cache_lock = threading.RLock()
 
     @wraps(func)
@@ -65,20 +71,17 @@ def cache(func: Callable[P, R]) -> Callable[P, R]:
         TypeError
             If the arguments are unhashable.
         """
-        try:
-            # Create a key based on the function arguments
-            key: tuple[tuple[Any, ...], frozenset[tuple[str, Any]]] = (
-                args,
-                frozenset(kwargs.items()),
-            )
-
-            # Check if the result is already cached
-            with cache_lock:
-                if key not in cached_results:
-                    cached_results[key] = func(*args, **kwargs)
-                return cached_results[key]  # type: ignore[no-any-return]
-        except TypeError as exc:
-            raise TypeError(f"Unhashable arguments: {exc}") from exc
+        key = (args, tuple(kwargs.items()))
+        with cache_lock:
+            # A single lookup validates hashability and checks for cached None.
+            try:
+                result = cached_results.get(key, _MISSING)
+            except TypeError as exc:
+                raise TypeError(f"Unhashable arguments: {exc}") from exc
+            if result is _MISSING:
+                result = func(*args, **kwargs)
+                cached_results[key] = result
+            return result  # type: ignore[no-any-return]
 
     def cache_clear() -> None:
         """Public method to clear the cached results for ``func``."""

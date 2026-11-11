@@ -101,18 +101,20 @@ def merge_query_params(
     # Add existing parameters if not replacing
     if not replace:
         for key, values in existing_params.items():
+            if key in params:
+                continue
             for value in values:
                 final_params.append((key, value))
 
     # Add/merge new parameters
+    remaining_keys = set(params)
     for key, value in params.items():
-        # Remove existing key if replacing or if new value provided
-        if replace or key in params:
-            final_params = [(k, v) for k, v in final_params if k != key]
-
+        remaining_keys.remove(key)
         # Handle different value types
         if isinstance(value, list):
-            if list_separator:
+            if not value:
+                continue
+            if list_separator is not None:
                 # Join list with separator
                 final_params.append((key, list_separator.join(str(v) for v in value)))
             else:
@@ -123,7 +125,9 @@ def merge_query_params(
             # Flatten nested dict (simple one-level flattening)
             for nested_key, nested_value in value.items():
                 full_key = f"{key}[{nested_key}]"
-                final_params.append((full_key, str(nested_value)))
+                # A later explicit key overrides this generated nested key.
+                if full_key not in remaining_keys:
+                    final_params.append((full_key, str(nested_value)))
         elif value is None:
             # Skip None values
             continue

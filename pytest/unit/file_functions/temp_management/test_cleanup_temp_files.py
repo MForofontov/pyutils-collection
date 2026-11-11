@@ -10,6 +10,49 @@ pytestmark = [pytest.mark.unit, pytest.mark.file_functions]
 from pyutils_collection.file_functions import cleanup_temp_files
 
 
+@pytest.mark.parametrize("age,error", [
+    (float("nan"), ValueError), (float("inf"), ValueError),
+    (float("-inf"), ValueError), (True, TypeError),
+])
+def test_cleanup_temp_files_rejects_nonfinite_age(tmp_path, age, error) -> None:
+    with pytest.raises(error):
+        cleanup_temp_files(tmp_path, max_age_hours=age)
+
+
+@pytest.mark.parametrize("pattern", ["", "../*.txt", "nested/../../*.txt"])
+def test_cleanup_temp_files_rejects_parent_traversal(tmp_path, pattern) -> None:
+    folder = tmp_path / "inside"
+    folder.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("keep")
+    os.utime(outside, (0, 0))
+    with pytest.raises(ValueError, match="pattern"):
+        cleanup_temp_files(folder, pattern=pattern)
+    assert outside.read_text() == "keep"
+
+
+def test_cleanup_temp_files_rejects_absolute_pattern(tmp_path) -> None:
+    with pytest.raises(ValueError, match="pattern"):
+        cleanup_temp_files(tmp_path, pattern=str(tmp_path / "*.txt"))
+
+
+def test_cleanup_temp_files_stats_each_candidate_once(tmp_path, monkeypatch) -> None:
+    candidate = tmp_path / "old.txt"
+    candidate.write_text("old")
+    os.utime(candidate, (0, 0))
+    calls = []
+    original_stat = Path.stat
+
+    def stat(path, *args, **kwargs):
+        if path == candidate:
+            calls.append(path)
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", stat)
+    assert cleanup_temp_files(tmp_path, dry_run=True) == [str(candidate)]
+    assert len(calls) == 1
+
+
 def test_cleanup_temp_files_normal_operation() -> None:
     """
     Test case 1: Normal operation cleaning old files.
@@ -210,5 +253,4 @@ def test_cleanup_temp_files_file_access_error_handling() -> None:
             # Assert - only accessible file should be deleted
             assert len(deleted_files) == 1
             assert "accessible.txt" in deleted_files[0]
-            assert inaccessible_file.exists()  # Inaccessible file still exists
-
+        assert inaccessible_file.exists()  # Inaccessible file still exists

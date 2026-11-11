@@ -1,0 +1,11 @@
+---
+description: Repository conventions and mandatory documentation and version updates
+alwaysApply: true
+---
+
+Read and follow [AGENTS.md](../../AGENTS.md) at the repository root.
+Always update documentation based on the changes and update the package version
+once per completed changeset, following its versioning policy.
+Read applicable shared workflows linked there under
+`.agents/skills/` for broad maintenance or documentation/release work.
+Do not duplicate those instructions here.

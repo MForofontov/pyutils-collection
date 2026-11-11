@@ -83,7 +83,7 @@ def correlation_analysis(
         )
     if not isinstance(alpha, (int, float)):
         raise TypeError(f"alpha must be a number, got {type(alpha).__name__}")
-    if alpha <= 0 or alpha >= 1:
+    if not 0 < alpha < 1:
         raise ValueError(f"alpha must be between 0 and 1, got {alpha}")
 
     # Convert to numpy arrays

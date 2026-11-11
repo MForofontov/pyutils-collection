@@ -8,6 +8,8 @@ from typing import Any
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from pyutils_collection.serialization_functions._staged_output import staged_output
+
 
 def append_parquet(
     data: list[dict[str, Any]],
@@ -49,6 +51,9 @@ def append_parquet(
     Requires pyarrow package.
     Schema must match existing file.
     Creates file if it doesn't exist.
+    A failed write leaves an existing destination unchanged. Output is staged
+    beside the destination; existing permission bits are preserved and a
+    destination symlink is replaced rather than followed.
 
     Complexity
     ----------
@@ -100,11 +105,12 @@ def append_parquet(
         combined_table = new_table
 
     # Write combined table
-    pq.write_table(
-        combined_table,
-        file_path,
-        compression=compression.upper() if compression != "none" else None,
-    )
+    with staged_output(file_path) as temporary:
+        pq.write_table(
+            combined_table,
+            temporary,
+            compression=compression.upper() if compression != "none" else None,
+        )
 
 
 __all__ = ["append_parquet"]

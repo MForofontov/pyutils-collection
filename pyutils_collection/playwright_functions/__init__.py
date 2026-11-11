@@ -19,12 +19,12 @@ from pyutils_collection._version import __version__
 
 # Import functions (gracefully handle missing playwright)
 try:
-    from .managed_browser import managed_browser
-    from .smart_screenshot import smart_screenshot
     from .extract_dynamic_content import extract_dynamic_content
-    from .save_session import save_session
-    from .restore_session import restore_session
+    from .managed_browser import managed_browser
     from .parallel_scrape import parallel_scrape
+    from .restore_session import restore_session
+    from .save_session import save_session
+    from .smart_screenshot import smart_screenshot
 
     __all__ = [
         "managed_browser",
@@ -38,11 +38,13 @@ try:
 except ImportError as e:
     # Playwright not installed - provide helpful error message
     import warnings
+
     warnings.warn(
         f"playwright_functions requires playwright package. "
         f"Install with: pip install 'pyutils_collection[playwright]'. "
         f"Error: {e}",
-        ImportWarning
+        ImportWarning,
+        stacklevel=2,
     )
 
     __all__ = ["__version__"]

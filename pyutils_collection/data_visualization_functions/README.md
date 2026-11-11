@@ -77,20 +77,20 @@ from data_visualization_functions import create_line_plot, create_scatter_plot
 fig, ax = create_line_plot(
     x=[1, 2, 3, 4],
     y=[[1, 4, 9, 16], [1, 2, 3, 4]],
-    labels=['Squared', 'Linear'],
-    title='Growth Comparison',
-    xlabel='Time',
-    ylabel='Value'
+    labels=["Squared", "Linear"],
+    title="Growth Comparison",
+    xlabel="Time",
+    ylabel="Value",
 )
 
 # Scatter plot
 fig, ax = create_scatter_plot(
     x=[1, 2, 3, 4, 5],
     y=[2, 4, 5, 7, 8],
-    colors='blue',
+    colors="blue",
     sizes=100,
     alpha=0.7,
-    title='Data Points'
+    title="Data Points",
 )
 ```
 
@@ -100,7 +100,7 @@ fig, ax = create_scatter_plot(
 from data_visualization_functions import get_preset_theme, apply_theme
 
 # Apply a professional theme
-theme = get_preset_theme('publication')
+theme = get_preset_theme("publication")
 apply_theme(theme)
 
 # All subsequent plots will use this theme
@@ -112,18 +112,18 @@ apply_theme(theme)
 from data_visualization_functions import (
     generate_color_palette,
     get_colorblind_safe_palette,
-    adjust_brightness
+    adjust_brightness,
 )
 
 # Generate sequential palette
-colors = generate_color_palette(5, palette_type='sequential')
+colors = generate_color_palette(5, palette_type="sequential")
 
 # Get colorblind-safe colors
 safe_colors = get_colorblind_safe_palette(8)
 
 # Adjust color brightness
-darker = adjust_brightness('red', 0.5)  # Darker
-lighter = adjust_brightness('#FF0000', 1.5)  # Lighter
+darker = adjust_brightness("red", 0.5)  # Darker
+lighter = adjust_brightness("#FF0000", 1.5)  # Lighter
 ```
 
 ### Data Transformation for Visualization
@@ -132,23 +132,23 @@ lighter = adjust_brightness('#FF0000', 1.5)  # Lighter
 from data_visualization_functions import (
     normalize_data,
     pivot_for_heatmap,
-    smooth_timeseries
+    smooth_timeseries,
 )
 
 # Normalize data for better visualization
 data = [1, 5, 10, 15, 20]
-normalized = normalize_data(data, method='minmax')
+normalized = normalize_data(data, method="minmax")
 
 # Prepare heatmap data
 matrix, row_labels, col_labels = pivot_for_heatmap(
     data=[10, 20, 30, 40],
-    row_labels=['A', 'A', 'B', 'B'],
-    col_labels=['X', 'Y', 'X', 'Y']
+    row_labels=["A", "A", "B", "B"],
+    col_labels=["X", "Y", "X", "Y"],
 )
 
 # Smooth noisy timeseries
 noisy_data = [1, 5, 2, 8, 3, 9, 4, 7]
-smoothed = smooth_timeseries(noisy_data, method='moving_average', window_size=3)
+smoothed = smooth_timeseries(noisy_data, method="moving_average", window_size=3)
 ```
 
 ### Exporting Figures
@@ -157,22 +157,19 @@ smoothed = smooth_timeseries(noisy_data, method='moving_average', window_size=3)
 from data_visualization_functions import (
     save_figure,
     save_multiple_formats,
-    configure_export_defaults
+    configure_export_defaults,
 )
 
 # Save single figure
-save_figure(fig, 'output/plot.png', dpi=300)
+save_figure(fig, "output/plot.png", dpi=300)
 
 # Save in multiple formats
 paths = save_multiple_formats(
-    fig, 
-    'output/plot',
-    formats=['png', 'pdf', 'svg'],
-    dpi=600
+    fig, "output/plot", formats=["png", "pdf", "svg"], dpi=600
 )
 
 # Configure defaults for all exports
-configure_export_defaults(dpi=300, format='pdf', transparent=True)
+configure_export_defaults(dpi=300, format="pdf", transparent=True)
 ```
 
 ## Advanced Examples
@@ -181,33 +178,31 @@ configure_export_defaults(dpi=300, format='pdf', transparent=True)
 
 ```python
 from data_visualization_functions import (
-    get_preset_theme, apply_theme,
-    create_line_plot, save_multiple_formats
+    get_preset_theme,
+    apply_theme,
+    create_line_plot,
+    save_multiple_formats,
 )
 
 # 1. Apply professional theme
-theme = get_preset_theme('publication')
+theme = get_preset_theme("publication")
 apply_theme(theme)
 
 # 2. Create plot
 fig, ax = create_line_plot(
     x=[1, 2, 3, 4, 5],
     y=[[1, 4, 9, 16, 25], [1, 2, 3, 4, 5]],
-    labels=['Squared', 'Linear'],
-    title='Mathematical Functions',
-    xlabel='Input (x)',
-    ylabel='Output f(x)',
+    labels=["Squared", "Linear"],
+    title="Mathematical Functions",
+    xlabel="Input (x)",
+    ylabel="Output f(x)",
     grid=True,
-    markers=['o', 's']
+    markers=["o", "s"],
 )
 
 # 3. Export in multiple formats
 save_multiple_formats(
-    fig,
-    'publication_plot',
-    formats=['png', 'pdf', 'svg'],
-    dpi=600,
-    transparent=False
+    fig, "publication_plot", formats=["png", "pdf", "svg"], dpi=600, transparent=False
 )
 ```
 
@@ -221,14 +216,14 @@ colors = generate_categorical_colors(3)
 
 # Create grouped bar chart
 fig, ax = create_bar_plot(
-    categories=['Q1', 'Q2', 'Q3', 'Q4'],
+    categories=["Q1", "Q2", "Q3", "Q4"],
     values=[[10, 15, 12, 18], [8, 12, 14, 16], [12, 10, 15, 14]],
-    labels=['Product A', 'Product B', 'Product C'],
-    title='Quarterly Sales by Product',
-    xlabel='Quarter',
-    ylabel='Sales (millions)',
+    labels=["Product A", "Product B", "Product C"],
+    title="Quarterly Sales by Product",
+    xlabel="Quarter",
+    ylabel="Sales (millions)",
     stacked=False,
-    colors=colors
+    colors=colors,
 )
 ```
 
@@ -239,30 +234,28 @@ import matplotlib.pyplot as plt
 from data_visualization_functions import (
     pivot_for_heatmap,
     get_preset_theme,
-    apply_theme
+    apply_theme,
 )
 
 # Apply dark theme
-apply_theme(get_preset_theme('dark'))
+apply_theme(get_preset_theme("dark"))
 
 # Prepare heatmap data
 data = [10, 20, 30, 15, 25, 35, 12, 22, 32]
-rows = ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C']
-cols = ['X', 'Y', 'Z', 'X', 'Y', 'Z', 'X', 'Y', 'Z']
+rows = ["A", "A", "A", "B", "B", "B", "C", "C", "C"]
+cols = ["X", "Y", "Z", "X", "Y", "Z", "X", "Y", "Z"]
 
-matrix, row_labels, col_labels = pivot_for_heatmap(
-    data, rows, cols, agg_func='mean'
-)
+matrix, row_labels, col_labels = pivot_for_heatmap(data, rows, cols, agg_func="mean")
 
 # Create heatmap
 fig, ax = plt.subplots(figsize=(8, 6))
-im = ax.imshow(matrix, cmap='viridis')
+im = ax.imshow(matrix, cmap="viridis")
 ax.set_xticks(range(len(col_labels)))
 ax.set_yticks(range(len(row_labels)))
 ax.set_xticklabels(col_labels)
 ax.set_yticklabels(row_labels)
 plt.colorbar(im, ax=ax)
-plt.title('Heatmap Visualization')
+plt.title("Heatmap Visualization")
 ```
 
 ### Timeseries Smoothing and Analysis
@@ -272,7 +265,7 @@ import numpy as np
 from data_visualization_functions import (
     smooth_timeseries,
     calculate_moving_statistics,
-    create_line_plot
+    create_line_plot,
 )
 
 # Generate noisy timeseries
@@ -282,25 +275,23 @@ noise = np.random.normal(0, 0.2, 100)
 noisy_data = signal + noise
 
 # Apply different smoothing methods
-ma_smoothed = smooth_timeseries(noisy_data, method='moving_average', window_size=5)
-exp_smoothed = smooth_timeseries(noisy_data, method='exponential', window_size=5)
+ma_smoothed = smooth_timeseries(noisy_data, method="moving_average", window_size=5)
+exp_smoothed = smooth_timeseries(noisy_data, method="exponential", window_size=5)
 
 # Calculate moving statistics
 stats = calculate_moving_statistics(
-    noisy_data,
-    window_size=10,
-    statistics=['mean', 'std', 'min', 'max']
+    noisy_data, window_size=10, statistics=["mean", "std", "min", "max"]
 )
 
 # Visualize
 fig, ax = create_line_plot(
     x=t,
     y=[noisy_data, ma_smoothed, exp_smoothed, signal],
-    labels=['Noisy', 'Moving Avg', 'Exponential', 'True Signal'],
-    title='Timeseries Smoothing Comparison',
-    xlabel='Time',
-    ylabel='Value',
-    alpha=[0.3, 1.0, 1.0, 1.0]
+    labels=["Noisy", "Moving Avg", "Exponential", "True Signal"],
+    title="Timeseries Smoothing Comparison",
+    xlabel="Time",
+    ylabel="Value",
+    alpha=[0.3, 1.0, 1.0, 1.0],
 )
 ```
 

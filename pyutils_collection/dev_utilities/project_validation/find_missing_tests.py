@@ -11,9 +11,9 @@ class MissingTest(NamedTuple):
     Attributes
     ----------
     source_file : str
-        Relative path to the source file.
+        Relative path to the source file, using forward slashes on every platform.
     expected_test_file : str
-        Expected path for the test file.
+        Expected relative path for the test file, using forward slashes.
     module : str
         Module name the source file belongs to.
     """
@@ -162,8 +162,10 @@ def find_missing_tests(
             if not test_path.exists():
                 missing_tests.append(
                     MissingTest(
-                        source_file=str(py_file.relative_to(project_path)),
-                        expected_test_file=str(test_path.relative_to(project_path)),
+                        source_file=py_file.relative_to(project_path).as_posix(),
+                        expected_test_file=test_path.relative_to(
+                            project_path
+                        ).as_posix(),
                         module=source_dir,
                     )
                 )

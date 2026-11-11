@@ -16,6 +16,7 @@ from . import (
 
 # Explicit imports for all functions listed in __all__
 from .dictionary_operations import (
+    deep_delete,
     deep_get,
     deep_set,
     dict_structural_difference,
@@ -29,6 +30,7 @@ from .dictionary_operations import (
     merge_dicts_recursive,
     remove_empty_dicts_recursive,
     sort_subdict_by_tuple,
+    unflatten_dict,
 )
 from .list_comparison import (
     all_match_lists,
@@ -50,6 +52,7 @@ from .list_operations import (
     is_nested_list_empty,
     repeat_strings_in_a_list,
     sliding_window,
+    unique_by,
 )
 from .set_operations import (
     check_if_all_sets_are_same,
@@ -77,6 +80,9 @@ from .type_operations import (
 )
 
 __all__ = [
+    "deep_delete",
+    "unflatten_dict",
+    "unique_by",
     # Submodules
     "list_operations",
     "set_operations",

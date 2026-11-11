@@ -20,7 +20,8 @@ def verify_password_bcrypt(
     Returns
     -------
     bool
-        True if the password matches the hash, False otherwise.
+        True if the password matches the hash, False otherwise. Passwords longer
+        than 72 UTF-8 bytes return False rather than being silently truncated.
 
     Raises
     ------
@@ -75,7 +76,10 @@ def verify_password_bcrypt(
 
     try:
         # Verify password against hash
-        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+        password_bytes = password.encode("utf-8")
+        if len(password_bytes) > 72:
+            return False
+        return bcrypt.checkpw(password_bytes, hashed_password.encode("utf-8"))
     except Exception:
         return False
 

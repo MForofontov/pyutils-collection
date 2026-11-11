@@ -1,11 +1,262 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.2.2] - 2026-11-09
+
+### Fixed
+- Preserve keyword insertion order in `cache` and `cache_with_expiration` keys,
+  preventing incorrect reuse when a function observes the order of `**kwargs`.
+- Propagate wrapped functions' `TypeError` instances unchanged instead of
+  reporting them as unhashable arguments. Failed calls remain uncached.
+- Use monotonic elapsed time for cache expiration so system-clock adjustments
+  cannot prematurely expire or prolong cached results.
+- Use exactly the requested width for even rolling-statistics windows, placing
+  the extra sample on the left and retaining partial windows at the edges.
+- Retain every complete even-width moving average in `smooth_timeseries`,
+  including the final valid window. Reject moving-average windows larger than
+  the series instead of returning an incorrectly sized result.
+- Keep `power` results real-valued and report complex-result domains, arithmetic
+  overflow, and zero-to-negative-power failures as `ValueError`. Preserve the
+  original arithmetic exception as the cause where applicable.
+- Include active exception tracebacks in contextual exception logging. Forward
+  `exc_info` as a logging control, honor explicit suppression, and retain custom
+  contextual fields and their precedence.
+
+### Enhanced
+- Use one dictionary lookup for cache hits, including cached `None` results.
+
+### Maintenance
+- Align README release/Python requirements, repository-root installation steps,
+  exported-name counts, and utility descriptions with the 0.2.2 package.
+- Audit the 0.2.2 maintenance changeset with fresh Python 3.15 checks, behavioral
+  cache, numerical, and logging regressions, and paired cache-hit benchmarks. See
+  `MAINTENANCE_PLAN.md` for measured results and local validation limitations.
+
+## [0.2.1] - 2026-11-02
+
+### Fixed
+- Release owned savepoints after rollback or ignored body failures without
+  committing the caller's outer transaction. Propagate setup/release failures
+  in ignore mode and preserve original body errors when rollback cleanup fails.
+- Roll back and release savepoints on cancellation, KeyboardInterrupt, and
+  SystemExit even in ignore mode; propagate the original interruption.
+- Correct the numerical-derivative docstring example to show the first-order
+  endpoint differences actually returned by the central method.
+
+### Added
+- Shared repository guidance, maintenance/documentation skills, and concise
+  Codex, Cursor, Claude, Gemini, and Copilot entry points.
+- Read-only pull-request documentation-impact checks with reviewed exceptions
+  and regression coverage for merge bases, renames, deletions, and fork events.
+
+### Documentation
+- Require documentation updates based on changes and one consistent package
+  version update per completed changeset in repository rules and shared skills.
+- Replace outdated AI instructions and contributor guidance with current package
+  layout, supported Python, validation commands, and documentation requirements.
+- Separate current maintenance evidence and outstanding checks from historical
+  audit records. Preserve published 0.2.0 notes.
+
+## [0.2.0] - 2026-10-30
+
+### Changed
+- Require Python 3.15+ (the previous published release supported Python 3.10+).
+  Public signatures and exports are preserved; dependency pins remain unchanged
+  from the validated Python 3.15 maintenance branch.
+
+### Fixed
+- Generate dotted dependency-graph module names on Windows, retaining nested
+  package imports when external dependencies are excluded.
+- Parse size strings with exact decimal arithmetic before converting to bytes,
+  avoiding float rounding above 2**53 and at fractional-byte boundaries.
+- Create and reuse Playwright drivers/browsers on each scraper worker's own
+  thread. Close contexts when page creation fails and stop drivers even after
+  browser launch/close errors, preserving ordered per-URL results.
+- Keep pagination parameters in the URL query before fragments and encode custom
+  parameter names so delimiter characters cannot introduce extra parameters.
+- Keep temporary-file cleanup inside its selected root when relative glob
+  patterns traverse directory symlinks or Windows junctions, including dry runs.
+- Sanitize Windows device names before multiple extensions and after truncation;
+  reject unsafe replacement characters and remove trailing truncation dots/spaces.
+
+### Tests
+- Validate bound migration values and quoted identifiers on PostgreSQL/MySQL
+  dialects, including drivers that do not report an affected-row count.
+- Exercise real parallel Chromium workers with context isolation and a failing
+  callback; add deterministic thread-ownership and startup/cleanup regressions.
+- Cover exact size parsing and Windows dependency-graph paths.
+- Add alternating baseline/candidate benchmarks against a specified local Git
+  revision, with five samples, output checks, Python allocation peaks, and
+  separately sampled parent/child RSS for all five major-check workload families.
+- Add regressions for cleanup through real directory links and filename safety
+  with custom replacements, multiple extensions, and short length limits.
+
+### Enhanced
+- Avoid constructing unused CASE SQL strings and parameter dictionaries for
+  SQLite ID migration batches; retain the indexed, bound temporary-table update.
+
+## Platform portability follow-up — 2026-10-29
+
+### Fixed
+- Return unavailable CPU-frequency fields as None on platforms without psutil
+  frequency support while preserving CPU count and usage information.
+- Support macOS Bash 3.2 in the test runner without losing quoted arguments or
+  checker exit codes. Isolate the session-restore fixture from host /tmp paths.
+
+## Live-service follow-up — 2026-10-29
+
+### Fixed
+- Run SQLAlchemy connection health queries through its driver-SQL interface and
+  close failed health-check connections and temporary results before retrying.
+- Multiplex SSH stdin, stdout, and stderr to prevent shared-window deadlocks
+  with large stderr or scripts that produce output before reading all input.
+  Enforce a finite input/output collection deadline and reject non-finite
+  timeouts before creating remote SSH clients.
+
+### Validation
+- Add disposable PostgreSQL, MySQL, and OpenSSH/SFTP protocol tests, isolated
+  loopback ports, fixture trust stores, pinned optional test drivers, diagnostic
+  logs, process-tree deadlines, and cleanup of task-owned Docker resources.
+- Add a dedicated service integration CI job alongside HTTP/browser checks.
+
+## Statistical follow-up — 2026-10-29
+
+### Fixed
+- Match independent t-test confidence intervals to the selected equal-variance
+  or Welch model and the two-sided, less, or greater alternative. Report Welch's
+  fractional degrees of freedom without changing the result keys or signature.
+- Collapse descriptive mean intervals to the mean for zero-variance samples.
+- Reject NaN confidence/significance levels consistently in descriptive
+  statistics, correlation analysis, and independent t-tests.
+
+## Major-check follow-up — 2026-10-28
+
+### Fixed
+- Preserve CSV transform, Parquet append/partition, and Excel transpose
+  destinations on callback, writer, sync, or replacement failures through
+  sibling-file staging. Existing permission bits are retained; destination
+  symlinks are replaced rather than followed. CSV transforms support in-place use.
+- Retain NaN-valued Parquet partition rows alongside null groups.
+- Reject malformed JWT JSON objects, invalid base64 characters, and boolean or
+  non-finite expiration claims with predictable validation errors.
+- Correct central first derivatives on uneven grids and accept two-point
+  inputs for the gradient method.
+- Close multicast sockets on setup errors, isolate logger scope metadata, and
+  preserve memory-tracing sessions owned by a caller.
+- Wait for resource-sampling completion with an event after reproducing a stall
+  inside a timed native thread join on the local Windows runtime.
+- Reuse managed SQLite test engines so validation tests close their pooled
+  connections; the database suite also passes with warnings treated as errors.
+
+### Performance and validation
+- Read Excel transpose sources in read-only mode, close workbooks reliably,
+  and avoid padded and transposed list copies. A five-sample paired 2,000×20-cell
+  benchmark with identical staged writes reduced median time from 2.49 s to
+  1.85 s and traced Python peak allocation from 27.05 MB to 13.06 MB. Every output
+  cell matched. These are local measurements, not CI timing thresholds.
+- Add repeatable small/large workload measurements for async mapping,
+  multiprocessing, file listing, serialization, and SQLite mappings. Memory
+  figures exclude native buffers and child-process RSS.
+- Add opt-in real Chromium lifecycle tests and an isolated Ubuntu CI job.
+- Preserve current audit evidence and the per-family review register in
+  `MAINTENANCE_PLAN.md`; remote platform and disposable service gaps remain explicit.
+
+## Unreleased — Python 3.15 migration
+
+### Breaking compatibility
+- Require Python 3.15 or newer; update dependency pins, tooling targets, and the
+  Windows/Linux/macOS CI matrix. Remove Python 3.10 dependency markers and the
+  obsolete Pydantic v1 configuration branch.
+- Replace the third-party zstandard dependency with Python's `compression.zstd`.
+  Public helper signatures and legacy frame compatibility are retained; Python
+  builds must include that standard-library extension. PyYAML 6.0.3 lacks 3.15
+  wheels, so CI uses its supported pure-Python build (`PYYAML_FORCE_LIBYAML=0`).
+
+### Fixed
+- Reject unsafe ZIP destinations and preflight TAR members before writes.
+- Stage async downloads before replacement; reject ignored, mismatched, or
+  truncated parallel ranges and await sibling cleanup on failure.
+- Accept futures in `gather_with_timeout` and clean up on worker, iterator, timeout,
+  and cancellation failures. Reject nested synchronous event-loop execution
+  before creating an unawaited coroutine.
+- Count checked-out connections toward async-pool capacity and reject duplicate
+  registration, duplicate release, and foreign connections.
+- Use SQLAlchemy's savepoint handle without committing an outer transaction;
+  validate SQL savepoint identifiers, including trailing newlines.
+- Bind ID-migration values and quote reflected identifiers; preserve SQLite's
+  foreign-key policy after success or rollback and clean up temporary mappings.
+- Restrict HTTP redirects to HTTP(S) and remove authorization/cookie headers on
+  origin changes without modifying urllib's global opener.
+- Fix CLI SSH script text input, validate destinations and finite deadlines,
+  disambiguate SCP paths/IPv6, and share fixes with legacy import paths.
+- Replace a reproduced scheduler-sensitive retry test with requested-delay checks.
+- Bound resource-monitor shutdown, use interruptible sampling waits and
+  nonblocking CPU samples, respect disabled monitors, and read GC counters
+  without forcing collections. Execution time excludes monitor shutdown.
+
+### Performance and verification
+- Store ordered async-map results directly in a list. Repeatable small/large
+  benchmarks compare results, time, and traced memory with the prior algorithm.
+- Replace quadratic SQLite batch CASE scans with indexed temporary mappings.
+  A local three-sample median for 10,000 rows improved from 1.81 s to 0.10 s;
+  the 100-row case had about 0.17 ms additional overhead.
+- Add family/export/test inventory, dependency-wheel checks, clean-distribution
+  smoke checks, and a deadline runner that terminates spawned worker processes.
+- Record current evidence and remaining release gates in `MAINTENANCE_PLAN.md`.
+
 All notable changes to this package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Fixed
+- Replace vulnerable dependency pins with patched releases and update the pytest/asyncio plugin pair together; retain the documented dnspython 2.8 exception for Python 3.10.
+- Save browser sessions through a temporary file and atomic replacement so serialization or replacement failures preserve existing sessions.
+- Reject bcrypt passwords longer than 72 UTF-8 bytes consistently across bcrypt versions; verification returns false instead of accepting a truncated password.
+- Preserve null Parquet partition rows, sanitize Windows filenames, and reject filename collisions before writing partition files.
+- Handle empty gateway output and command timeouts; measure download speed with a monotonic high-resolution clock.
+- Verify SSH server keys using the user's known-hosts file and close clients when host-key setup fails.
+- Restrict HTTP helpers to HTTP(S) initial URLs before filesystem or network operations.
+- Propagate test and checker failures through CI and the shell runner; scan the actual package and reject missing or erroneous security reports.
+- Recheck async rate-limit capacity after early timer wakeups; reject non-finite limits.
+- Preserve existing download destinations on failures and detect truncated transfers.
+- Return already-converted environment defaults unchanged when variables are absent.
+- Normalize missing-test report paths across operating systems and stabilize JSON diff order.
+- Reject non-finite cleanup ages and patterns that traverse outside the selected directory.
+- Report free disk space on systems without statvfs and skip inaccessible file metadata.
+
+### Changed
+- Make plain pytest invocations collect unit tests only; performance and stress suites require an explicit path.
+- Bound default `parallel_map` workers by input size and avoid starting a pool for empty input; explicit process counts are preserved.
+- Synchronize runtime and development dependency declarations, retain Python 3.10-compatible NumPy/SciPy pins, and require a build backend supporting the package's license metadata.
+- Run pull-request unit checks on Windows and Linux with Python 3.10–3.13, alongside lint, type, and security checks.
+- Correct mixed-value result typing and platform-specific attribute access; apply the configured package formatting rules.
+- Mark MD5 and SHA-1 file checksums as non-security uses and document narrow scanner exceptions for intentional command execution and multicast/route constants.
+- Use cached directory-entry metadata for listings and one stat call per temporary file.
+- Make command, Unicode, temporary-file, and Unix-specific tests portable across platforms.
+- Add MAINTENANCE_PLAN.md with phased checks and remaining validation blockers.
+
+### Added
+- Include the PEP 561 `py.typed` marker in distributions so installed-package type hints are discoverable.
+- Order-preserving `unique_by`, `unflatten_dict`, and nested `deep_delete` utilities.
+- Lazy `date_range` with ascending and descending date or datetime steps.
+- `remove_query_params` with preservation of retained query encoding.
+- `atomic_write_file` for text or binary file replacement with failure cleanup.
+- `async_map_limited` with ordered results, bounded workers, and cancellation cleanup.
+- `validate_env_vars` with converters, defaults, boolean parsing, and grouped errors.
+
+### Tests
+- Execute CI checker pipelines and final-status/report-validation scripts with simulated failures to verify that failed tools and missing scans cannot produce passing pull-request checks.
+- Validate a 1,000-record Pydantic payload without a wall-clock deadline and test browser-session write failures without assuming a particular path is unwritable.
+- Add regression coverage for shell exit codes and quoting, dependency declaration parity, bounded worker counts, gateway failures, UTF-8 bcrypt limits, Parquet partition safety, HTTP schemes, and SSH host-key verification.
+- Replace scheduler-dependent periodic/backoff timing assertions with controlled clocks and recorded sleeps; simulate compression permission metadata consistently across platforms.
+
+### Documentation
+- Correct installed-package import examples and remove the malformed duplicate README appendix; replace outdated coverage and module-count claims with measured maintenance results.
+- Document security behavior corrections and separate unit, performance, and stress-test commands; record validation progress in MAINTENANCE_PLAN.md.
 
 ## [0.1.5] - 2026-08-04
 

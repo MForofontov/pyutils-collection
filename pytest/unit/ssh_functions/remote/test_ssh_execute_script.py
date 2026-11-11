@@ -14,7 +14,7 @@ except ImportError:
 import pytest
 
 pytestmark = pytest.mark.skipif(not PARAMIKO_AVAILABLE, reason="paramiko not installed")
-pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.ssh_functions]
+pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.ssh_functions, pytest.mark.usefixtures("mocked_output_reader")]
 
 
 def test_ssh_execute_script_successful_with_password() -> None:

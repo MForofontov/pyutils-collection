@@ -1,6 +1,6 @@
 """Zstandard compression for binary data."""
 
-import zstandard as zstd
+from compression import zstd
 
 
 def compress_zstd(data: bytes, level: int = 3) -> bytes:
@@ -35,9 +35,7 @@ def compress_zstd(data: bytes, level: int = 3) -> bytes:
 
     try:
         # Create a Zstandard compressor with the specified compression level
-        compressor = zstd.ZstdCompressor(level=level)
-        # Compress the data using Zstandard
-        compressed: bytes = compressor.compress(data)
+        compressed: bytes = zstd.compress(data, level=level)
         return compressed
     except Exception as exc:
         # Raise a ValueError if an error occurs during compression

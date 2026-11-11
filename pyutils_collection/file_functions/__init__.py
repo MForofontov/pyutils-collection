@@ -27,6 +27,7 @@ from .file_hashing import (
     compare_file_hashes,
 )
 from .file_operations import (
+    atomic_write_file,
     check_and_delete_file,
     concat_files,
     copy_file,
@@ -55,6 +56,7 @@ from .temp_management import (
 )
 
 __all__ = [
+    "atomic_write_file",
     # Path operations
     "file_basename",
     "get_paths_dict",

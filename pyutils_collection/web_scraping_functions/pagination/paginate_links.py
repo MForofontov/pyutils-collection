@@ -2,6 +2,8 @@
 Generate pagination links.
 """
 
+from urllib.parse import urlencode, urlsplit, urlunsplit
+
 
 def paginate_links(
     base_url: str,
@@ -48,6 +50,7 @@ def paginate_links(
     Notes
     -----
     Automatically handles existing query parameters.
+    Preserves fragments and URL-encodes the page parameter name.
 
     Complexity
     ----------
@@ -77,10 +80,12 @@ def paginate_links(
         raise ValueError(f"start_page ({start_page}) must be <= end_page ({end_page})")
 
     urls = []
-    separator = "&" if "?" in base_url else "?"
+    parsed = urlsplit(base_url)
 
     for page in range(start_page, end_page + 1):
-        url = f"{base_url}{separator}{page_param}={page}"
+        page_query = urlencode({page_param: page})
+        query = f"{parsed.query}&{page_query}" if parsed.query else page_query
+        url = urlunsplit(parsed._replace(query=query))
         urls.append(url)
 
     return urls

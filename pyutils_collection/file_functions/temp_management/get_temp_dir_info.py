@@ -3,6 +3,8 @@ Get information about system temporary directory.
 """
 
 import os
+import shutil
+import stat
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -72,26 +74,35 @@ def get_temp_dir_info() -> dict[str, Any]:
             file_count = 0
 
             for item in temp_dir_path.rglob("*"):
-                if item.is_file():
-                    try:
-                        file_size = item.stat().st_size
+                try:
+                    file_info = item.stat()
+                    if stat.S_ISREG(file_info.st_mode):
+                        file_size = file_info.st_size
                         total_size += file_size
                         file_count += 1
-                    except OSError:
-                        # Skip files that cannot be accessed
-                        continue
+                except OSError:
+                    # Skip files that cannot be accessed
+                    continue
 
             info["total_files"] = file_count
             info["total_size_bytes"] = total_size
 
             # Get available disk space
             try:
-                statvfs = os.statvfs(temp_dir_path)
+                statvfs_func = getattr(os, "statvfs", None)
+                if statvfs_func is None:
+                    raise AttributeError("statvfs is unavailable")
+                statvfs = statvfs_func(temp_dir_path)
                 available_bytes = statvfs.f_frsize * statvfs.f_bavail
                 info["available_space_bytes"] = available_bytes
-            except (OSError, AttributeError):
-                # statvfs not available on all systems
-                info["available_space_bytes"] = 0
+            except OSError, AttributeError:
+                # Windows has no statvfs; disk_usage supports it natively.
+                try:
+                    info["available_space_bytes"] = shutil.disk_usage(
+                        temp_dir_path
+                    ).free
+                except OSError, AttributeError:
+                    info["available_space_bytes"] = 0
 
     except OSError as e:
         raise OSError(f"Error accessing temporary directory: {e}") from e

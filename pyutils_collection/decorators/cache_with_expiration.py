@@ -19,7 +19,7 @@ def cache_with_expiration(
     Parameters
     ----------
     expiration_time : int
-        The time in seconds for which the cached result is valid.
+        Nonnegative cache lifetime in elapsed seconds. Zero disables reuse.
 
     Returns
     -------
@@ -29,7 +29,14 @@ def cache_with_expiration(
     Raises
     ------
     ValueError
-        If `expiration_time` is not a positive integer.
+        If `expiration_time` is not a nonnegative integer.
+
+    Notes
+    -----
+    Expiration uses a monotonic clock, so system clock adjustments do not change
+    cache lifetimes. Lifetime starts before the wrapped call. Keyword insertion
+    order is part of the key. Wrapped exceptions propagate unchanged and are
+    never cached.
     """
     if not isinstance(expiration_time, int) or expiration_time < 0:
         raise ValueError("expiration_time must be a positive integer")
@@ -49,7 +56,7 @@ def cache_with_expiration(
             The wrapped function.
         """
         cached_results: dict[
-            tuple[tuple[Any, ...], frozenset[tuple[str, Any]]], tuple[float, Any]
+            tuple[tuple[Any, ...], tuple[tuple[str, Any], ...]], tuple[float, Any]
         ] = {}
         cache_lock = threading.RLock()
 
@@ -75,24 +82,20 @@ def cache_with_expiration(
             TypeError
                 If the arguments are unhashable
             """
-            try:
-                # Create a key based on the function arguments
-                key: tuple[tuple[Any, ...], frozenset[tuple[str, Any]]] = (
-                    args,
-                    frozenset(kwargs.items()),
-                )
-
-                current_time = time.time()
-                with cache_lock:
-                    if key in cached_results:
-                        cached_time, cached_value = cached_results[key]
-                        if current_time - cached_time < expiration_time:
-                            return cached_value  # type: ignore[no-any-return]
-                        del cached_results[key]
-                    result = func(*args, **kwargs)
-                    cached_results[key] = (current_time, result)
-            except TypeError as exc:
-                raise TypeError(f"Unhashable arguments: {exc}") from exc
+            key = (args, tuple(kwargs.items()))
+            with cache_lock:
+                current_time = time.monotonic()
+                try:
+                    cached = cached_results.get(key)
+                except TypeError as exc:
+                    raise TypeError(f"Unhashable arguments: {exc}") from exc
+                if cached is not None:
+                    cached_time, cached_value = cached
+                    if current_time - cached_time < expiration_time:
+                        return cached_value  # type: ignore[no-any-return]
+                    del cached_results[key]
+                result = func(*args, **kwargs)
+                cached_results[key] = (current_time, result)
 
             return result
 

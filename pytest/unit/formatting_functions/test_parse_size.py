@@ -218,3 +218,15 @@ def test_parse_size_unknown_unit() -> None:
 
     with pytest.raises(ValueError, match=expected_message):
         parse_size("1 INVALID")
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("9007199254740993 B", 9007199254740993),
+        ("8796093022208.0009765625 KiB", 9007199254740993),
+        ("0.99999999999999999999 B", 0),
+    ],
+)
+def test_parse_size_preserves_exact_decimal_bytes(value, expected):
+    assert parse_size(value) == expected

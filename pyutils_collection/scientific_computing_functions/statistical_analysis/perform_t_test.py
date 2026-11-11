@@ -73,6 +73,11 @@ def perform_t_test(
     - Medium: 0.5
     - Large: 0.8
 
+    Confidence intervals use the same variance assumption and alternative as
+    the t-test. One-sided intervals have one infinite bound. Welch's test
+    reports its fractional degrees of freedom; the equal-variance test retains
+    its integer degrees of freedom. Cohen's d uses the pooled standard deviation.
+
     Complexity
     ----------
     Time: O(n + m), Space: O(1)
@@ -98,7 +103,7 @@ def perform_t_test(
         raise TypeError(f"equal_var must be a boolean, got {type(equal_var).__name__}")
     if not isinstance(alpha, (int, float)):
         raise TypeError(f"alpha must be a number, got {type(alpha).__name__}")
-    if alpha <= 0 or alpha >= 1:
+    if not 0 < alpha < 1:
         raise ValueError(f"alpha must be between 0 and 1, got {alpha}")
 
     # Convert to numpy arrays
@@ -123,9 +128,10 @@ def perform_t_test(
         raise ValueError("group2 contains only NaN values")
 
     # Perform t-test
-    t_stat, p_value = stats.ttest_ind(
+    test_result = stats.ttest_ind(
         arr1, arr2, equal_var=equal_var, alternative=alternative
     )
+    t_stat, p_value = test_result
 
     # Calculate Cohen's d effect size
     mean1 = np.mean(arr1)
@@ -152,12 +158,9 @@ def perform_t_test(
         interpretation = "large"
 
     # Calculate confidence interval for difference
-    se_diff = pooled_std * np.sqrt(1 / n1 + 1 / n2)
-    df = n1 + n2 - 2
-    t_crit = stats.t.ppf(1 - alpha / 2, df)
+    interval = test_result.confidence_interval(confidence_level=1 - alpha)
+    df = float(test_result.df)
     diff = mean1 - mean2
-    ci_lower = diff - t_crit * se_diff
-    ci_upper = diff + t_crit * se_diff
 
     return {
         "statistic": float(t_stat),
@@ -166,9 +169,9 @@ def perform_t_test(
         "cohens_d": float(cohens_d),
         "effect_size_interpretation": interpretation,
         "mean_difference": float(diff),
-        "ci_lower": float(ci_lower),
-        "ci_upper": float(ci_upper),
-        "degrees_of_freedom": int(df),
+        "ci_lower": float(interval.low),
+        "ci_upper": float(interval.high),
+        "degrees_of_freedom": int(df) if equal_var else df,
         "alpha": alpha,
     }
 

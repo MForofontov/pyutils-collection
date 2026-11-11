@@ -7,6 +7,8 @@ from pathlib import Path
 import openpyxl
 from openpyxl.workbook import Workbook
 
+from pyutils_collection.serialization_functions._staged_output import staged_output
+
 
 def transpose_excel_data(
     input_file: str | Path,
@@ -66,6 +68,9 @@ def transpose_excel_data(
     -----
     Empty cells are preserved in transposed output.
     For a 100x5 sheet, output will be 5x100.
+    The source workbook is read in read-only mode and closed before publishing.
+    Output is staged beside the destination, preserving existing content if
+    saving fails. Permission bits are preserved; destination symlinks are replaced.
 
     Complexity
     ----------
@@ -97,52 +102,41 @@ def transpose_excel_data(
         raise ValueError("output_sheet_name cannot be empty")
 
     # Load workbook
-    wb = openpyxl.load_workbook(input_file, data_only=True)
+    wb = openpyxl.load_workbook(input_file, data_only=True, read_only=True)
+    try:
+        if sheet_name is None:
+            ws = wb.active
+            if ws is None:
+                raise ValueError("Workbook has no active sheet")
+        else:
+            if sheet_name not in wb.sheetnames:
+                raise ValueError(f"Sheet '{sheet_name}' not found in workbook")
+            ws = wb[sheet_name]
+        # iter_rows supplies a rectangular grid, including missing cells.
+        data = list(ws.iter_rows(values_only=True))
+    finally:
+        wb.close()
 
-    # Get worksheet
-    if sheet_name is None:
-        ws = wb.active
-        if ws is None:
-            raise ValueError("Workbook has no active sheet")
-    else:
-        if sheet_name not in wb.sheetnames:
-            raise ValueError(f"Sheet '{sheet_name}' not found in workbook")
-        ws = wb[sheet_name]
-
-    # Read all data
-    data = list(ws.iter_rows(values_only=True))
-
-    if len(data) == 0:
-        # Empty sheet
-        original_rows = 0
-        original_cols = 0
-    else:
-        original_rows = len(data)
-        original_cols = max(len(row) for row in data) if data else 0
-
-    # Transpose data
-    # Handle irregular row lengths by padding with None
-    max_cols = original_cols
-    padded_data = [list(row) + [None] * (max_cols - len(row)) for row in data]
-
-    transposed_data = (
-        list(zip(*padded_data, strict=False)) if padded_data else []
-    )
+    original_rows = len(data)
+    original_cols = len(data[0]) if data else 0
 
     # Create output workbook
     output_wb = Workbook()
-    output_ws = output_wb.active
-    if output_ws is None:
-        output_ws = output_wb.create_sheet(output_sheet_name)
-    else:
-        output_ws.title = output_sheet_name
+    try:
+        output_ws = output_wb.active
+        if output_ws is None:
+            output_ws = output_wb.create_sheet(output_sheet_name)
+        else:
+            output_ws.title = output_sheet_name
 
-    # Write transposed data
-    for row in transposed_data:
-        output_ws.append(row)
+        # Consume transposed columns without padded and transposed list copies.
+        for row in zip(*data, strict=True):
+            output_ws.append(row)
 
-    # Save output workbook
-    output_wb.save(output_file)
+        with staged_output(output_file) as temporary:
+            output_wb.save(temporary)
+    finally:
+        output_wb.close()
 
     return original_rows, original_cols
 

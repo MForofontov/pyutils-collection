@@ -32,6 +32,10 @@ async def async_batch(
 
     Raises
     ------
+    TypeError
+        If batch_size is not an integer or is a boolean.
+    ValueError
+        If batch_size is not positive.
     Exception
         Propagates any exception raised by ``func`` during batch processing.
 
@@ -43,6 +47,11 @@ async def async_batch(
     >>> asyncio.run(async_batch(process_batch, [1, 2, 3, 4, 5], batch_size=2))
     [2, 4, 6, 8, 10]
     """
+    if not isinstance(batch_size, int) or isinstance(batch_size, bool):
+        raise TypeError("batch_size must be an integer")
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+
     # Initialize an empty list to store the results
     results = []
 

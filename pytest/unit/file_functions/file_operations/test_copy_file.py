@@ -89,13 +89,13 @@ def test_copy_file_preserves_content() -> None:
         source = Path(temp_dir) / "source.txt"
         destination = Path(temp_dir) / "destination.txt"
         content = "Special chars: <>&\"' 世界\n\tTabbed line"
-        source.write_text(content)
+        source.write_text(content, encoding="utf-8")
 
         # Act
         copy_file(str(source), str(destination))
 
         # Assert
-        assert destination.read_text() == content
+        assert destination.read_text(encoding="utf-8") == content
 
 
 def test_copy_file_different_extension() -> None:

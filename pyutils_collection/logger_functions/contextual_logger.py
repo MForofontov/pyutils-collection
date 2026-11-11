@@ -24,7 +24,7 @@ class LogContext:
     operation: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self: "LogContext") -> dict[str, Any]:
+    def to_dict(self: LogContext) -> dict[str, Any]:
         """Convert context to dictionary."""
         return {
             k: v
@@ -32,7 +32,7 @@ class LogContext:
             if v or k == "metadata"  # Include metadata even if empty
         }
 
-    def update(self: "LogContext", **kwargs: Any) -> None:
+    def update(self: LogContext, **kwargs: Any) -> None:
         """Update context with new values."""
         for key, value in kwargs.items():
             if hasattr(self, key):
@@ -41,9 +41,7 @@ class LogContext:
                 self.metadata[key] = value
 
 
-def contextual_logger(
-    name: str, context: LogContext | None = None
-) -> "ContextualLogger":
+def contextual_logger(name: str, context: LogContext | None = None) -> ContextualLogger:
     """
     Create a logger with built-in context support.
 
@@ -72,6 +70,13 @@ class ContextualLogger:
     Logger with built-in context support.
 
     Automatically includes contextual information in all log messages.
+
+    Notes
+    -----
+    The ``exc_info`` keyword is forwarded to standard-library logging rather
+    than stored as metadata. Other keyword fields override explicit ``extra``
+    fields, which override context fields. ``exception`` includes the current
+    traceback by default; pass ``exc_info=False`` to suppress it.
     """
 
     def __init__(self, name: str, context: LogContext | None = None):
@@ -94,7 +99,7 @@ class ContextualLogger:
         self._local.context = context
 
     @contextmanager
-    def context_scope(self, **kwargs: Any) -> Generator[None, Any, None]:
+    def context_scope(self, **kwargs: Any) -> Generator[None, Any]:
         """
         Context manager for temporary context changes.
 
@@ -104,7 +109,10 @@ class ContextualLogger:
             Context fields to temporarily set
         """
         old_context = self._get_context()
-        new_context = LogContext(**old_context.to_dict())
+        # Isolate metadata updates as well as the context object itself.
+        new_context = LogContext(
+            **{**old_context.to_dict(), "metadata": old_context.metadata.copy()}
+        )
         new_context.update(**kwargs)
 
         self._set_context(new_context)
@@ -122,6 +130,7 @@ class ContextualLogger:
     ) -> None:
         """Log message with current context."""
         context = self._get_context()
+        exc_info = kwargs.pop("exc_info", None)
 
         # Merge context with extra data
         log_extra = context.to_dict()
@@ -130,7 +139,7 @@ class ContextualLogger:
         if kwargs:
             log_extra.update(kwargs)
 
-        self.logger.log(level, message, extra=log_extra)
+        self.logger.log(level, message, extra=log_extra, exc_info=exc_info)
 
     def debug(
         self, message: str, extra: dict[str, Any] | None = None, **kwargs: Any
@@ -165,7 +174,25 @@ class ContextualLogger:
     def exception(
         self, message: str, extra: dict[str, Any] | None = None, **kwargs: Any
     ) -> None:
-        """Log exception with context."""
+        """
+        Log an error with contextual fields and exception information.
+
+        Parameters
+        ----------
+        message : str
+            Message describing the failed operation.
+        extra : dict[str, Any] or None, optional
+            Additional fields overriding the current context.
+        **kwargs : Any
+            Fields overriding ``extra``. The ``exc_info`` keyword is passed to
+            standard-library logging and defaults to True, including the active
+            exception and traceback. False suppresses exception information.
+
+        Returns
+        -------
+        None
+        """
+        kwargs.setdefault("exc_info", True)
         self._log_with_context(logging.ERROR, message, extra, **kwargs)
 
 

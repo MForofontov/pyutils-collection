@@ -1,251 +1,143 @@
+import importlib
+"""Download behavior using mocked transport and real temporary files."""
+
+import os
+import tempfile
 import urllib.error
+import urllib.request
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock
 
 import pytest
-
-pytestmark = [pytest.mark.unit, pytest.mark.http_functions]
 from pyutils_collection.http_functions.download_file import download_file
 
-
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_successful(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 1: Test successful file download returns correct response structure."""
-    # Mock response
-    mock_response = Mock()
-    mock_response.headers = {"Content-Length": "1024"}
-    mock_response.read.side_effect = [
-        b"chunk1",
-        b"chunk2",
-        b"",
-    ]  # Simulate chunked reading
-    mock_urlopen.return_value.__enter__.return_value = mock_response
-
-    # Mock Path.absolute() to return a predictable path
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
-
-        result = download_file("https://example.com/file.txt", "/tmp/test.txt")
-
-    assert result["success"] is True
-    assert result["file_path"] == "/tmp/test.txt"
-    assert result["file_size"] == 12  # len('chunk1') + len('chunk2')
-    assert "Successfully downloaded 12 bytes" in result["message"]
-
-    # Verify file was written
-    mock_file_open.assert_called_once()
-    handle = mock_file_open()
-    assert handle.write.call_count == 2
-    handle.write.assert_any_call(b"chunk1")
-    handle.write.assert_any_call(b"chunk2")
+pytestmark = [pytest.mark.unit, pytest.mark.http_functions]
 
 
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_with_custom_headers(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 2: Test file download with custom headers are properly set."""
-    mock_response = Mock()
-    mock_response.headers = {}
-    mock_response.read.side_effect = [b"test", b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
+@pytest.fixture
+def transport(monkeypatch):
+    response = MagicMock()
+    response.headers = {"Content-Length": "12"}
+    response.read.side_effect = [b"chunk1", b"chunk2", b""]
+    opener = MagicMock()
+    opener.return_value.__enter__.return_value = response
+    monkeypatch.setattr(importlib.import_module("pyutils_collection.http_functions.download_file"), "open_http", opener)
+    return opener, response
 
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
 
-        headers = {"User-Agent": "TestAgent", "Authorization": "Bearer token"}
-        download_file("https://example.com/file.txt", "/tmp/test.txt", headers=headers)
+def test_download_file_successful(tmp_path: Path, transport) -> None:
+    destination = tmp_path / "nested" / "data.txt"
+    result = download_file("https://example.com/data", str(destination))
+    assert result == {
+        "success": True,
+        "file_path": str(destination.absolute()),
+        "file_size": 12,
+        "message": "Successfully downloaded 12 bytes",
+    }
+    assert destination.read_bytes() == b"chunk1chunk2"
+    assert list(destination.parent.iterdir()) == [destination]
 
-    # Verify headers were added to request
-    call_args = mock_urlopen.call_args[0]
-    request = call_args[0]
+
+def test_download_file_headers_and_timeout(tmp_path: Path, transport) -> None:
+    opener, _ = transport
+    download_file(
+        "https://example.com/data", str(tmp_path / "data"),
+        headers={"User-Agent": "TestAgent", "Authorization": "Bearer test"}, timeout=60,
+    )
+    request = opener.call_args.args[0]
     assert request.get_header("User-agent") == "TestAgent"
-    assert request.get_header("Authorization") == "Bearer token"
+    assert request.get_header("Authorization") == "Bearer test"
+    assert opener.call_args.kwargs["timeout"] == 60
 
 
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_with_progress_callback(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 3: Test file download with progress callback function called correctly."""
-    mock_response = Mock()
-    mock_response.headers = {"Content-Length": "100"}
-    mock_response.read.side_effect = [b"a" * 50, b"b" * 50, b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
-
-    progress_calls = []
-
-    def progress_callback(downloaded: int, total: int) -> None:
-        progress_calls.append((downloaded, total))
-
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
-
-        download_file(
-            "https://example.com/file.txt",
-            "/tmp/test.txt",
-            progress_callback=progress_callback,
-        )
-
-    # Verify progress callback was called
-    assert len(progress_calls) == 2
-    assert progress_calls[0] == (50, 100)
-    assert progress_calls[1] == (100, 100)
+def test_download_file_default_timeout(tmp_path: Path, transport) -> None:
+    opener, _ = transport
+    download_file("https://example.com/data", str(tmp_path / "data"))
+    assert opener.call_args.kwargs["timeout"] == 30
 
 
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_no_content_length_header(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 4: Test file download when Content-Length header is missing."""
-    mock_response = Mock()
-    mock_response.headers = {}  # No Content-Length
-    mock_response.read.side_effect = [b"test data", b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
-
-    progress_calls = []
-
-    def progress_callback(downloaded: int, total: int) -> None:
-        progress_calls.append((downloaded, total))
-
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
-
-        result = download_file(
-            "https://example.com/file.txt",
-            "/tmp/test.txt",
-            progress_callback=progress_callback,
-        )
-
-    assert result["success"] is True
-    assert result["file_size"] == 9  # len('test data')
-
-    # Progress callback should be called with total_size=0
-    assert len(progress_calls) == 1
-    assert progress_calls[0] == (9, 0)
+@pytest.mark.parametrize("known_size", [True, False])
+def test_download_file_progress_callback(tmp_path: Path, transport, known_size) -> None:
+    _, response = transport
+    if not known_size:
+        response.headers = {}
+    progress = []
+    download_file(
+        "https://example.com/data", str(tmp_path / "data"),
+        progress_callback=lambda downloaded, total: progress.append((downloaded, total)),
+    )
+    total = 12 if known_size else 0
+    assert progress == [(6, total), (12, total)]
 
 
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_with_custom_timeout(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 5: Test file download with custom timeout value."""
-    mock_response = Mock()
-    mock_response.headers = {}
-    mock_response.read.side_effect = [b"test", b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
-
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
-
-        download_file("https://example.com/file.txt", "/tmp/test.txt", timeout=60)
-
-    # Verify timeout was passed correctly
-    mock_urlopen.assert_called_once()
-    assert mock_urlopen.call_args[1]["timeout"] == 60
-
-
-@patch("urllib.request.urlopen")
-@patch("builtins.open", new_callable=mock_open)
-@patch("pathlib.Path.mkdir")
-def test_download_file_default_timeout(
-    mock_mkdir: MagicMock, mock_file_open: MagicMock, mock_urlopen: MagicMock
-) -> None:
-    """Test case 6: Test that default timeout is 30 seconds when not specified."""
-    mock_response = Mock()
-    mock_response.headers = {}
-    mock_response.read.side_effect = [b"test", b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
-
-    with patch("pathlib.Path.absolute") as mock_absolute:
-        mock_absolute.return_value = Path("/tmp/test.txt")
-
-        download_file("https://example.com/file.txt", "/tmp/test.txt")
-
-        # Check that timeout=30 was passed
-        assert mock_urlopen.call_args[1]["timeout"] == 30
-
-
-def test_download_file_with_empty_url() -> None:
-    """Test case 7: Test download_file function with empty URL raises ValueError."""
+@pytest.mark.parametrize("url", ["", "   ", None, 1])
+def test_download_file_invalid_url(tmp_path: Path, url) -> None:
     with pytest.raises(ValueError, match="URL must be a non-empty string"):
-        download_file("", "test.txt")
+        download_file(url, str(tmp_path / "data"))
 
 
-def test_download_file_with_whitespace_url() -> None:
-    """Test case 8: Test download_file function with whitespace-only URL raises ValueError."""
-    with pytest.raises(ValueError, match="URL must be a non-empty string"):
-        download_file("   ", "test.txt")
-
-
-def test_download_file_with_none_url() -> None:
-    """Test case 9: Test download_file function with None URL raises ValueError."""
-    with pytest.raises(ValueError, match="URL must be a non-empty string"):
-        download_file(None, "test.txt")
-
-
-def test_download_file_with_empty_destination() -> None:
-    """Test case 10: Test download_file function with empty destination raises ValueError."""
+@pytest.mark.parametrize("destination", ["", "   ", None, 1])
+def test_download_file_invalid_destination(destination) -> None:
     with pytest.raises(ValueError, match="Destination must be a non-empty string"):
-        download_file("https://example.com/file.txt", "")
+        download_file("https://example.com/data", destination)
 
 
-def test_download_file_with_whitespace_destination() -> None:
-    """Test case 11: Test download_file function with whitespace-only destination raises ValueError."""
-    with pytest.raises(ValueError, match="Destination must be a non-empty string"):
-        download_file("https://example.com/file.txt", "   ")
-
-
-def test_download_file_with_none_destination() -> None:
-    """Test case 12: Test download_file function with None destination raises ValueError."""
-    with pytest.raises(ValueError, match="Destination must be a non-empty string"):
-        download_file("https://example.com/file.txt", None)
-
-
-@patch("urllib.request.urlopen")
-@patch("pathlib.Path.unlink")
-def test_download_file_request_failure(
-    mock_unlink: MagicMock, mock_urlopen: MagicMock
+@pytest.mark.parametrize("existing", [True, False])
+@pytest.mark.parametrize("failure", ["request", "read", "callback", "write", "replace", "sync"])
+def test_failure_preserves_destination_and_removes_partial_file(
+    tmp_path: Path, monkeypatch, transport, existing, failure
 ) -> None:
-    """Test case 13: Test file download when request fails returns error response."""
-    mock_urlopen.side_effect = urllib.error.URLError("Connection failed")
+    opener, response = transport
+    destination = tmp_path / "data"
+    if existing:
+        destination.write_bytes(b"original")
+    error = OSError("simulated failure")
+    callback = None
+    if failure == "request":
+        opener.side_effect = error
+    elif failure == "read":
+        response.read.side_effect = [b"partial", error]
+    elif failure == "callback":
+        callback = Mock(side_effect=error)
+    elif failure == "write":
+        original = tempfile.NamedTemporaryFile
 
-    with pytest.raises(urllib.error.URLError, match="Connection failed"):
-        download_file("https://example.com/file.txt", "/tmp/test.txt")
+        def create_file(**kwargs):
+            stream = original(**kwargs)
+            stream.write = Mock(side_effect=error)
+            return stream
+
+        monkeypatch.setattr(tempfile, "NamedTemporaryFile", create_file)
+    else:
+        monkeypatch.setattr(os, "replace" if failure == "replace" else "fsync", Mock(side_effect=error))
+
+    with pytest.raises(OSError) as caught:
+        download_file("https://example.com/data", str(destination), progress_callback=callback)
+    assert caught.value is error
+    if existing:
+        assert destination.read_bytes() == b"original"
+    else:
+        assert not destination.exists()
+    assert list(tmp_path.iterdir()) == ([destination] if existing else [])
 
 
-@patch("urllib.request.urlopen")
-@patch("builtins.open", side_effect=OSError("Write failed"))
-@patch("pathlib.Path.mkdir")
-@patch("pathlib.Path.exists", return_value=True)
-@patch("pathlib.Path.unlink")
-def test_download_file_write_failure_cleanup(
-    mock_unlink: MagicMock,
-    mock_exists: MagicMock,
-    mock_mkdir: MagicMock,
-    mock_file_open: MagicMock,
-    mock_urlopen: MagicMock,
-) -> None:
-    """Test case 14: Test file download when file write fails performs cleanup."""
-    mock_response = Mock()
-    mock_response.headers = {}
-    mock_response.read.side_effect = [b"test", b""]
-    mock_urlopen.return_value.__enter__.return_value = mock_response
+def test_truncated_download_preserves_original(tmp_path: Path, transport) -> None:
+    _, response = transport
+    response.headers = {"Content-Length": "100"}
+    destination = tmp_path / "data"
+    destination.write_bytes(b"original")
+    with pytest.raises(urllib.error.ContentTooShortError):
+        download_file("https://example.com/data", str(destination))
+    assert destination.read_bytes() == b"original"
+    assert list(tmp_path.iterdir()) == [destination]
 
-    with pytest.raises(OSError, match="Write failed"):
-        download_file("https://example.com/file.txt", "/tmp/test.txt")
 
-    # Verify cleanup was attempted
-    mock_unlink.assert_called_once()
+def test_destination_is_replaced_only_after_download(tmp_path: Path, transport) -> None:
+    destination = tmp_path / "data"
+    destination.write_bytes(b"original")
+
+    def progress(downloaded, total):
+        assert destination.read_bytes() == b"original"
+
+    download_file("https://example.com/data", str(destination), progress_callback=progress)
+    assert destination.read_bytes() == b"chunk1chunk2"

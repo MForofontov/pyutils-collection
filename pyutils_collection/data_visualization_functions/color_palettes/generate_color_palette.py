@@ -146,7 +146,11 @@ def generate_color_palette(
             hues = np.linspace(0, 1, n_colors - len(base_colors) + 1)[:-1]
             for hue in hues:
                 rgb_arr = mcolors.hsv_to_rgb((hue, 0.7, 0.9))
-                rgb: tuple[float, float, float] = (float(rgb_arr[0]), float(rgb_arr[1]), float(rgb_arr[2]))
+                rgb: tuple[float, float, float] = (
+                    float(rgb_arr[0]),
+                    float(rgb_arr[1]),
+                    float(rgb_arr[2]),
+                )
                 colors.append(mcolors.rgb2hex(rgb))
 
     elif palette_type == "sequential":

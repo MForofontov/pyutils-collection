@@ -22,8 +22,9 @@ def parallel_map(
         The list of data items to process.
     num_processes : int | None, optional
         The number of processes to use for parallel execution. If ``None``,
-        it defaults to the number of available CPUs minus one with a minimum
-        of one process.
+        it defaults to the number of available CPUs minus one, bounded by the
+        number of input items with a minimum of one process. Empty input starts
+        no workers when the process count is omitted.
 
     Returns
     -------
@@ -39,8 +40,10 @@ def parallel_map(
     """
     # If num_processes is not specified, use the number of available CPUs
     if num_processes is None:
+        if not data:
+            return []
         # Ensure at least one process is used
-        num_processes = max(cpu_count() - 1, 1)
+        num_processes = min(max(cpu_count() - 1, 1), len(data))
 
     # Create a pool of worker processes
     with Pool(processes=num_processes) as pool:

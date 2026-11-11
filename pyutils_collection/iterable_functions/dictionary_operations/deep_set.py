@@ -43,6 +43,9 @@ def deep_set(d: dict[str, Any], keys: str | list[str], value: Any) -> None:
     elif not isinstance(keys, list):
         raise TypeError("keys must be a string or a list of strings")
 
+    if not all(isinstance(key, str) for key in keys):
+        raise TypeError("keys must be a string or a list of strings")
+
     if len(keys) == 0:
         raise ValueError("keys must contain at least one key")
 

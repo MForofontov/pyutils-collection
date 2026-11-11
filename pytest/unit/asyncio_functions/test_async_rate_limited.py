@@ -107,3 +107,40 @@ async def test_async_rate_limited_invalid_params() -> None:
         await async_rate_limited(echo, [1], max_calls=0, period=0.1)
     with pytest.raises(ValueError):
         await async_rate_limited(echo, [1], max_calls=1, period=0)
+
+
+@pytest.mark.asyncio
+async def test_async_rate_limited_rechecks_after_early_wakeup(monkeypatch) -> None:
+    import importlib
+    from types import SimpleNamespace
+
+    module = importlib.import_module(
+        "pyutils_collection.asyncio_functions.async_rate_limited"
+    )
+    now = 0.0
+    called_at = []
+    sleeps = []
+
+    async def early_sleep(delay):
+        nonlocal now
+        sleeps.append(delay)
+        now += min(delay, 0.6)
+
+    async def process(value):
+        called_at.append(now)
+        return value
+
+    monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: now))
+    monkeypatch.setattr(asyncio, "sleep", early_sleep)
+    assert await async_rate_limited(process, range(5), 2, 1.0) == list(range(5))
+    assert called_at == pytest.approx([0, 0, 1, 1, 2])
+    assert sleeps == pytest.approx([1, 0.4, 1, 0.4])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("max_calls,period", [
+    (True, 1), (1, True), (1, float("nan")), (1, float("inf")),
+])
+async def test_async_rate_limited_rejects_nonfinite_limits(max_calls, period) -> None:
+    with pytest.raises(ValueError):
+        await async_rate_limited(echo, [], max_calls, period)

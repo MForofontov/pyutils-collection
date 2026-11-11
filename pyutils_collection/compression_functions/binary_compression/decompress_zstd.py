@@ -1,6 +1,6 @@
 """Zstandard decompression for binary data."""
 
-import zstandard as zstd
+from compression import zstd
 
 
 def decompress_zstd(compressed_data: bytes) -> bytes:
@@ -33,6 +33,8 @@ def decompress_zstd(compressed_data: bytes) -> bytes:
         decompressor = zstd.ZstdDecompressor()
         # Decompress the data using Zstandard
         decompressed: bytes = decompressor.decompress(compressed_data)
+        if not decompressor.eof:
+            raise ValueError("Incomplete Zstandard frame")
         return decompressed
     except Exception as exc:
         # Raise a ValueError if an error occurs during decompression

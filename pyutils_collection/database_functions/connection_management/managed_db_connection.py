@@ -8,6 +8,8 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import Any, Protocol, TypeVar
 
+from sqlalchemy.engine import Connection as SQLAlchemyConnection
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +25,7 @@ class DatabaseConnection(Protocol):
         ...
 
 
-T = TypeVar("T", bound=DatabaseConnection)
+T = TypeVar("T", bound=DatabaseConnection | SQLAlchemyConnection)
 
 
 def _establish_connection(
@@ -31,8 +33,23 @@ def _establish_connection(
     health_check_query: str | None,
 ) -> T:
     connection = connection_factory()
-    if health_check_query is not None:
-        connection.execute(health_check_query)
+    try:
+        if health_check_query is not None:
+            if isinstance(connection, SQLAlchemyConnection):
+                result: Any = connection.exec_driver_sql(health_check_query)
+            else:
+                result = connection.execute(health_check_query)
+            close_result = getattr(result, "close", None)
+            if result is not connection and callable(close_result):
+                close_result()
+    except BaseException:
+        try:
+            connection.close()
+        except Exception as close_error:
+            logger.warning(
+                "Closing a failed health-check connection failed: %s", close_error
+            )
+        raise
     return connection
 
 
@@ -42,7 +59,7 @@ def managed_db_connection(
     max_retries: int = 3,
     retry_delay: float = 1.0,
     health_check_query: str | None = "SELECT 1",
-) -> Generator[T, None, None]:
+) -> Generator[T]:
     """
     Context manager for database connection with automatic retry and cleanup.
 
@@ -81,6 +98,9 @@ def managed_db_connection(
     Notes
     -----
     Uses exponential backoff for retries: delay * (2 ** attempt).
+    SQLAlchemy connections execute health queries with exec_driver_sql.
+    Failed health checks close their connection before another attempt, and
+    temporary health-query result objects are closed before yielding.
 
     Complexity
     ----------

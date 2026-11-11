@@ -1,10 +1,15 @@
 """File download functionality."""
 
+import os
+import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+
+from ._transport import open_http
 
 
 def download_file(
@@ -49,9 +54,18 @@ def download_file(
     True
     >>> os.path.exists(result['file_path'])
     True
+
+    Notes
+    -----
+    Downloads are streamed to a temporary file beside the destination and
+    replaced only after the transfer completes. Existing contents survive
+    network, callback, write, or replacement failures. The replacement uses
+    temporary-file permissions. Known truncated responses raise ContentTooShortError.
     """
     if not isinstance(url, str) or not url.strip():
         raise ValueError("URL must be a non-empty string")
+    if urllib.parse.urlsplit(url).scheme.lower() not in {"http", "https"}:
+        raise ValueError("URL must use http or https")
 
     if not isinstance(destination, str) or not destination.strip():
         raise ValueError("Destination must be a non-empty string")
@@ -68,15 +82,19 @@ def download_file(
         for key, value in headers.items():
             req.add_header(key, value)
 
+    temporary_path: Path | None = None
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with open_http(req, timeout=timeout) as response:
             content_length = response.headers.get("Content-Length")
             total_size = int(content_length) if content_length else 0
 
             downloaded = 0
             chunk_size = 8192
 
-            with open(dest_path, "wb") as f:
+            with tempfile.NamedTemporaryFile(
+                mode="wb", dir=dest_path.parent, prefix=".download-", delete=False
+            ) as f:
+                temporary_path = Path(f.name)
                 while True:
                     chunk = response.read(chunk_size)
                     if not chunk:
@@ -85,14 +103,23 @@ def download_file(
                     downloaded += len(chunk)
                     if progress_callback:
                         progress_callback(downloaded, total_size)
+                if content_length is not None and downloaded < total_size:
+                    raise urllib.error.ContentTooShortError(
+                        f"Downloaded {downloaded} of {total_size} bytes",
+                        None,  # type: ignore[arg-type]  # No partial file is retained.
+                    )
+                f.flush()
+                os.fsync(f.fileno())
 
-            return {
-                "success": True,
-                "file_path": str(dest_path.absolute()),
-                "file_size": downloaded,
-                "message": f"Successfully downloaded {downloaded} bytes",
-            }
-    except Exception:
-        if dest_path.exists():
-            dest_path.unlink()
-        raise
+        assert temporary_path is not None
+        os.replace(temporary_path, dest_path)
+
+        return {
+            "success": True,
+            "file_path": str(dest_path.absolute()),
+            "file_size": downloaded,
+            "message": f"Successfully downloaded {downloaded} bytes",
+        }
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)

@@ -179,7 +179,7 @@ def get_code_statistics(
                 elif isinstance(node, (ast.Import, ast.ImportFrom)):
                     total_imports += 1
 
-        except (SyntaxError, UnicodeDecodeError):
+        except SyntaxError, UnicodeDecodeError:
             # Skip files with errors
             continue
 

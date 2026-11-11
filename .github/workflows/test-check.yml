@@ -1,11 +1,16 @@
 name: test-check
 
+env:
+  # PyYAML's optional C accelerator has no 3.15 wheels yet.
+  PYYAML_FORCE_LIBYAML: '0'
+
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       python_versions:
         description: 'JSON list of Python versions'
-        default: '["3.13"]'
+        default: '["3.15"]'
         type: string
         required: false
       tests_path:
@@ -40,7 +45,144 @@ on:
         required: false
 
 jobs:
+  unit:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.15']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test dependencies
+        run: python -m pip install --only-binary=cramjam,psutil,numpy,matplotlib,aiohttp,pydantic-core,bcrypt,cryptography,lxml,pyarrow,scipy,scikit-learn -e ".[dev,playwright]"
+      - name: Check standard-library Zstandard
+        run: python -c "from compression import zstd; print(zstd.zstd_version)"
+      - name: Check dependency consistency
+        run: python -m pip check
+      - name: Unit tests
+        run: python scripts/run_with_deadline.py --seconds 900 --log unit-output.log -- python -m pytest pytest/unit -ra --junitxml=unit-results.xml --cov=pyutils_collection --cov-report=xml
+      - name: Record family coverage inventory
+        if: always()
+        run: python scripts/audit_inventory.py unit-results.xml
+      - name: Isolated loopback integration checks
+        run: python scripts/run_with_deadline.py --seconds 60 --log integration-output.log -- python -m pytest pytest/integration/test_http_loopback.py -q --junitxml=integration-results.xml
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-${{ matrix.os }}-${{ matrix.python-version }}
+          include-hidden-files: true
+          path: |
+            unit-results.xml
+            unit-output.log
+            integration-output.log
+            integration-results.xml
+            coverage.xml
+            .major-check/inventory.json
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYUTILS_BROWSER_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.15'
+          cache: pip
+      - name: Install package and browser test dependencies
+        run: python -m pip install -e ".[dev,playwright]"
+      - name: Install disposable Chromium
+        run: python -m playwright install --with-deps chromium --only-shell
+      - name: Real browser lifecycle and loopback integration checks
+        run: python scripts/run_with_deadline.py --seconds 120 --log browser-output.log -- python -m pytest pytest/integration/test_browser_lifecycle.py pytest/integration/test_http_loopback.py -ra --junitxml=browser-results.xml
+      - name: Upload browser results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-integration
+          path: |
+            browser-output.log
+            browser-results.xml
+
+  services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.15'
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements_integration.txt
+      - name: Install package and service test dependencies
+        run: python -m pip install -e ".[dev]" -r requirements_integration.txt
+      - name: Disposable PostgreSQL, MySQL, and OpenSSH integration
+        run: python scripts/run_service_integration.py --report-dir .major-check/services
+      - name: Upload service evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-integration
+          include-hidden-files: true
+          path: .major-check/services/
+
+  package:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.15'
+      - name: Build and validate distributions
+        run: |
+          python -m pip install build==1.6.1 twine==7.0.0
+          python -m build --outdir .major-check/dist
+          python -m twine check .major-check/dist/*
+      - name: Check wheel in a clean environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv .major-check/wheel-env
+          if [ -f .major-check/wheel-env/Scripts/python.exe ]; then PY=.major-check/wheel-env/Scripts/python.exe; else PY=.major-check/wheel-env/bin/python; fi
+          "$PY" -m pip install .major-check/dist/*.whl packaging
+          "$PY" -m pip check
+          "$PY" -I scripts/check_installed_distribution.py "$PWD"
+      - name: Check source distribution in a clean environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv .major-check/source-env
+          if [ -f .major-check/source-env/Scripts/python.exe ]; then PY=.major-check/source-env/Scripts/python.exe; else PY=.major-check/source-env/bin/python; fi
+          "$PY" -m pip install .major-check/dist/*.tar.gz packaging
+          "$PY" -m pip check
+          "$PY" -I scripts/check_installed_distribution.py "$PWD"
+      - name: Upload distributions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: distributions-${{ matrix.os }}
+          include-hidden-files: true
+          path: .major-check/dist/
+
   test:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -73,32 +215,36 @@ jobs:
           java-version: '17'
 
       - name: Install Allure CLI ${{ inputs.allure_version }}
+        env:
+          ALLURE_VERSION: ${{ inputs.allure_version }}
         run: |
           set -eux
-          curl -L -o allure.tgz "https://github.com/allure-framework/allure2/releases/download/${{ inputs.allure_version }}/allure-${{ inputs.allure_version }}.tgz"
+          [[ "$ALLURE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          curl --fail -L -o allure.tgz "https://github.com/allure-framework/allure2/releases/download/$ALLURE_VERSION/allure-$ALLURE_VERSION.tgz"
           sudo tar -C /opt -xzf allure.tgz
-          sudo mv "/opt/allure-${{ inputs.allure_version }}" /opt/allure
+          sudo mv "/opt/allure-$ALLURE_VERSION" /opt/allure
           sudo ln -sf /opt/allure/bin/allure /usr/local/bin/allure
           allure --version
 
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install main project dependencies first
-          pip install -r requirements.txt
-          # Then install development/testing dependencies
-          pip install -r requirements_dev.txt
+          python -m pip install -e ".[dev]"
+          python -m pip check
 
       - name: Run tests (prefers your pytest.sh if present)
         shell: bash
-        continue-on-error: true
+        env:
+          RUN_PARALLEL: ${{ inputs.run_parallel }}
+          EXTRA_PYTEST_ARGS: ${{ inputs.extra_pytest_args }}
+          ENABLE_COVERAGE: ${{ inputs.enable_coverage }}
         run: |
           set -eux
           mkdir -p "$ALLURE_RESULTS_DIR" "$ALLURE_REPORT_DIR" "$COVERAGE_REPORT_DIR"
 
           # If repo provides pytest.sh, use it for consistency with your local runs
-          if [ -x ./pytest.sh ]; then
-            ./pytest.sh "${TESTS_PATH}" "$ALLURE_RESULTS_DIR" "$ALLURE_REPORT_DIR" true "${{ inputs.run_parallel }}" "${{ inputs.extra_pytest_args }}" "${{ inputs.enable_coverage }}" "$COVERAGE_REPORT_DIR"
+          if [ -f ./pytest.sh ]; then
+            bash ./pytest.sh "${TESTS_PATH}" "$ALLURE_RESULTS_DIR" "$ALLURE_REPORT_DIR" true "$RUN_PARALLEL" "$EXTRA_PYTEST_ARGS" "$ENABLE_COVERAGE" "$COVERAGE_REPORT_DIR"
           else
             # Fallback: direct pytest invocation
             PARALLEL=""
@@ -108,13 +254,10 @@ jobs:
             COVERAGE=""
             if [ "${{ inputs.enable_coverage }}" = "true" ]; then
               COVERAGE="--cov=. --cov-report=term-missing --cov-report=html:$COVERAGE_REPORT_DIR --cov-report=xml:coverage.xml"
-              if [ "${{ inputs.coverage_fail_under }}" -gt 0 ]; then
-                COVERAGE="$COVERAGE --cov-fail-under=${{ inputs.coverage_fail_under }}"
-              fi
             fi
             pytest "${TESTS_PATH}" \
               --alluredir="$ALLURE_RESULTS_DIR" \
-              $PARALLEL $COVERAGE ${{ inputs.extra_pytest_args }}
+              $PARALLEL $COVERAGE $EXTRA_PYTEST_ARGS
           fi
 
       - name: Generate Allure report
@@ -168,13 +311,15 @@ jobs:
 
       - name: Job summary
         if: always()
+        env:
+          SUMMARY_EXTRA_ARGS: ${{ inputs.extra_pytest_args }}
         run: |
           echo "## Pytest + Allure summary" >> $GITHUB_STEP_SUMMARY
           echo "- Python: \`${{ matrix.python-version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Tests path: \`${{ inputs.tests_path }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests path: \`$TESTS_PATH\`" >> $GITHUB_STEP_SUMMARY
           echo "- Parallel: \`${{ inputs.run_parallel }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Coverage: \`${{ inputs.enable_coverage }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Extra pytest args: \`${{ inputs.extra_pytest_args }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Extra pytest args: \`$SUMMARY_EXTRA_ARGS\`" >> $GITHUB_STEP_SUMMARY
           echo "- Artifacts: \`allure-results-${{ matrix.python-version }}\`, \`allure-report-${{ matrix.python-version }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ inputs.enable_coverage }}" = "true" ]; then
             echo "- Coverage artifacts: \`coverage-report-${{ matrix.python-version }}\`, \`coverage-xml-${{ matrix.python-version }}\`" >> $GITHUB_STEP_SUMMARY

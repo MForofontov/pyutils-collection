@@ -15,8 +15,10 @@ from .group_by import group_by
 from .is_nested_list_empty import is_nested_list_empty
 from .repeat_strings_in_a_list import repeat_strings_in_a_list
 from .sliding_window import sliding_window
+from .unique_by import unique_by
 
 __all__ = [
+    "unique_by",
     "add_strings_to_subsets",
     "check_if_all_elements_are_duplicates",
     "divide_list_into_n_chunks",

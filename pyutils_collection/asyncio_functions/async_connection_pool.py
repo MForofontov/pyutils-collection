@@ -19,6 +19,13 @@ class AsyncConnectionPool(Generic[C]):
         The maximum number of connections in the pool.
     _pool : asyncio.Queue[C]
         The internal queue to manage connections.
+
+    Notes
+    -----
+    Capacity includes idle and acquired connections. Connections are tracked by
+    identity; duplicate registration and foreign or duplicate release raise
+    ValueError. Capacity must be a positive integer. The pool does not own a
+    close operation; callers remain responsible for closing their resources.
     """
 
     def __init__(self, max_connections: int) -> None:
@@ -42,8 +49,14 @@ class AsyncConnectionPool(Generic[C]):
         --------
         >>> pool = AsyncConnectionPool[str](max_connections=2)
         """
+        if not isinstance(max_connections, int) or isinstance(max_connections, bool):
+            raise TypeError("max_connections must be an integer")
+        if max_connections <= 0:
+            raise ValueError("max_connections must be positive")
         self.max_connections = max_connections
         self._pool: asyncio.Queue[C] = asyncio.Queue(max_connections)
+        self._connections: dict[int, C] = {}
+        self._available: set[int] = set()
 
     async def acquire(self) -> C:
         """
@@ -71,6 +84,7 @@ class AsyncConnectionPool(Generic[C]):
         """
         # Wait until a connection is available and return it
         conn = await self._pool.get()
+        self._available.remove(id(conn))
         return conn
 
     async def release(self, conn: C) -> None:
@@ -97,8 +111,15 @@ class AsyncConnectionPool(Generic[C]):
         >>> conn = await pool.acquire()  # doctest: +SKIP
         >>> await pool.release(conn)  # doctest: +SKIP
         """
-        # Put the connection back into the pool
-        await self._pool.put(conn)
+        key = id(conn)
+        if key not in self._connections:
+            raise ValueError("Connection does not belong to this pool")
+        if key in self._available:
+            raise ValueError("Connection was already released")
+        # An acquired connection always has a reserved slot. No suspension is
+        # needed, so cancellation cannot interrupt its return to the pool.
+        self._pool.put_nowait(conn)
+        self._available.add(key)
 
     async def add_connection(self, conn: C) -> None:
         """
@@ -123,11 +144,15 @@ class AsyncConnectionPool(Generic[C]):
         >>> pool = AsyncConnectionPool[str](1)
         >>> await pool.add_connection('conn')  # doctest: +SKIP
         """
-        # Check if the pool is not full before adding the connection
-        if self._pool.qsize() < self.max_connections:
-            await self._pool.put(conn)
-        else:
+        key = id(conn)
+        if key in self._connections:
+            raise ValueError("Connection already belongs to this pool")
+        # Capacity includes checked-out connections, not just idle entries.
+        if len(self._connections) >= self.max_connections:
             raise RuntimeError("Connection pool is full.")
+        self._pool.put_nowait(conn)
+        self._connections[key] = conn
+        self._available.add(key)
 
 
 async def use_connection(

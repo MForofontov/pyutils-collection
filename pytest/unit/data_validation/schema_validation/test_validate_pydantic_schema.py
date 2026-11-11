@@ -202,27 +202,22 @@ def test_validate_pydantic_schema_complex_schemas() -> None:
     assert result.enabled is False
 
 
-def test_validate_pydantic_schema_performance_large_data() -> None:
+def test_validate_pydantic_schema_large_data() -> None:
     """
-    Test case 9: Performance with large data structures.
+    Test case 9: Validate a large nested payload without a machine-specific deadline.
     """
-    # Test with large list of objects
-    large_data = {"name": "Performance Test", "age": 30, "email": "perf@example.com"}
+    class UserBatchSchema(BaseModel):
+        users: list[SimpleUserSchema]
 
-    import time
+    users = [
+        {"name": f"User {index}", "age": index, "email": f"user{index}@example.com"}
+        for index in range(1000)
+    ]
+    result = validate_pydantic_schema({"users": users}, UserBatchSchema)
+    assert len(result.users) == len(users)
+    assert [user.model_dump() for user in result.users] == users
 
-    start_time = time.time()
-    for _ in range(1000):
-        validate_pydantic_schema(large_data, SimpleUserSchema)
-    elapsed_time = time.time() - start_time
 
-    assert elapsed_time < 1.0  # Should complete within 1 second
-
-
-@pytest.mark.skipif(
-    not PYDANTIC_AVAILABLE or not hasattr(__import__("pydantic"), "v1"),
-    reason="Pydantic v1 compatibility layer not available",
-)
 def test_validate_pydantic_schema_type_error_invalid_schema() -> None:
     """
     Test case 10: TypeError for invalid schema model.

@@ -10,7 +10,7 @@ from pyutils_collection.http_functions.upload_file import upload_file
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test file content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_successful(
     mock_guess_type: MagicMock,
@@ -45,7 +45,7 @@ def test_upload_file_successful(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=(None, None))
 def test_upload_file_unknown_content_type(
     mock_guess_type: MagicMock,
@@ -74,7 +74,7 @@ def test_upload_file_unknown_content_type(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_with_custom_field_name(
     mock_guess_type: MagicMock,
@@ -105,7 +105,7 @@ def test_upload_file_with_custom_field_name(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_with_custom_headers(
     mock_guess_type: MagicMock,
@@ -136,7 +136,7 @@ def test_upload_file_with_custom_headers(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_with_additional_data(
     mock_guess_type: MagicMock,
@@ -174,7 +174,7 @@ def test_upload_file_with_additional_data(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_with_custom_timeout(
     mock_guess_type: MagicMock,
@@ -201,7 +201,7 @@ def test_upload_file_with_custom_timeout(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_default_timeout(
     mock_guess_type: MagicMock,
@@ -280,7 +280,7 @@ def test_upload_file_not_a_file(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_http_error(
     mock_guess_type: MagicMock,
@@ -315,7 +315,7 @@ def test_upload_file_http_error(
 @patch("pathlib.Path.exists", return_value=True)
 @patch("pathlib.Path.is_file", return_value=True)
 @patch("builtins.open", new_callable=mock_open, read_data=b"test content")
-@patch("urllib.request.urlopen")
+@patch("pyutils_collection.http_functions.upload_file.open_http")
 @patch("mimetypes.guess_type", return_value=("text/plain", None))
 def test_upload_file_url_error(
     mock_guess_type: MagicMock,

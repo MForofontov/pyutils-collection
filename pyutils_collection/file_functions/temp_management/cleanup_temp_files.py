@@ -2,6 +2,8 @@
 Cleanup temporary files and directories by age or pattern.
 """
 
+import math
+import stat
 import time
 from pathlib import Path
 
@@ -22,7 +24,8 @@ def cleanup_temp_files(
     max_age_hours : float, optional
         Maximum age in hours before files are deleted (by default 24.0).
     pattern : str, optional
-        Filename pattern to match for deletion (by default "*").
+        Relative filename pattern to match for deletion (by default "*").
+        Absolute patterns and parent-directory traversal are rejected.
     dry_run : bool, optional
         If True, return list of files that would be deleted without deleting (by default False).
 
@@ -51,6 +54,9 @@ def cleanup_temp_files(
     -----
     Only files (not directories) are deleted by default.
     The function uses modification time to determine file age.
+    Matches whose parent resolves outside the selected directory are skipped,
+    including paths through directory symlinks and Windows junctions. This check
+    assumes directory links are not concurrently replaced by another process.
     Be careful with the pattern to avoid deleting system files.
 
     Complexity
@@ -62,7 +68,7 @@ def cleanup_temp_files(
         raise TypeError(
             f"temp_dir must be a string, Path, or None, got {type(temp_dir).__name__}"
         )
-    if not isinstance(max_age_hours, (int, float)):
+    if not isinstance(max_age_hours, (int, float)) or isinstance(max_age_hours, bool):
         raise TypeError(
             f"max_age_hours must be a number, got {type(max_age_hours).__name__}"
         )
@@ -70,6 +76,12 @@ def cleanup_temp_files(
         raise TypeError(f"pattern must be a string, got {type(pattern).__name__}")
     if not isinstance(dry_run, bool):
         raise TypeError(f"dry_run must be a boolean, got {type(dry_run).__name__}")
+    if not pattern or Path(pattern).anchor or ".." in Path(pattern).parts:
+        raise ValueError("pattern must be a nonempty relative path without '..'")
+    if not math.isfinite(max_age_hours) or max_age_hours <= 0:
+        raise ValueError(
+            f"max_age_hours must be positive and finite, got {max_age_hours}"
+        )
 
     # Use system temp directory if none specified
     if temp_dir is None:
@@ -85,10 +97,7 @@ def cleanup_temp_files(
         raise ValueError(f"Directory does not exist: {temp_dir}")
     if not dir_path.is_dir():
         raise ValueError(f"Path is not a directory: {temp_dir}")
-
-    # Validate max_age_hours
-    if max_age_hours <= 0:
-        raise ValueError(f"max_age_hours must be positive, got {max_age_hours}")
+    resolved_root = dir_path.resolve()
 
     # Calculate cutoff time
     current_time = time.time()
@@ -99,9 +108,14 @@ def cleanup_temp_files(
     try:
         # Find matching files
         for file_path in dir_path.glob(pattern):
-            if file_path.is_file():  # Only process files, not directories
-                try:
-                    file_mtime = file_path.stat().st_mtime
+            try:
+                # A relative glob can still escape through a directory link.
+                # Check the parent: unlinking a file symlink itself is safe.
+                if not file_path.parent.resolve().is_relative_to(resolved_root):
+                    continue
+                file_info = file_path.stat()
+                if stat.S_ISREG(file_info.st_mode):
+                    file_mtime = file_info.st_mtime
 
                     if file_mtime < cutoff_time:
                         if dry_run:
@@ -110,9 +124,9 @@ def cleanup_temp_files(
                             file_path.unlink()
                             deleted_files.append(str(file_path))
 
-                except OSError:
-                    # Skip files that cannot be accessed or deleted
-                    continue
+            except OSError:
+                # Skip files that cannot be accessed or deleted
+                continue
 
     except OSError as e:
         raise OSError(f"Error accessing directory {temp_dir}: {e}") from e

@@ -8,6 +8,22 @@ pytestmark = [pytest.mark.unit, pytest.mark.url_functions]
 from pyutils_collection.url_functions.normalize_url import normalize_url
 
 
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("HTTP://[2001:DB8::1]:80/a", "http://[2001:db8::1]/a"),
+        ("https://[::1]:8443", "https://[::1]:8443/"),
+        ("https://[::1]", "https://[::1]/"),
+        ("http://user:@EXAMPLE.COM:80", "http://user:@example.com/"),
+        ("http://:pass@EXAMPLE.COM", "http://:pass@example.com/"),
+        ("http://@EXAMPLE.COM", "http://@example.com/"),
+    ],
+)
+def test_normalize_url_preserves_authority(url: str, expected: str) -> None:
+    assert normalize_url(url) == expected
+    assert normalize_url(expected) == expected
+
+
 def test_normalize_url_default_port_http() -> None:
     """
     Test case 1: Remove default HTTP port 80.
