@@ -16,7 +16,7 @@ def mock_datetime_fixture(
     hour: int = 0,
     minute: int = 0,
     second: int = 0,
-) -> Generator[datetime, None, None]:
+) -> Generator[datetime]:
     """
     Create a mock datetime fixture that freezes time.
 

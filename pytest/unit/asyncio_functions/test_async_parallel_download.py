@@ -56,6 +56,7 @@ async def test_async_parallel_download_normal_operation(tmp_path: Path) -> None:
             self.status: int = 206
             self._start: int = start
             self._end: int = end
+            self.headers = {"Content-Range": f"bytes {start}-{end}/{file_size}"}
 
         async def __aenter__(self) -> "MockGetResponse":
             return self
@@ -140,6 +141,7 @@ async def test_async_parallel_download_more_chunks_than_size(tmp_path: Path) -> 
             self.status: int = 206
             self._start: int = start
             self._end: int = end
+            self.headers = {"Content-Range": f"bytes {start}-{end}/{file_size}"}
             self._idx: int = idx
 
         async def __aenter__(self) -> "MockGetResponse":

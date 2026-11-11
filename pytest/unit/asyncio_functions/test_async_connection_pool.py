@@ -9,6 +9,54 @@ from pyutils_collection.asyncio_functions.async_connection_pool import (
 )
 
 
+@pytest.mark.parametrize("capacity", [0, -1])
+def test_capacity_must_be_positive(capacity):
+    with pytest.raises(ValueError):
+        AsyncConnectionPool(capacity)
+
+
+@pytest.mark.asyncio
+async def test_checked_out_connections_count_toward_capacity():
+    pool = AsyncConnectionPool(1)
+    connection = object()
+    await pool.add_connection(connection)
+    assert await pool.acquire() is connection
+    with pytest.raises(RuntimeError, match="full"):
+        await pool.add_connection(object())
+    await asyncio.wait_for(pool.release(connection), 1)
+    assert await pool.acquire() is connection
+
+
+@pytest.mark.asyncio
+async def test_duplicate_or_foreign_release_is_rejected_without_blocking():
+    pool = AsyncConnectionPool(1)
+    connection = object()
+    await pool.add_connection(connection)
+    with pytest.raises(ValueError, match="already released"):
+        await asyncio.wait_for(pool.release(connection), 1)
+    with pytest.raises(ValueError, match="does not belong"):
+        await asyncio.wait_for(pool.release(object()), 1)
+
+
+@pytest.mark.asyncio
+async def test_cancelled_use_returns_connection():
+    pool = AsyncConnectionPool(1)
+    connection = object()
+    await pool.add_connection(connection)
+    started = asyncio.Event()
+
+    async def work(_connection):
+        started.set()
+        await asyncio.Event().wait()
+
+    task = asyncio.create_task(use_connection(pool, work))
+    await started.wait()
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert await asyncio.wait_for(pool.acquire(), 1) is connection
+
+
 @pytest.mark.asyncio
 async def test_async_connection_pool_add_and_acquire() -> None:
     """

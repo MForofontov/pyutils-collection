@@ -79,8 +79,12 @@ def _gateway_from_command(command: Iterable[str], parser: Callable[[str], str]) 
             capture_output=True,
             text=True,
             check=False,
+            timeout=5,
         )
-    except (OSError, ValueError):
+    except OSError, ValueError, subprocess.TimeoutExpired:
+        return ""
+
+    if result.returncode != 0:
         return ""
 
     output = result.stdout or ""
@@ -120,7 +124,10 @@ def _parse_route_get_default(output: str) -> str:
 
         if line.lower().startswith("gateway:"):
             _, value = line.split(":", 1)
-            gateway = _normalize_ipv4(value.strip().split()[0])
+            tokens = value.split()
+            if not tokens:
+                continue
+            gateway = _normalize_ipv4(tokens[0])
             if gateway:
                 return gateway
 
@@ -137,7 +144,7 @@ def _parse_netstat_rn(output: str) -> str:
         if lower.startswith("destination") or "routing" in lower:
             continue
 
-        if not (lower.startswith("default") or line.startswith("0.0.0.0")):
+        if not (lower.startswith("default") or line.startswith("0.0.0.0")):  # nosec B104 # Route text, not a bind address.
             continue
 
         tokens = line.split()
@@ -152,7 +159,7 @@ def _parse_netstat_rn(output: str) -> str:
 def _hex_to_ipv4(value: str) -> str:
     try:
         packed = struct.pack("<L", int(value, 16))
-    except (ValueError, struct.error, OverflowError):
+    except ValueError, struct.error, OverflowError:
         return ""
 
     return _normalize_ipv4(socket.inet_ntoa(packed))

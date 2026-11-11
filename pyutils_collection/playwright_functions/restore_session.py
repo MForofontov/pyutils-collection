@@ -8,7 +8,6 @@ saved JSON files, enabling continuation of authenticated sessions.
 import json
 import logging
 from pathlib import Path
-from typing import Any
 
 from playwright.sync_api import BrowserContext
 
@@ -74,7 +73,9 @@ def restore_session(
     """
     # Input validation
     if not isinstance(session_file, str):
-        raise TypeError(f"session_file must be a string, got {type(session_file).__name__}")
+        raise TypeError(
+            f"session_file must be a string, got {type(session_file).__name__}"
+        )
     if not session_file:
         raise ValueError("session_file cannot be empty")
 
@@ -115,8 +116,10 @@ def restore_session(
         if local_storage or session_storage:
             # Need to navigate to URL to set storage
             if url is None:
-                raise ValueError("url must be provided when restoring local_storage or session_storage")
-            
+                raise ValueError(
+                    "url must be provided when restoring local_storage or session_storage"
+                )
+
             pages = context.pages
             if not pages:
                 page = context.new_page()
@@ -130,16 +133,22 @@ def restore_session(
             # Set localStorage
             if local_storage:
                 for key, value in local_storage.items():
-                    page.evaluate(f"localStorage.setItem({json.dumps(key)}, {json.dumps(value)})")
+                    page.evaluate(
+                        f"localStorage.setItem({json.dumps(key)}, {json.dumps(value)})"
+                    )
                 if logger:
                     logger.debug(f"Restored {len(local_storage)} localStorage items")
 
             # Set sessionStorage
             if session_storage:
                 for key, value in session_storage.items():
-                    page.evaluate(f"sessionStorage.setItem({json.dumps(key)}, {json.dumps(value)})")
+                    page.evaluate(
+                        f"sessionStorage.setItem({json.dumps(key)}, {json.dumps(value)})"
+                    )
                 if logger:
-                    logger.debug(f"Restored {len(session_storage)} sessionStorage items")
+                    logger.debug(
+                        f"Restored {len(session_storage)} sessionStorage items"
+                    )
 
         if logger:
             logger.info(f"Session restored successfully from: {session_file}")

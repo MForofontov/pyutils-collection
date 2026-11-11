@@ -10,6 +10,18 @@ except ImportError:
 
 import pytest
 
+
+def test_is_process_running_empty_name_skips_scan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from unittest.mock import Mock
+
+    scan = Mock()
+    monkeypatch.setattr(psutil, "process_iter", scan)
+    assert is_process_running("") is False
+    scan.assert_not_called()
+
+
 pytestmark = pytest.mark.skipif(not PSUTIL_AVAILABLE, reason="psutil not installed")
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.cli_functions]
 

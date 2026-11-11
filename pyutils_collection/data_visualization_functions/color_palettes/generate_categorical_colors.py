@@ -71,7 +71,7 @@ def generate_categorical_colors(n_colors: int) -> list[str]:
     for hue in hues:
         # Convert HSV to RGB
         h_sector = int(hue * 6)
-        f = hue * 6 - h_sector
+        f = float(hue * 6 - h_sector)
         p = value * (1 - saturation)
         q = value * (1 - f * saturation)
         t = value * (1 - (1 - f) * saturation)

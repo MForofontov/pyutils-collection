@@ -64,9 +64,7 @@ def power(base: int | float, exponent: int | float) -> int | float:
     # Check for NaN and Inf
     if isinstance(base, float) and (math.isnan(base) or math.isinf(base)):
         raise ValueError("base cannot be NaN or Inf")
-    if isinstance(exponent, float) and (
-        math.isnan(exponent) or math.isinf(exponent)
-    ):
+    if isinstance(exponent, float) and (math.isnan(exponent) or math.isinf(exponent)):
         raise ValueError("exponent cannot be NaN or Inf")
 
     # Safety limits to prevent overflow/memory exhaustion

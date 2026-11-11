@@ -4,7 +4,8 @@ import base64
 import hashlib
 import hmac
 import json
-from datetime import datetime, timezone
+import math
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -83,7 +84,7 @@ def verify_jwt_token(
         if padding != 4:
             data += "=" * padding
         try:
-            return base64.urlsafe_b64decode(data)
+            return base64.b64decode(data, altchars=b"-_", validate=True)
         except Exception as e:
             raise ValueError(f"invalid base64url encoding: {e}") from e
 
@@ -98,6 +99,9 @@ def verify_jwt_token(
 
     except (json.JSONDecodeError, UnicodeDecodeError) as e:
         raise ValueError(f"invalid base64url encoding: {e}") from e
+
+    if not isinstance(header, dict) or not isinstance(payload, dict):
+        raise ValueError("JWT header and payload must be JSON objects")
 
     # Verify algorithm
     if header.get("alg") != "HS256":
@@ -115,14 +119,18 @@ def verify_jwt_token(
     # Check expiration
     if "exp" in payload:
         exp_timestamp = payload["exp"]
-        if not isinstance(exp_timestamp, (int, float)):
+        if (
+            not isinstance(exp_timestamp, (int, float))
+            or isinstance(exp_timestamp, bool)
+            or (isinstance(exp_timestamp, float) and not math.isfinite(exp_timestamp))
+        ):
             raise ValueError("invalid expiration time format")
 
-        current_timestamp = datetime.now(timezone.utc).timestamp()
+        current_timestamp = datetime.now(UTC).timestamp()
         if current_timestamp >= exp_timestamp:
             raise ValueError("token has expired")
 
-    return payload  # type: ignore[no-any-return]
+    return payload
 
 
 __all__ = ["verify_jwt_token"]

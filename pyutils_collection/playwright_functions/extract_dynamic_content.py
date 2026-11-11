@@ -11,8 +11,10 @@ from typing import Any, Literal, cast
 
 from playwright.sync_api import Locator, Page
 
-
-WaitStrategy = Literal["domcontentloaded", "load", "networkidle", "selector", "function"]
+WaitStrategy = Literal[
+    "domcontentloaded", "load", "networkidle", "selector", "function"
+]
+_LoadState = Literal["domcontentloaded", "load", "networkidle"]
 
 
 def extract_dynamic_content(
@@ -135,10 +137,20 @@ def extract_dynamic_content(
         raise TypeError(f"url must be a string or None, got {type(url).__name__}")
 
     if not isinstance(wait_strategy, str):
-        raise TypeError(f"wait_strategy must be a string, got {type(wait_strategy).__name__}")
-    valid_strategies = ("domcontentloaded", "load", "networkidle", "selector", "function")
+        raise TypeError(
+            f"wait_strategy must be a string, got {type(wait_strategy).__name__}"
+        )
+    valid_strategies = (
+        "domcontentloaded",
+        "load",
+        "networkidle",
+        "selector",
+        "function",
+    )
     if wait_strategy not in valid_strategies:
-        raise ValueError(f"wait_strategy must be one of {valid_strategies}, got {wait_strategy}")
+        raise ValueError(
+            f"wait_strategy must be one of {valid_strategies}, got {wait_strategy}"
+        )
 
     if wait_strategy == "selector" and wait_selector is None:
         raise ValueError("wait_selector is required when wait_strategy='selector'")
@@ -147,10 +159,14 @@ def extract_dynamic_content(
         raise ValueError("wait_function is required when wait_strategy='function'")
 
     if wait_selector is not None and not isinstance(wait_selector, str):
-        raise TypeError(f"wait_selector must be a string or None, got {type(wait_selector).__name__}")
+        raise TypeError(
+            f"wait_selector must be a string or None, got {type(wait_selector).__name__}"
+        )
 
     if wait_function is not None and not isinstance(wait_function, str):
-        raise TypeError(f"wait_function must be a string or None, got {type(wait_function).__name__}")
+        raise TypeError(
+            f"wait_function must be a string or None, got {type(wait_function).__name__}"
+        )
 
     if not isinstance(timeout, (int, float)):
         raise TypeError(f"timeout must be a number, got {type(timeout).__name__}")
@@ -158,13 +174,19 @@ def extract_dynamic_content(
         raise ValueError(f"timeout must be positive, got {timeout}")
 
     if not isinstance(extract_text, bool):
-        raise TypeError(f"extract_text must be a boolean, got {type(extract_text).__name__}")
+        raise TypeError(
+            f"extract_text must be a boolean, got {type(extract_text).__name__}"
+        )
 
     if not isinstance(extract_html, bool):
-        raise TypeError(f"extract_html must be a boolean, got {type(extract_html).__name__}")
+        raise TypeError(
+            f"extract_html must be a boolean, got {type(extract_html).__name__}"
+        )
 
     if extract_selector is not None and not isinstance(extract_selector, str):
-        raise TypeError(f"extract_selector must be a string or None, got {type(extract_selector).__name__}")
+        raise TypeError(
+            f"extract_selector must be a string or None, got {type(extract_selector).__name__}"
+        )
 
     if logger is not None and not isinstance(logger, logging.Logger):
         raise TypeError("logger must be an instance of logging.Logger or None")
@@ -178,7 +200,7 @@ def extract_dynamic_content(
 
             # Navigate with specified wait strategy for load events
             if wait_strategy in ("domcontentloaded", "load", "networkidle"):
-                response = page.goto(url, wait_until=wait_strategy, timeout=timeout)  # type: ignore
+                response = page.goto(url, wait_until=wait_strategy, timeout=timeout)
             else:
                 # For selector/function strategies, use basic navigation
                 response = page.goto(url, wait_until="commit", timeout=timeout)
@@ -203,7 +225,7 @@ def extract_dynamic_content(
             if not url:
                 if logger:
                     logger.debug(f"Waiting for load state: {wait_strategy}")
-                page.wait_for_load_state(wait_strategy, timeout=timeout)  # type: ignore
+                page.wait_for_load_state(wait_strategy, timeout=timeout)
 
         if logger:
             logger.debug("Wait strategy completed successfully")

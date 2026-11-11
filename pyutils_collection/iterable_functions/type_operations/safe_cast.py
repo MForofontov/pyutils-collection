@@ -109,7 +109,7 @@ def safe_cast(value: Any, target_type: type[T], default: T | None = None) -> T |
         else:
             # Generic conversion attempt
             return target_type(value)  # type: ignore[call-arg]
-    except (ValueError, TypeError, AttributeError):
+    except ValueError, TypeError, AttributeError:
         # Conversion failed, return default or original value
         if default is not None:
             return default

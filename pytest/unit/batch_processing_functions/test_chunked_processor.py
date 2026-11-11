@@ -304,3 +304,16 @@ def test_chunked_processor_type_error_processor_returns_non_list() -> None:
 
     with pytest.raises(TypeError, match="processor must return a list"):
         list(chunked_processor(items, processor, chunk_size=2))
+
+
+def test_chunked_processor_preserves_retained_batches() -> None:
+    batches = []
+
+    def process(batch):
+        batches.append(batch)
+        return [batch]
+
+    result = list(chunked_processor(range(5), process, chunk_size=2))
+    assert result == [[0, 1], [2, 3], [4]]
+    assert batches == [[0, 1], [2, 3], [4]]
+    assert len({id(batch) for batch in batches}) == 3

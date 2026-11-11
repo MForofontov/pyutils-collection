@@ -70,7 +70,7 @@ async def async_periodic(
             try:
                 await asyncio.wait_for(stop_event.wait(), timeout=timeout)
                 break
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass
         else:
             await asyncio.sleep(timeout)

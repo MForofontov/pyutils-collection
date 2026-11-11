@@ -1,9 +1,12 @@
 """Simple HTTP POST request functionality."""
 
 import json
+import urllib.parse
 import urllib.request
 from typing import Any
 from urllib.error import HTTPError, URLError
+
+from ._transport import open_http
 
 
 def http_post(
@@ -52,6 +55,8 @@ def http_post(
         raise TypeError("URL must be a string")
     if not url.strip():
         raise ValueError("URL must be a non-empty string")
+    if urllib.parse.urlsplit(url).scheme.lower() not in {"http", "https"}:
+        raise ValueError("URL must use http or https")
 
     # Prepare data
     if data is not None:
@@ -78,7 +83,7 @@ def http_post(
             req.add_header(key, value)
 
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with open_http(req, timeout=timeout) as response:
             content = response.read().decode("utf-8")
             return {
                 "status_code": response.getcode(),

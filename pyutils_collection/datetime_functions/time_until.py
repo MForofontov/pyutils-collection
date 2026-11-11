@@ -66,10 +66,10 @@ def time_until(future_date: datetime, reference_date: datetime | None = None) ->
     if days < 7:
         return f"in {days} day{'s' if days != 1 else ''}"
     weeks = days // 7
-    if weeks < 4:
+    if days < 30:
         return f"in {weeks} week{'s' if weeks != 1 else ''}"
     months = days // 30  # Approximate
-    if months < 12:
+    if days < 365:
         return f"in {months} month{'s' if months != 1 else ''}"
     years = days // 365  # Approximate
     return f"in {years} year{'s' if years != 1 else ''}"

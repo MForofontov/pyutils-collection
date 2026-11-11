@@ -16,7 +16,7 @@ def get_env_var(
     key : str
         The environment variable name.
     default : Any, optional
-        Value to return if variable is not set.
+        Already-converted value to return unchanged if the variable is not set.
     cast : callable, optional
         Function to cast the value (e.g., int, float, bool).
 
@@ -39,7 +39,9 @@ def get_env_var(
     >>> get_env_var('DEBUG', default=False, cast=lambda v: v.lower() == 'true')
     False
     """
-    value = os.environ.get(key, default)
+    value = os.environ.get(key)
+    if value is None:
+        return default
     if value is not None and cast is not None:
         try:
             return cast(value)

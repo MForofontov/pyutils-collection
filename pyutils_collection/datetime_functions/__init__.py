@@ -7,6 +7,7 @@ including parsing, timezone conversions, and date arithmetic.
 from .calculate_age import calculate_age
 from .compare_dates import compare_dates
 from .convert_timezone import convert_timezone
+from .date_range import date_range
 from .days_between import days_between
 from .get_current_datetime_iso import get_current_datetime_iso
 from .get_current_datetime_iso_utc import get_current_datetime_iso_utc
@@ -32,6 +33,7 @@ from .time_ago import time_ago
 from .time_until import time_until
 
 __all__ = [
+    "date_range",
     "parse_date",
     "convert_timezone",
     "modify_days",

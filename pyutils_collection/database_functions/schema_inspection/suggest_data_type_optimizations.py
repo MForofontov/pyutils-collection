@@ -98,7 +98,7 @@ def suggest_data_type_optimizations(
 
     table_names = tables if tables else [t for t in metadata.tables.keys()]
 
-    suggestions = []
+    suggestions: list[dict[str, Any]] = []
 
     for table_name in table_names:
         if table_name not in metadata.tables:
@@ -293,7 +293,10 @@ def suggest_data_type_optimizations(
     # Sort by severity and potential savings
     severity_order = {"high": 0, "medium": 1, "low": 2}
     suggestions.sort(
-        key=lambda x: (severity_order[str(x["severity"])], -float(x.get("potential_savings_mb", 0)))  # type: ignore[arg-type]
+        key=lambda x: (
+            severity_order[str(x["severity"])],
+            -float(x.get("potential_savings_mb", 0)),
+        )
     )
 
     return suggestions

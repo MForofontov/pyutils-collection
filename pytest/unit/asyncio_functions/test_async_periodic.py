@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+from types import SimpleNamespace
 
 import pytest
 
@@ -18,8 +20,28 @@ pytestmark = [
 ]
 
 
+@pytest.fixture
+def periodic_clock(monkeypatch: pytest.MonkeyPatch):
+    clock = SimpleNamespace(now=0.0, sleeps=[])
+
+    async def sleep(delay: float) -> None:
+        clock.sleeps.append(delay)
+        clock.now += delay
+
+    module = importlib.import_module("pyutils_collection.asyncio_functions.async_periodic")
+    monkeypatch.setattr(
+        module,
+        "asyncio",
+        SimpleNamespace(
+            get_running_loop=lambda: SimpleNamespace(time=lambda: clock.now),
+            sleep=sleep,
+        ),
+    )
+    return clock
+
+
 @pytest.mark.asyncio
-async def test_async_periodic_stops_after_timeout() -> None:
+async def test_async_periodic_stops_after_timeout(periodic_clock) -> None:
     """
     Test case 1: Function runs periodically and stops after timeout.
     """
@@ -33,8 +55,8 @@ async def test_async_periodic_stops_after_timeout() -> None:
     await async_periodic(periodic_task, interval=0.05, stop_after=0.15)
 
     # Assert
-    # Should execute approximately 3-4 times in 0.15 seconds with 0.05 interval
-    assert 2 <= len(call_count) <= 4
+    assert len(call_count) == 4
+    assert periodic_clock.now == pytest.approx(0.15)
 
 
 @pytest.mark.asyncio
@@ -106,7 +128,7 @@ async def test_async_periodic_immediate_stop() -> None:
 
 
 @pytest.mark.asyncio
-async def test_async_periodic_custom_interval() -> None:
+async def test_async_periodic_custom_interval(periodic_clock) -> None:
     """
     Test case 5: Custom interval controls execution frequency.
     """
@@ -114,17 +136,14 @@ async def test_async_periodic_custom_interval() -> None:
     call_times = []
 
     async def periodic_task() -> None:
-        call_times.append(asyncio.get_event_loop().time())
+        call_times.append(periodic_clock.now)
 
     # Act
     await async_periodic(periodic_task, interval=0.05, stop_after=0.12)
 
     # Assert
-    assert len(call_times) >= 2
-    # Check that intervals are approximately correct (with some tolerance)
-    if len(call_times) >= 2:
-        interval_diff = call_times[1] - call_times[0]
-        assert 0.04 <= interval_diff <= 0.07
+    assert call_times == pytest.approx([0.0, 0.05, 0.10, 0.12])
+    assert periodic_clock.sleeps == pytest.approx([0.05, 0.05, 0.02])
 
 
 @pytest.mark.asyncio

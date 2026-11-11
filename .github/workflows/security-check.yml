@@ -1,6 +1,10 @@
 name: security-check
 
+env:
+  PYYAML_FORCE_LIBYAML: '0'
+
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       severity:
@@ -28,7 +32,7 @@ on:
       run_pip_audit:
         description: "Also run pip-audit on dependencies"
         required: false
-        default: false
+        default: true
         type: boolean
       fail_on_findings:
         description: "Fail job if findings exist (Bandit and/or pip-audit)"
@@ -38,10 +42,15 @@ on:
 
 jobs:
   bandit:
+    permissions:
+      contents: read
+      security-events: write
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.11"
-      B_ANDIT_DIRS: "asyncio_functions compression_functions data_types datetime_functions decorators env_config_functions file_functions http_functions iterable_functions json_functions cli_functions logger_functions logging_debugging mathematical_functions multiprocessing_functions security_functions ssh_functions strings_utility"
+      PYTHON_VERSION: "3.15"
+      SCAN_SEVERITY: ${{ inputs.severity || 'medium' }}
+      SCAN_CONFIDENCE: ${{ inputs.confidence || 'medium' }}
+      SCAN_BASELINE: ${{ inputs.use_baseline }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,9 +64,12 @@ jobs:
       - name: Install tools
         run: |
           python -m pip install --upgrade pip
-          pip install bandit
-          if [ "${{ inputs.upload_sarif }}" = "true" ]; then pip install bandit>=1.7.6; fi
-          if [ "${{ inputs.run_pip_audit }}" = "true" ]; then pip install pip-audit; fi
+          if [ "${{ inputs.upload_sarif }}" = "true" ]; then
+            pip install 'bandit[sarif]==1.9.4'
+          else
+            pip install 'bandit==1.9.4'
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.run_pip_audit }}" = "true" ]; then pip install 'pip-audit==2.10.1'; fi
           sudo apt-get update -y && sudo apt-get install -y jq
 
       - name: Determine file set (tracked .py files within your target dirs)
@@ -65,20 +77,18 @@ jobs:
         shell: bash
         run: |
           # Use tracked Python files only to avoid vendored/venv noise
-          mapfile -t PYFILES < <(git ls-files -- "*.py")
+          mapfile -t PYFILES < <(git ls-files -- 'pyutils_collection/*.py')
           # Filter to the provided dirs and exclude common junk
           FILTERED=()
           for f in "${PYFILES[@]}"; do
             case "$f" in
               venv/*|.venv/*|.mypy_cache/*|.ruff_cache/*|dist/*|build/*) continue ;;
             esac
-            for d in $B_ANDIT_DIRS; do
-              if [[ "$f" == $d/* ]]; then FILTERED+=("$f"); break; fi
-            done
+            FILTERED+=("$f")
           done
           if [ ${#FILTERED[@]} -eq 0 ]; then
-            echo "No Python files matched target directories."
-            echo "files=" >> $GITHUB_OUTPUT
+            echo "::error::No package Python files matched the security scan."
+            exit 1
           else
             printf '%s\n' "${FILTERED[@]}" > bandit-filelist.txt
             echo "files=bandit-filelist.txt" >> $GITHUB_OUTPUT
@@ -89,24 +99,19 @@ jobs:
         shell: bash
         run: |
           set +e
-          if [ -z "${{ steps.files.outputs.files }}" ]; then
-            echo "No files to scan."
-            echo "exit_code=0" >> $GITHUB_OUTPUT
-            printf '{"results":[],"metrics":{"_totals":{"CONFIDENCE.HIGH":0,"CONFIDENCE.MEDIUM":0,"CONFIDENCE.LOW":0,"SEVERITY.HIGH":0,"SEVERITY.MEDIUM":0,"SEVERITY.LOW":0}}}\n' > bandit.json
-            exit 0
+          BASELINE_ARG=()
+          if [ -n "$SCAN_BASELINE" ]; then
+            if [ ! -f "$SCAN_BASELINE" ]; then exit 2; fi
+            BASELINE_ARG=(--baseline "$SCAN_BASELINE")
           fi
-
-          BASELINE_ARG=""
-          if [ -n "${{ inputs.use_baseline }}" ]; then
-            [ -f "${{ inputs.use_baseline }}" ] && BASELINE_ARG="--baseline ${{ inputs.use_baseline }}"
-          fi
+          mapfile -t SCAN_FILES < "${{ steps.files.outputs.files }}"
 
           bandit \
-            --severity-level "${{ inputs.severity }}" \
-            --confidence-level "${{ inputs.confidence }}" \
+            --severity-level "$SCAN_SEVERITY" \
+            --confidence-level "$SCAN_CONFIDENCE" \
             -f json -o bandit.json \
-            -r $(tr '\n' ' ' < "${{ steps.files.outputs.files }}") \
-            $BASELINE_ARG
+            "${SCAN_FILES[@]}" \
+            "${BASELINE_ARG[@]}"
           echo "exit_code=$?" >> $GITHUB_OUTPUT
           set -e
         continue-on-error: true
@@ -119,18 +124,20 @@ jobs:
           set +e
           # Newer Bandit supports SARIF directly; try it first.
           if [ -n "${{ steps.files.outputs.files }}" ]; then
-            BASELINE_ARG=""
-            if [ -n "${{ inputs.use_baseline }}" ]; then
-              [ -f "${{ inputs.use_baseline }}" ] && BASELINE_ARG="--baseline ${{ inputs.use_baseline }}"
+            BASELINE_ARG=()
+            if [ -n "$SCAN_BASELINE" ]; then
+              if [ ! -f "$SCAN_BASELINE" ]; then exit 2; fi
+              BASELINE_ARG=(--baseline "$SCAN_BASELINE")
             fi
+            mapfile -t SCAN_FILES < "${{ steps.files.outputs.files }}"
             bandit \
-              --severity-level "${{ inputs.severity }}" \
-              --confidence-level "${{ inputs.confidence }}" \
+              --severity-level "$SCAN_SEVERITY" \
+              --confidence-level "$SCAN_CONFIDENCE" \
               -f sarif -o bandit.sarif \
-              -r $(tr '\n' ' ' < "${{ steps.files.outputs.files }}") \
-              $BASELINE_ARG
+              "${SCAN_FILES[@]}" \
+              "${BASELINE_ARG[@]}"
           else
-            echo '{"version":"2.1.0","$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs":[{"tool":{"driver":{"name":"bandit","version":"1.0.0"}},"results":[]}]}' > bandit.sarif
+            exit 2
           fi
           echo "exit_code=$?" >> $GITHUB_OUTPUT
           set -e
@@ -140,11 +147,12 @@ jobs:
         if: ${{ inputs.upload_sarif }}
         run: |
           if [ ! -f bandit.sarif ]; then
-            echo '{"version":"2.1.0","$schema":"https://json.schemastore.org/sarif-2.1.0.json","runs":[{"tool":{"driver":{"name":"bandit","version":"1.0.0"}},"results":[]}]}' > bandit.sarif
+            echo "::error::Bandit did not produce a SARIF report."
+            exit 1
           fi
 
       - name: pip-audit (dependency CVEs) — optional
-        if: ${{ inputs.run_pip_audit }}
+        if: github.event_name == 'pull_request' || inputs.run_pip_audit
         id: pip_audit
         shell: bash
         run: |
@@ -152,16 +160,34 @@ jobs:
           # Try common requirements files; fall back to current env
           FILES=()
           for f in requirements.txt requirements-dev.txt requirements_dev.txt requirements/*.txt; do
-            [ -f "$f" ] && FILES+=("$f")
+            [ -f "$f" ] && FILES+=(-r "$f")
           done
           if [ ${#FILES[@]} -gt 0 ]; then
-            pip-audit -r "${FILES[@]}" -f json -o pip-audit.json
+            pip-audit "${FILES[@]}" -f json -o pip-audit.json
           else
             pip-audit -f json -o pip-audit.json
           fi
           echo "exit_code=$?" >> $GITHUB_OUTPUT
           set -e
         continue-on-error: true
+
+      - name: Validate scan reports
+        env:
+          AUDIT_ENABLED: ${{ github.event_name == 'pull_request' || inputs.run_pip_audit }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path("bandit.json").read_text())
+          if report.get("errors") or len(report.get("metrics", {})) <= 1:
+              raise SystemExit("Bandit reported scan errors or scanned no files")
+          if os.environ.get("AUDIT_ENABLED") == "true":
+              audit = json.loads(Path("pip-audit.json").read_text())
+              if not isinstance(audit.get("dependencies"), list):
+                  raise SystemExit("pip-audit did not produce a valid dependency report")
+          PY
 
       - name: Summarize findings
         id: summary
@@ -182,13 +208,14 @@ jobs:
           fi
 
           if [ -f pip-audit.json ]; then
-            VULN_COUNT=$(jq '. | length' pip-audit.json)
+            VULN_COUNT=$(jq '[.dependencies[]?.vulns[]?] | length' pip-audit.json)
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### pip-audit" >> $GITHUB_STEP_SUMMARY
             echo "- Vulnerabilities: **$VULN_COUNT**" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
@@ -209,13 +236,24 @@ jobs:
         shell: bash
         run: |
           FAIL=0
-          [ "${{ steps.bandit_json.outputs.exit_code }}" != "0" ] && FAIL=1
-          if [ "${{ inputs.upload_sarif }}" = "true" ] && [ "${{ steps.bandit_sarif.outputs.exit_code }}" != "0" ]; then FAIL=1; fi
-          if [ "${{ inputs.run_pip_audit }}" = "true" ] && [ "${{ steps.pip_audit.outputs.exit_code }}" != "0" ]; then FAIL=1; fi
+          CODES=("${{ steps.bandit_json.outputs.exit_code }}")
+          if [ "${{ inputs.upload_sarif }}" = "true" ]; then CODES+=("${{ steps.bandit_sarif.outputs.exit_code }}"); fi
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.run_pip_audit }}" = "true" ]; then CODES+=("${{ steps.pip_audit.outputs.exit_code }}"); fi
+          for code in "${CODES[@]}"; do
+            case "$code" in
+              0) ;;
+              1) FAIL=1 ;;
+              *) echo "::error::Security check did not complete successfully (status: $code)."; exit 1 ;;
+            esac
+          done
 
-          if [ "${{ inputs.fail_on_findings }}" = "true" ] && [ "$FAIL" -ne 0 ]; then
+          if [ "$FAIL" -ne 0 ] && { [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ inputs.fail_on_findings }}" = "true" ]; }; then
             echo "Failing due to findings or tool errors (per configuration)."
             exit 1
           else
-            echo "Findings detected but not failing the job (per configuration)."
+            if [ "$FAIL" -ne 0 ]; then
+              echo "Findings recorded in report-only mode."
+            else
+              echo "Security checks completed without findings."
+            fi
           fi

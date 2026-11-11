@@ -2,8 +2,19 @@ from typing import Any
 
 import pytest
 
+
+@pytest.mark.parametrize("keys", [["new", 1], ["new", []], [None]])
+def test_deep_set_rejects_invalid_keys_without_mutation(keys) -> None:
+    data = {"existing": 1}
+    with pytest.raises(TypeError, match="keys must be a string or a list of strings"):
+        deep_set(data, keys, 2)
+    assert data == {"existing": 1}
+
+
 pytestmark = [pytest.mark.unit, pytest.mark.iterable_functions]
-from pyutils_collection.iterable_functions.dictionary_operations.deep_set import deep_set
+from pyutils_collection.iterable_functions.dictionary_operations.deep_set import (
+    deep_set,
+)
 
 
 def test_deep_set_basic_functionality() -> None:

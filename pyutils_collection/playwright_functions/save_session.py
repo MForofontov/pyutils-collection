@@ -7,6 +7,8 @@ cookies, localStorage, and sessionStorage to JSON files for later restoration.
 
 import json
 import logging
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -74,6 +76,8 @@ def save_session(
     - Store session files securely
     - Session expiration depends on cookie expiry settings
     - localStorage and sessionStorage are page-specific
+    - Files are replaced atomically after successful serialization and use
+      temporary-file permissions; failures preserve an existing session file
 
     Complexity
     ----------
@@ -81,12 +85,16 @@ def save_session(
     """
     # Input validation
     if not isinstance(session_file, str):
-        raise TypeError(f"session_file must be a string, got {type(session_file).__name__}")
+        raise TypeError(
+            f"session_file must be a string, got {type(session_file).__name__}"
+        )
     if not session_file:
         raise ValueError("session_file cannot be empty")
 
     if not isinstance(include_storage, bool):
-        raise TypeError(f"include_storage must be a boolean, got {type(include_storage).__name__}")
+        raise TypeError(
+            f"include_storage must be a boolean, got {type(include_storage).__name__}"
+        )
 
     if logger is not None and not isinstance(logger, logging.Logger):
         raise TypeError("logger must be an instance of logging.Logger or None")
@@ -118,7 +126,9 @@ def save_session(
                     local_storage = page.evaluate("() => Object.entries(localStorage)")
                     session_data["storage"]["localStorage"] = dict(local_storage)
                     if logger:
-                        logger.debug(f"Retrieved {len(local_storage)} localStorage items")
+                        logger.debug(
+                            f"Retrieved {len(local_storage)} localStorage items"
+                        )
                 except Exception as e:
                     if logger:
                         logger.warning(f"Could not retrieve localStorage: {e}")
@@ -126,10 +136,14 @@ def save_session(
 
                 # Get sessionStorage
                 try:
-                    session_storage = page.evaluate("() => Object.entries(sessionStorage)")
+                    session_storage = page.evaluate(
+                        "() => Object.entries(sessionStorage)"
+                    )
                     session_data["storage"]["sessionStorage"] = dict(session_storage)
                     if logger:
-                        logger.debug(f"Retrieved {len(session_storage)} sessionStorage items")
+                        logger.debug(
+                            f"Retrieved {len(session_storage)} sessionStorage items"
+                        )
                 except Exception as e:
                     if logger:
                         logger.warning(f"Could not retrieve sessionStorage: {e}")
@@ -139,9 +153,24 @@ def save_session(
         session_path = Path(session_file)
         session_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Write session file
-        with open(session_path, "w") as f:
-            json.dump(session_data, f, indent=2)
+        # Stage beside the destination so failed writes preserve the old session.
+        temporary_path: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=session_path.parent,
+                prefix=".session-",
+                delete=False,
+            ) as f:
+                temporary_path = Path(f.name)
+                json.dump(session_data, f, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temporary_path, session_path)
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
 
         if logger:
             logger.info(f"Session saved successfully: {session_file}")

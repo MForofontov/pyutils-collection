@@ -14,7 +14,7 @@ def chunked_processor(
     processor: Callable[[list[T]], list[R]],
     chunk_size: int = 1000,
     max_memory_mb: int | None = None,
-) -> Generator[R, None, None]:
+) -> Generator[R]:
     """
     Process large datasets in chunks with backpressure control.
 
@@ -117,8 +117,8 @@ def chunked_processor(
             for result in results:
                 yield result
 
-            # Clear chunk for next batch
-            chunk.clear()
+            # A processor or result may retain this batch; do not mutate it.
+            chunk = []
 
             # Optional memory check
             if max_memory_mb is not None:
@@ -222,7 +222,7 @@ class ChunkedProcessor:
         self.chunk_size = chunk_size
         self.max_memory_mb = max_memory_mb
 
-    def process(self, items: Iterable[T]) -> Generator[R, None, None]:
+    def process(self, items: Iterable[T]) -> Generator[R]:
         """
         Process items using configured settings.
 

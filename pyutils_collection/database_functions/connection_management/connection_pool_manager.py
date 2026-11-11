@@ -136,7 +136,7 @@ class ConnectionPoolManager:
             return False
 
     @contextmanager
-    def get_connection(self) -> Generator[Any, None, None]:
+    def get_connection(self) -> Generator[Any]:
         """
         Get a connection from the pool with automatic health check.
 

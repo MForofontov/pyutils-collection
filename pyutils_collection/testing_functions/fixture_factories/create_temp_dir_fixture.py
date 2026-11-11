@@ -11,7 +11,7 @@ from pathlib import Path
 @contextmanager
 def create_temp_dir_fixture(
     files: dict[str, str] | None = None,
-) -> Generator[Path, None, None]:
+) -> Generator[Path]:
     """
     Create a temporary directory fixture with optional files.
 

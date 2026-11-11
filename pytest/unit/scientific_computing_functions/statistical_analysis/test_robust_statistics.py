@@ -279,7 +279,7 @@ def test_robust_statistics_nested_list() -> None:
     """Test case 19: TypeError for nested list."""
     # Arrange
     invalid_data = cast(Any, [[1, 2], [3, 4]])
-    expected_message = "only 0-dimensional arrays can be converted to Python scalars"
+    expected_message = "data must be one-dimensional"
 
     # Act & Assert
     with pytest.raises(TypeError, match=expected_message):

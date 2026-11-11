@@ -50,3 +50,25 @@ def test_get_env_var_cast_fail(monkeypatch) -> None:
     monkeypatch.setenv("PORT", "not_an_int")
     with pytest.raises(ValueError):
         get_env_var("PORT", cast=int)
+
+
+@pytest.mark.parametrize("default", [False, 8080, None, {"fallback": True}])
+def test_missing_variable_returns_default_without_casting(monkeypatch, default) -> None:
+    monkeypatch.delenv("PYUTILS_TEST_UNSET", raising=False)
+
+    def cast(value):
+        pytest.fail("defaults must not be converted")
+
+    assert get_env_var("PYUTILS_TEST_UNSET", default, cast) is default
+
+
+def test_documented_boolean_default(monkeypatch) -> None:
+    monkeypatch.delenv("PYUTILS_TEST_DEBUG", raising=False)
+    assert get_env_var(
+        "PYUTILS_TEST_DEBUG", default=False, cast=lambda value: value.lower() == "true"
+    ) is False
+
+
+def test_present_empty_value_is_still_converted(monkeypatch) -> None:
+    monkeypatch.setenv("PYUTILS_TEST_EMPTY", "")
+    assert get_env_var("PYUTILS_TEST_EMPTY", default="default", cast=lambda x: [x]) == [""]

@@ -119,3 +119,13 @@ def test_async_event_loop_exception_propagation() -> None:
     # Act & Assert
     with pytest.raises(ValueError, match="Task failed"):
         async_event_loop(failing_task)
+
+
+@pytest.mark.asyncio
+async def test_running_loop_is_rejected_before_creating_coroutines():
+    from unittest.mock import Mock
+
+    function = Mock()
+    with pytest.raises(RuntimeError, match="await func"):
+        async_event_loop(function)
+    function.assert_not_called()

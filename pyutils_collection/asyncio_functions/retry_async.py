@@ -1,6 +1,7 @@
 """Async function retry utilities."""
 
 import asyncio
+import math
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
@@ -8,7 +9,7 @@ from typing import TypeVar
 T = TypeVar("T")
 
 
-async def retry_async(  # type: ignore[return]
+async def retry_async(
     func: Callable[..., Awaitable[T]],
     retries: int,
     delay: float,
@@ -21,7 +22,7 @@ async def retry_async(  # type: ignore[return]
     func : Callable[..., Awaitable[T]]
         The asynchronous function to retry.
     retries : int
-        The maximum number of retry attempts.
+        The maximum number of attempts, including the initial call (at least 1).
     delay : float
         The delay in seconds between retry attempts.
 
@@ -32,6 +33,10 @@ async def retry_async(  # type: ignore[return]
 
     Raises
     ------
+    TypeError
+        If retries is not an integer or delay is not a number, or either is a boolean.
+    ValueError
+        If retries is not positive or delay is negative or non-finite.
     Exception
         If the function fails after all retries.
 
@@ -44,14 +49,21 @@ async def retry_async(  # type: ignore[return]
     >>> asyncio.run(retry_async(unstable_func, retries=3, delay=1))
     42
     """
-    for attempt in range(retries):
+    if not isinstance(retries, int) or isinstance(retries, bool):
+        raise TypeError("retries must be an integer")
+    if retries <= 0:
+        raise ValueError("retries must be positive")
+    if not isinstance(delay, (int, float)) or isinstance(delay, bool):
+        raise TypeError("delay must be a number")
+    if delay < 0 or not math.isfinite(delay):
+        raise ValueError("delay must be finite and non-negative")
+
+    for _ in range(retries - 1):
         try:
             return await func()
         except Exception:
-            if attempt < retries - 1:
-                await asyncio.sleep(delay)
-            else:
-                raise
+            await asyncio.sleep(delay)
+    return await func()
 
 
 __all__ = ["retry_async"]

@@ -169,7 +169,7 @@ def test_compress_zip_io_error_on_output_file(tmp_path) -> None:
         os.chmod(tmp_path, 0o600)
 
 
-def test_compress_zip_no_permission_on_input_file(tmp_path) -> None:
+def test_compress_zip_no_permission_on_input_file(tmp_path, deny_read_access) -> None:
     """
     Test case 8: Test the compress_zip function with no permission on input file.
     """
@@ -181,7 +181,7 @@ def test_compress_zip_no_permission_on_input_file(tmp_path) -> None:
         f.write(data)
 
     # Remove all permissions from the input file
-    os.chmod(input_file, 0o000)
+    deny_read_access(input_file)
 
     try:
         with pytest.raises(OSError):
@@ -240,7 +240,7 @@ def test_compress_zip_read_only_output_directory(tmp_path) -> None:
         os.chmod(output_dir, 0o755)
 
 
-def test_compress_zip_read_only_input_directory(tmp_path) -> None:
+def test_compress_zip_read_only_input_directory(tmp_path, deny_read_access) -> None:
     """
     Test case 11: Test the compress_zip function with read-only input directory.
     """
@@ -250,7 +250,7 @@ def test_compress_zip_read_only_input_directory(tmp_path) -> None:
     output_zip = tmp_path / "output.zip"
 
     # Make input directory read-only
-    os.chmod(input_dir, 0o000)
+    deny_read_access(input_dir)
 
     try:
         with pytest.raises(OSError, match="Input path is not readable"):

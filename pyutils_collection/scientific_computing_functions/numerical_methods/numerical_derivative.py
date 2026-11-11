@@ -5,9 +5,17 @@ Uses numpy.gradient or finite difference methods, adds validation
 and comprehensive derivative computation.
 """
 
-from typing import Literal
+from typing import Literal, TypedDict
 
 import numpy as np
+from numpy.typing import NDArray
+
+
+class _DerivativeResult(TypedDict):
+    derivative: NDArray[np.float64]
+    x: NDArray[np.float64]
+    method: str
+    order: int
 
 
 def numerical_derivative(
@@ -15,7 +23,7 @@ def numerical_derivative(
     y: list[float] | np.ndarray,
     method: Literal["gradient", "forward", "backward", "central"] = "central",
     order: int = 1,
-) -> dict[str, np.ndarray]:
+) -> _DerivativeResult:
     """
     Compute numerical derivative with validation and multiple methods.
 
@@ -39,7 +47,7 @@ def numerical_derivative(
 
     Returns
     -------
-    dict[str, np.ndarray]
+    dict
         Dictionary containing:
         - derivative: Computed derivative values
         - x: Independent variable values
@@ -114,7 +122,7 @@ def numerical_derivative(
     # Compute derivative
     if method == "gradient":
         # Use numpy gradient (2nd order accurate)
-        derivative = np.gradient(y_arr, x_arr, edge_order=2)
+        derivative = np.gradient(y_arr, x_arr, edge_order=2 if x_arr.size >= 3 else 1)
         if order == 2:
             derivative = np.gradient(derivative, x_arr, edge_order=2)
 
@@ -174,9 +182,9 @@ def numerical_derivative(
                 h_forward = x_arr[i + 1] - x_arr[i]
                 h_backward = x_arr[i] - x_arr[i - 1]
                 derivative[i] = (
-                    (y_arr[i + 1] - y_arr[i]) / h_forward
-                    + (y_arr[i] - y_arr[i - 1]) / h_backward
-                ) / 2
+                    h_backward * (y_arr[i + 1] - y_arr[i]) / h_forward
+                    + h_forward * (y_arr[i] - y_arr[i - 1]) / h_backward
+                ) / (h_forward + h_backward)
             # Forward for first, backward for last
             derivative[0] = (y_arr[1] - y_arr[0]) / (x_arr[1] - x_arr[0])
             derivative[-1] = (y_arr[-1] - y_arr[-2]) / (x_arr[-1] - x_arr[-2])
@@ -200,8 +208,8 @@ def numerical_derivative(
     return {
         "derivative": derivative,
         "x": x_arr,
-        "method": method,  # type: ignore[dict-item]
-        "order": order,  # type: ignore[dict-item]
+        "method": method,
+        "order": order,
     }
 
 

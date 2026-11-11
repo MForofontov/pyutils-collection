@@ -8,6 +8,7 @@ from .async_cleanup import async_cleanup
 from .async_connection_pool import AsyncConnectionPool, use_connection
 from .async_download import async_download
 from .async_event_loop import async_event_loop
+from .async_map_limited import async_map_limited
 from .async_parallel_download import async_parallel_download
 from .async_periodic import async_periodic
 from .async_rate_limited import async_rate_limited
@@ -20,6 +21,7 @@ from .gather_with_timeout import gather_with_timeout
 from .retry_async import retry_async
 
 __all__ = [
+    "async_map_limited",
     "async_await_with_error_handling",
     "async_batch",
     "async_cancellable_task",

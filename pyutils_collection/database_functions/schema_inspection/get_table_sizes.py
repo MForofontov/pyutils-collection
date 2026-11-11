@@ -99,7 +99,7 @@ def get_table_sizes(
     results = []
 
     for table_name in table_names:
-        table_info = {
+        table_info: dict[str, Any] = {
             "table_name": table_name,
             "row_count": 0,
             "data_size_bytes": 0,
@@ -248,7 +248,7 @@ def get_table_sizes(
 
             else:
                 # Fallback: estimate based on row count
-                estimated_bytes = int(table_info["row_count"]) * 1000  # type: ignore[call-overload]  # rough estimate
+                estimated_bytes = int(table_info["row_count"]) * 1000  # rough estimate
                 table_info["total_size_bytes"] = estimated_bytes
                 table_info["data_size_bytes"] = estimated_bytes
                 logger.warning(
@@ -256,14 +256,18 @@ def get_table_sizes(
                 )
 
             # Calculate MB values
-            table_info["data_size_mb"] = int(table_info["data_size_bytes"]) / (1024 * 1024)  # type: ignore[call-overload]
-            table_info["total_size_mb"] = int(table_info["total_size_bytes"]) / (1024 * 1024)  # type: ignore[call-overload]
+            table_info["data_size_mb"] = int(table_info["data_size_bytes"]) / (
+                1024 * 1024
+            )
+            table_info["total_size_mb"] = int(table_info["total_size_bytes"]) / (
+                1024 * 1024
+            )
 
             # Remove index size if not requested
             if not include_indexes:
                 del table_info["index_size_bytes"]
             else:
-                table_info["index_size_mb"] = int(table_info["index_size_bytes"]) / (  # type: ignore[call-overload]
+                table_info["index_size_mb"] = int(table_info["index_size_bytes"]) / (
                     1024 * 1024
                 )
 
@@ -274,7 +278,7 @@ def get_table_sizes(
             results.append(table_info)
 
     # Sort by total size descending
-    results.sort(key=lambda x: int(x["total_size_bytes"]), reverse=True)  # type: ignore[call-overload]
+    results.sort(key=lambda x: int(x["total_size_bytes"]), reverse=True)
 
     return results
 

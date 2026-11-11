@@ -96,9 +96,7 @@ def timeout(
             try:
                 return future.result(timeout=seconds)  # type: ignore[no-any-return]
             except FuturesTimeoutError as exc:
-                message = (
-                    f"Function {func.__name__} timed out after {seconds} seconds"
-                )
+                message = f"Function {func.__name__} timed out after {seconds} seconds"
                 if logger:
                     logger.error(message)
                 future.cancel()
