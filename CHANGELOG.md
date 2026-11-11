@@ -2,6 +2,37 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-09
+
+### Fixed
+- Preserve keyword insertion order in `cache` and `cache_with_expiration` keys,
+  preventing incorrect reuse when a function observes the order of `**kwargs`.
+- Propagate wrapped functions' `TypeError` instances unchanged instead of
+  reporting them as unhashable arguments. Failed calls remain uncached.
+- Use monotonic elapsed time for cache expiration so system-clock adjustments
+  cannot prematurely expire or prolong cached results.
+- Use exactly the requested width for even rolling-statistics windows, placing
+  the extra sample on the left and retaining partial windows at the edges.
+- Retain every complete even-width moving average in `smooth_timeseries`,
+  including the final valid window. Reject moving-average windows larger than
+  the series instead of returning an incorrectly sized result.
+- Keep `power` results real-valued and report complex-result domains, arithmetic
+  overflow, and zero-to-negative-power failures as `ValueError`. Preserve the
+  original arithmetic exception as the cause where applicable.
+- Include active exception tracebacks in contextual exception logging. Forward
+  `exc_info` as a logging control, honor explicit suppression, and retain custom
+  contextual fields and their precedence.
+
+### Enhanced
+- Use one dictionary lookup for cache hits, including cached `None` results.
+
+### Maintenance
+- Align README release/Python requirements, repository-root installation steps,
+  exported-name counts, and utility descriptions with the 0.2.2 package.
+- Audit the 0.2.2 maintenance changeset with fresh Python 3.15 checks, behavioral
+  cache, numerical, and logging regressions, and paired cache-hit benchmarks. See
+  `MAINTENANCE_PLAN.md` for measured results and local validation limitations.
+
 ## [0.2.1] - 2026-11-02
 
 ### Fixed
