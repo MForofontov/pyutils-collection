@@ -2,6 +2,7 @@
 
 import urllib.request
 from typing import Any
+from urllib.error import HTTPError
 
 
 def http_get(
@@ -64,5 +65,13 @@ def http_get(
                 "headers": dict(response.headers),
                 "url": response.geturl(),
             }
+    except HTTPError as e:
+        content = e.read().decode("utf-8") if e.fp else ""
+        return {
+            "status_code": e.code,
+            "content": content,
+            "headers": dict(e.headers) if e.headers else {},
+            "url": e.url,
+        }
     except Exception:
         raise

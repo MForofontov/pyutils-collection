@@ -308,6 +308,16 @@ def test_safe_cast_scalar_to_tuple() -> None:
     assert result == (42,)
 
 
+def test_safe_cast_string_to_list_wraps_atomically() -> None:
+    """Test case 27b: Strings are wrapped as a single list element."""
+    assert safe_cast("hello", list) == ["hello"]
+
+
+def test_safe_cast_string_to_tuple_wraps_atomically() -> None:
+    """Test case 27c: Strings are wrapped as a single tuple element."""
+    assert safe_cast("hello", tuple) == ("hello",)
+
+
 def test_safe_cast_type_error_non_type() -> None:
     """
     Test case 28: TypeError when target_type is not a type.

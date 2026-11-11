@@ -98,7 +98,6 @@ def ssh_check_connection(
             key_filename=key_filename,
             timeout=timeout,
         )
-        client.close()
         return {
             "success": True,
             "message": "Connection successful",
@@ -128,6 +127,8 @@ def ssh_check_connection(
             "message": "Connection failed",
             "error": str(exc),
         }
+    finally:
+        client.close()
 
 
 __all__ = ["ssh_check_connection"]

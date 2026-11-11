@@ -1,5 +1,6 @@
 """Recursive dictionary merging."""
 
+import copy
 from typing import Any
 
 
@@ -43,7 +44,7 @@ def merge_dicts_recursive(*dicts: dict[str, Any]) -> dict[str, Any]:
             ):
                 result[key] = merge_dicts_recursive(result[key], value)
             else:
-                result[key] = value
+                result[key] = copy.deepcopy(value)
 
     return result
 

@@ -123,7 +123,7 @@ def test_http_get_with_none_url() -> None:
 def test_http_get_http_error_with_response_body(mock_urlopen) -> None:
 
     """
-    Test case 8: HTTP GET request with HTTP error that includes response body.
+    Test case 8: HTTP GET request with HTTP error returns error response dict.
     """
     error = urllib.error.HTTPError(
         url="https://example.com",
@@ -135,8 +135,9 @@ def test_http_get_http_error_with_response_body(mock_urlopen) -> None:
     error.fp.read.return_value = b"Not found"
     mock_urlopen.side_effect = error
 
-    with pytest.raises(urllib.error.HTTPError):
-        http_get("https://example.com")
+    result = http_get("https://example.com")
+    assert result["status_code"] == 404
+    assert result["content"] == "Not found"
 
 
 @patch("urllib.request.urlopen")
@@ -150,8 +151,9 @@ def test_http_get_http_error_without_response_body(mock_urlopen) -> None:
     )
     mock_urlopen.side_effect = error
 
-    with pytest.raises(urllib.error.HTTPError):
-        http_get("https://example.com")
+    result = http_get("https://example.com")
+    assert result["status_code"] == 500
+    assert result["content"] == ""
 
 
 @patch("urllib.request.urlopen")

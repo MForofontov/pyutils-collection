@@ -14,6 +14,10 @@ def inc(x: int) -> int:
     return x + 1
 
 
+def returns_none_for_two(x: int) -> int | None:
+    return None if x == 2 else x
+
+
 def test_parallel_gather_errors_with_exception() -> None:
     """
     Test case 1: Test gathering errors when some inputs raise exceptions.
@@ -31,4 +35,11 @@ def test_parallel_gather_errors_no_error() -> None:
     data: list[int] = [1, 2, 3]
     results, errors = parallel_gather_errors(inc, data)
     assert results == [2, 3, 4]
+    assert errors == []
+
+
+def test_parallel_gather_errors_preserves_none_results() -> None:
+    """Successful None results are preserved in the output list."""
+    results, errors = parallel_gather_errors(returns_none_for_two, [1, 2, 3])
+    assert results == [1, None, 3]
     assert errors == []

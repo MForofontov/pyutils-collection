@@ -91,19 +91,20 @@ def timeout(
             def _run_func() -> Any:
                 return func(*args, **kwargs)
 
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(_run_func)
-                try:
-                    return future.result(timeout=seconds)  # type: ignore[no-any-return]
-                except FuturesTimeoutError as exc:
-                    message = (
-                        f"Function {func.__name__} timed out after {seconds} seconds"
-                    )
-                    if logger:
-                        logger.error(message)
-                    # Attempt to cancel but function may continue running in background
-                    future.cancel()
-                    raise TimeoutException(message) from exc
+            executor = ThreadPoolExecutor(max_workers=1)
+            future = executor.submit(_run_func)
+            try:
+                return future.result(timeout=seconds)  # type: ignore[no-any-return]
+            except FuturesTimeoutError as exc:
+                message = (
+                    f"Function {func.__name__} timed out after {seconds} seconds"
+                )
+                if logger:
+                    logger.error(message)
+                future.cancel()
+                raise TimeoutException(message) from exc
+            finally:
+                executor.shutdown(wait=False, cancel_futures=True)
 
         return wrapper
 

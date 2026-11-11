@@ -15,6 +15,8 @@ restore_session : Restore browser session from file
 parallel_scrape : Scrape multiple URLs in parallel with context pooling
 """
 
+from pyutils_collection._version import __version__
+
 # Import functions (gracefully handle missing playwright)
 try:
     from .managed_browser import managed_browser

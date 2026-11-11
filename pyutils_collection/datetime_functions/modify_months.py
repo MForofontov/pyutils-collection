@@ -23,7 +23,7 @@ def modify_months(date_obj: datetime | date, months: int) -> datetime | date:
     if not isinstance(date_obj, (datetime, date)):
         raise TypeError("date_obj must be a datetime or date object")
 
-    if not isinstance(months, int):
+    if not isinstance(months, int) or isinstance(months, bool):
         raise TypeError("months must be an integer")
 
     # Calculate new year and month

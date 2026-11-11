@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 import numpy as np
+from sklearn.base import clone
 from sklearn.model_selection import cross_val_score
 
 logger = logging.getLogger(__name__)
@@ -167,7 +168,7 @@ def auto_select_best_model(
     }
 
     # Refit best model on full training set
-    best_model = models[best_model_name]
+    best_model = clone(models[best_model_name])
     if refit:
         logger.debug(f"Refitting best model ({best_model_name}) on full training set")
         best_model.fit(X_train, y_train)

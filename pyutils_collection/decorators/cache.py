@@ -1,5 +1,6 @@
 """Function result caching decorator."""
 
+import threading
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar, cast
@@ -40,6 +41,7 @@ def cache(func: Callable[P, R]) -> Callable[P, R]:
     """
 
     cached_results: dict[tuple[tuple[Any, ...], frozenset[tuple[str, Any]]], Any] = {}
+    cache_lock = threading.RLock()
 
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -71,18 +73,17 @@ def cache(func: Callable[P, R]) -> Callable[P, R]:
             )
 
             # Check if the result is already cached
-            if key not in cached_results:
-                # If not cached, call the function and store the result
-                cached_results[key] = func(*args, **kwargs)
+            with cache_lock:
+                if key not in cached_results:
+                    cached_results[key] = func(*args, **kwargs)
+                return cached_results[key]  # type: ignore[no-any-return]
         except TypeError as exc:
             raise TypeError(f"Unhashable arguments: {exc}") from exc
 
-        # Return the cached result
-        return cached_results[key]  # type: ignore[no-any-return]
-
     def cache_clear() -> None:
         """Public method to clear the cached results for ``func``."""
-        cached_results.clear()
+        with cache_lock:
+            cached_results.clear()
 
     wrapper.cache_clear = cache_clear  # type: ignore[attr-defined]
 

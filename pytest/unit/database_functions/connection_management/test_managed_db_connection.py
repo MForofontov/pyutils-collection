@@ -119,9 +119,7 @@ def test_managed_db_connection_cleanup_on_exception() -> None:
         return conn
 
     # Act & Assert
-    # The context manager catches the error from yield block and handles cleanup
-    # The RuntimeError about generator is raised when exception happens after yield
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError, match="Test error"):
         with managed_db_connection(create_conn) as conn:
             conn.execute("INSERT INTO test VALUES (1)")
             raise ValueError("Test error")

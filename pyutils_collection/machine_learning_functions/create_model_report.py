@@ -74,12 +74,13 @@ def create_model_report(
     if len(results) == 0:
         raise ValueError("results dictionary cannot be empty")
 
-    # Check that sort_by metric exists
-    first_model = next(iter(results.values()))
-    if sort_by not in first_model:
-        raise ValueError(
-            f"Metric '{sort_by}' not found in results. Available: {list(first_model.keys())}"
-        )
+    # Check that sort_by metric exists in all models
+    for name, metrics in results.items():
+        if sort_by not in metrics:
+            raise ValueError(
+                f"Metric '{sort_by}' not found in results for model '{name}'. "
+                f"Available: {list(metrics.keys())}"
+            )
 
     # Sort models by specified metric
     sorted_models = sorted(

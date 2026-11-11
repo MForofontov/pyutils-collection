@@ -42,7 +42,7 @@ def modify_years(date_obj: datetime | date, years: int) -> datetime | date:
     if not isinstance(date_obj, (datetime, date)):
         raise TypeError("date_obj must be a datetime or date object")
 
-    if not isinstance(years, int):
+    if not isinstance(years, int) or isinstance(years, bool):
         raise TypeError("years must be an integer")
 
     new_year = date_obj.year + years

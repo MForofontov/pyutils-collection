@@ -1,6 +1,7 @@
 """Rate limiting decorator."""
 
 import logging
+import threading
 import time
 from collections import deque
 from collections.abc import Callable
@@ -79,6 +80,7 @@ def rate_limit(
         """
         # Store timestamps of function calls using a deque with fixed length
         calls: deque[float] = deque(maxlen=max_calls)
+        calls_lock = threading.Lock()
 
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -103,23 +105,24 @@ def rate_limit(
                 If the rate limit is exceeded.
             """
             nonlocal calls  # Indicates that 'calls' refers to the deque in the enclosing scope
-            current_time = time.time()
-            # Remove calls that are outside the allowed period
-            while calls and current_time - calls[0] >= period:
-                calls.popleft()
+            with calls_lock:
+                current_time = time.time()
+                # Remove calls that are outside the allowed period
+                while calls and current_time - calls[0] >= period:
+                    calls.popleft()
 
-            # Check if the number of calls exceeds the limit
-            if len(calls) >= max_calls:
-                message = (
-                    exception_message
-                    or f"Rate limit exceeded for {func.__name__}. Try again later."
-                )
-                if logger:
-                    logger.warning(message, exc_info=True)
-                raise RateLimitExceededException(message)
+                # Check if the number of calls exceeds the limit
+                if len(calls) >= max_calls:
+                    message = (
+                        exception_message
+                        or f"Rate limit exceeded for {func.__name__}. Try again later."
+                    )
+                    if logger:
+                        logger.warning(message, exc_info=True)
+                    raise RateLimitExceededException(message)
 
-            # Append the current timestamp to the list of calls
-            calls.append(current_time)
+                # Append the current timestamp to the list of calls
+                calls.append(current_time)
             return func(*args, **kwargs)
 
         return wrapper

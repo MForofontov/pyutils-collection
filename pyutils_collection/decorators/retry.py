@@ -21,7 +21,9 @@ def retry(
     Parameters
     ----------
     max_retries : int
-        The maximum number of retry attempts.
+        The maximum number of attempts (including the first call).
+        For example, ``max_retries=3`` allows up to three total attempts
+        before the last exception is re-raised.
     delay : int | float, optional
         The delay between retry attempts in seconds (default is 1.0).
     logger : logging.Logger | None, optional

@@ -1,6 +1,7 @@
 """Ping host utility."""
 
 import subprocess
+import sys
 
 
 def ping_host(host: str, count: int = 1, timeout: int = 2) -> bool:
@@ -42,7 +43,12 @@ def ping_host(host: str, count: int = 1, timeout: int = 2) -> bool:
     if not isinstance(timeout, int):
         raise TypeError(f"timeout must be an integer, got {type(timeout).__name__}")
 
-    cmd = ["ping", "-c", str(count), "-W", str(timeout), host]
+    if sys.platform == "darwin":
+        cmd = ["ping", "-c", str(count), "-t", str(timeout), host]
+    elif sys.platform.startswith("win"):
+        cmd = ["ping", "-n", str(count), "-w", str(timeout * 1000), host]
+    else:
+        cmd = ["ping", "-c", str(count), "-W", str(timeout), host]
     try:
         result = subprocess.run(
             cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL

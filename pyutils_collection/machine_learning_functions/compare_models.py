@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 import numpy as np
+from sklearn.base import clone
 from sklearn.model_selection import cross_val_score
 
 logger = logging.getLogger(__name__)
@@ -125,16 +126,17 @@ def compare_models(
         if not hasattr(model, "fit") or not hasattr(model, "score"):
             raise ValueError(f"Model '{name}' must have fit and score methods")
 
-        # Fit model
-        model.fit(X_train, y_train)
+        # Fit a clone so caller's estimator is not mutated
+        fitted_model = clone(model)
+        fitted_model.fit(X_train, y_train)
 
         # Calculate scores
-        train_score = model.score(X_train, y_train)
-        test_score = model.score(X_test, y_test)
+        train_score = fitted_model.score(X_train, y_train)
+        test_score = fitted_model.score(X_test, y_test)
 
         # Cross-validation
         cv_scores = cross_val_score(
-            model, X_train, y_train, cv=cv_folds, scoring=scoring
+            clone(model), X_train, y_train, cv=cv_folds, scoring=scoring
         )
 
         results[name] = {

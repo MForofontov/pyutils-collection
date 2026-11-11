@@ -6,6 +6,10 @@ from typing import Any
 
 import paramiko
 
+_ALLOWED_INTERPRETERS = frozenset(
+    {"bash", "sh", "python", "python3", "perl", "ruby", "node", "php"}
+)
+
 
 def ssh_execute_script(
     host: str,
@@ -96,6 +100,10 @@ def ssh_execute_script(
     if not isinstance(interpreter, str):
         raise TypeError(
             f"interpreter must be a string, got {type(interpreter).__name__}"
+        )
+    if interpreter not in _ALLOWED_INTERPRETERS:
+        raise ValueError(
+            f"interpreter must be one of {sorted(_ALLOWED_INTERPRETERS)}, got {interpreter!r}"
         )
 
     # Check if script file exists

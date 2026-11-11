@@ -126,12 +126,12 @@ def detect_overfitting(
     # Detect overfitting
     overfitting_detected = train_test_gap > gap_threshold
 
-    # Assess severity
+    # Assess severity relative to gap_threshold
     if not overfitting_detected:
         severity = "none"
-    elif train_test_gap < 0.15:
+    elif train_test_gap < gap_threshold * 1.5:
         severity = "mild"
-    elif train_test_gap < 0.25:
+    elif train_test_gap < gap_threshold * 2.5:
         severity = "moderate"
     else:
         severity = "severe"

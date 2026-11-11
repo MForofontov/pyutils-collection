@@ -1,6 +1,7 @@
 """Function throttling decorator."""
 
 import logging
+import threading
 import time
 from collections.abc import Callable
 from functools import wraps
@@ -60,6 +61,7 @@ def throttle(
             The wrapped function.
         """
         last_called = 0.0
+        throttle_lock = threading.Lock()
 
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -79,18 +81,19 @@ def throttle(
                 The result of the decorated function.
             """
             nonlocal last_called
-            current_time = time.time()
-            elapsed_time = current_time - last_called
-            if elapsed_time < rate_limit:
-                if logger:
-                    logger.error(
-                        f"Function {func.__name__} called too frequently. Rate limit: {rate_limit} seconds.",
-                        exc_info=True,
+            with throttle_lock:
+                current_time = time.time()
+                elapsed_time = current_time - last_called
+                if elapsed_time < rate_limit:
+                    if logger:
+                        logger.error(
+                            f"Function {func.__name__} called too frequently. Rate limit: {rate_limit} seconds.",
+                            exc_info=True,
+                        )
+                    raise RuntimeError(
+                        f"Function {func.__name__} called too frequently. Rate limit: {rate_limit} seconds."
                     )
-                raise RuntimeError(
-                    f"Function {func.__name__} called too frequently. Rate limit: {rate_limit} seconds."
-                )
-            last_called = current_time
+                last_called = current_time
             return func(*args, **kwargs)
 
         return wrapper

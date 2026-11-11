@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 import numpy as np
+from sklearn.base import clone
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 def calculate_prediction_intervals(
     model: Any,
     X: np.ndarray,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
     confidence_level: float = 0.95,
     n_bootstrap: int = 100,
     random_state: int | None = 42,
@@ -18,15 +21,19 @@ def calculate_prediction_intervals(
     """
     Calculate prediction confidence intervals using bootstrap resampling.
 
-    Generates prediction intervals by resampling model predictions,
-    useful for quantifying prediction uncertainty.
+    Generates prediction intervals by refitting the model on bootstrap
+    resamples of the training data, then predicting on ``X``.
 
     Parameters
     ----------
     model : Any
-        Trained sklearn model with predict method.
+        Trained sklearn model with fit and predict methods.
     X : np.ndarray
         Feature matrix for predictions.
+    X_train : np.ndarray
+        Training feature matrix used for bootstrap resampling.
+    y_train : np.ndarray
+        Training target values used for bootstrap resampling.
     confidence_level : float, optional
         Confidence level for intervals (by default 0.95 for 95% CI).
     n_bootstrap : int, optional
@@ -58,7 +65,9 @@ def calculate_prediction_intervals(
     >>> y_train = np.random.randn(100)
     >>> X_test = np.random.randn(20, 5)
     >>> model = LinearRegression().fit(X_train, y_train)
-    >>> intervals = calculate_prediction_intervals(model, X_test, n_bootstrap=50)
+    >>> intervals = calculate_prediction_intervals(
+    ...     model, X_test, X_train, y_train, n_bootstrap=50
+    ... )
     >>> len(intervals['predictions']) == 20
     True
     >>> all(intervals['lower_bound'] <= intervals['predictions'])
@@ -68,12 +77,8 @@ def calculate_prediction_intervals(
 
     Notes
     -----
-    Uses bootstrap resampling to estimate prediction uncertainty.
-    For probabilistic models, consider using predict_proba directly.
-
-    Use battle-tested libraries: Built on numpy bootstrap resampling.
-    Adds value through: convenient CI calculation, automatic percentile computation,
-    unified interface for uncertainty quantification.
+    Uses bootstrap resampling of the training set with model refitting
+    to estimate prediction uncertainty.
 
     Complexity
     ----------
@@ -82,6 +87,10 @@ def calculate_prediction_intervals(
     # Input validation
     if not isinstance(X, np.ndarray):
         raise TypeError(f"X must be numpy array, got {type(X).__name__}")
+    if not isinstance(X_train, np.ndarray):
+        raise TypeError(f"X_train must be numpy array, got {type(X_train).__name__}")
+    if not isinstance(y_train, np.ndarray):
+        raise TypeError(f"y_train must be numpy array, got {type(y_train).__name__}")
     if not isinstance(confidence_level, (int, float)):
         raise TypeError(
             f"confidence_level must be numeric, got {type(confidence_level).__name__}"
@@ -100,23 +109,25 @@ def calculate_prediction_intervals(
         )
     if not hasattr(model, "predict"):
         raise ValueError("model must have a 'predict' method")
+    if not hasattr(model, "fit"):
+        raise ValueError("model must have a 'fit' method")
+    if X_train.shape[0] != y_train.shape[0]:
+        raise ValueError("X_train and y_train must have the same number of samples")
+    if X_train.shape[1] != X.shape[1]:
+        raise ValueError("X_train and X must have the same number of features")
 
-    # Set random seed for reproducibility
-    if random_state is not None:
-        np.random.seed(random_state)
-
+    rng = np.random.default_rng(random_state)
+    n_train_samples = X_train.shape[0]
     n_samples = X.shape[0]
 
-    # Bootstrap predictions
+    # Bootstrap predictions via refit
     bootstrap_predictions = np.zeros((n_bootstrap, n_samples))
 
     for i in range(n_bootstrap):
-        # Resample indices with replacement
-        indices = np.random.choice(n_samples, size=n_samples, replace=True)
-        X_bootstrap = X[indices]
-
-        # Predict on bootstrap sample
-        bootstrap_predictions[i] = model.predict(X_bootstrap)
+        indices = rng.choice(n_train_samples, size=n_train_samples, replace=True)
+        bootstrap_model = clone(model)
+        bootstrap_model.fit(X_train[indices], y_train[indices])
+        bootstrap_predictions[i] = bootstrap_model.predict(X)
 
     # Calculate statistics
     mean_predictions = np.mean(bootstrap_predictions, axis=0)

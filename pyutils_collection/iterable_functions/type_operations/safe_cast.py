@@ -91,6 +91,8 @@ def safe_cast(value: Any, target_type: type[T], default: T | None = None) -> T |
         elif target_type is list:
             if isinstance(value, (list, tuple)):
                 return list(value)
+            elif isinstance(value, (str, bytes)):
+                return [value]
             elif hasattr(value, "__iter__"):
                 return list(value)
             else:
@@ -98,6 +100,8 @@ def safe_cast(value: Any, target_type: type[T], default: T | None = None) -> T |
         elif target_type is tuple:
             if isinstance(value, (list, tuple)):
                 return tuple(value)
+            elif isinstance(value, (str, bytes)):
+                return (value,)
             elif hasattr(value, "__iter__"):
                 return tuple(value)
             else:

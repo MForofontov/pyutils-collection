@@ -19,7 +19,7 @@ def _wrapper(args: tuple[Callable[[T], R], T]) -> tuple[R | None, Exception | No
 
 def parallel_gather_errors(
     func: Callable[[T], R], data: list[T], num_processes: int | None = None
-) -> tuple[list[R], list[Exception]]:
+) -> tuple[list[R | None], list[Exception]]:
     """
     Apply a function to a list of items in parallel and gather any exceptions raised by the processes.
 
@@ -67,8 +67,7 @@ def parallel_gather_errors(
                 results.append(result)
             else:
                 errors.append(error)
-    filtered_results = [r for r in results if r is not None]
-    return filtered_results, errors
+    return results, errors
 
 
 __all__ = ["parallel_gather_errors"]

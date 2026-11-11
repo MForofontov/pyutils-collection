@@ -129,6 +129,10 @@ def extract_feature_importance(
         # If auto and no native method found, use permutation
         elif method == "auto":
             method = "permutation"
+        else:
+            raise ValueError(
+                "Model does not support native feature importance extraction"
+            )
 
     # Use permutation importance if requested or no native method
     if importances is None:

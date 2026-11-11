@@ -1,6 +1,7 @@
 """Password verification using PBKDF2 algorithm."""
 
 import hashlib
+import hmac
 
 
 def verify_password_pbkdf2(
@@ -96,7 +97,7 @@ def verify_password_pbkdf2(
         )
 
         # Compare hashes using constant-time comparison
-        return computed_hash.hex() == hashed_password
+        return hmac.compare_digest(computed_hash, bytes.fromhex(hashed_password))
     except Exception as e:
         raise ValueError(f"Error during password verification: {e}") from e
 

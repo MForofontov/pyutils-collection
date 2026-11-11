@@ -46,6 +46,12 @@ def test_try_convert_to_type_success_bool() -> None:
     assert try_convert_to_type(value, target_type) is expected_output
 
 
+def test_try_convert_to_type_bool_false_string() -> None:
+    """Test case 5b: String 'false' converts to False, not True."""
+    assert try_convert_to_type("false", bool) is False
+    assert try_convert_to_type("true", bool) is True
+
+
 def test_try_convert_to_type_custom_class() -> None:
     """Test case 6: Test the try_convert_to_type function with a custom class."""
 

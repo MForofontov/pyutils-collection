@@ -26,6 +26,16 @@ class DatabaseConnection(Protocol):
 T = TypeVar("T", bound=DatabaseConnection)
 
 
+def _establish_connection(
+    connection_factory: Callable[[], T],
+    health_check_query: str | None,
+) -> T:
+    connection = connection_factory()
+    if health_check_query is not None:
+        connection.execute(health_check_query)
+    return connection
+
+
 @contextmanager
 def managed_db_connection(
     connection_factory: Callable[[], T],
@@ -94,63 +104,38 @@ def managed_db_connection(
             f"health_check_query must be str or None, got {type(health_check_query).__name__}"
         )
 
-    connection = None
-    last_error = None
+    connection: T | None = None
+    last_error: Exception | None = None
 
     for attempt in range(max_retries):
         try:
-            # Attempt to create connection
-            connection = connection_factory()
-
-            # Perform health check if specified
-            if health_check_query is not None:
-                try:
-                    connection.execute(health_check_query)
-                except Exception as health_error:
-                    logger.warning(
-                        f"Health check failed on attempt {attempt + 1}: {health_error}"
-                    )
-                    try:
-                        connection.close()
-                    except Exception:
-                        pass
-                    connection = None
-                    raise health_error
-
-            # Connection successful
+            connection = _establish_connection(connection_factory, health_check_query)
             logger.debug(f"Database connection established on attempt {attempt + 1}")
-            yield connection
-            return
-
+            break
         except Exception as e:
             last_error = e
             logger.warning(
                 f"Connection attempt {attempt + 1}/{max_retries} failed: {e}"
             )
-
             if attempt < max_retries - 1:
-                # Exponential backoff
                 sleep_time = retry_delay * (2**attempt)
                 logger.debug(f"Retrying in {sleep_time} seconds...")
                 time.sleep(sleep_time)
-            else:
-                # Final attempt failed
-                logger.error(f"All connection attempts failed. Last error: {e}")
+    else:
+        raise RuntimeError(
+            f"Failed to establish database connection after {max_retries} attempts. "
+            f"Last error: {last_error}"
+        )
 
-        finally:
-            # Cleanup connection if established
-            if connection is not None:
-                try:
-                    connection.close()
-                    logger.debug("Connection closed successfully")
-                except Exception as close_error:
-                    logger.error(f"Error closing connection: {close_error}")
-
-    # All retries exhausted
-    raise RuntimeError(
-        f"Failed to establish database connection after {max_retries} attempts. "
-        f"Last error: {last_error}"
-    )
+    try:
+        yield connection
+    finally:
+        if connection is not None:
+            try:
+                connection.close()
+                logger.debug("Connection closed successfully")
+            except Exception as close_error:
+                logger.error(f"Error closing connection: {close_error}")
 
 
 __all__ = ["managed_db_connection"]

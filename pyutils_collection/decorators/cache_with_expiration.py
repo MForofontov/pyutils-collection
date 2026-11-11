@@ -1,5 +1,6 @@
 """Time-based cache expiration decorator."""
 
+import threading
 import time
 from collections.abc import Callable
 from functools import wraps
@@ -50,6 +51,7 @@ def cache_with_expiration(
         cached_results: dict[
             tuple[tuple[Any, ...], frozenset[tuple[str, Any]]], tuple[float, Any]
         ] = {}
+        cache_lock = threading.RLock()
 
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -81,12 +83,14 @@ def cache_with_expiration(
                 )
 
                 current_time = time.time()
-                if key in cached_results:
-                    cached_time, cached_value = cached_results[key]
-                    if current_time - cached_time < expiration_time:
-                        return cached_value  # type: ignore[no-any-return]
-                result = func(*args, **kwargs)
-                cached_results[key] = (current_time, result)
+                with cache_lock:
+                    if key in cached_results:
+                        cached_time, cached_value = cached_results[key]
+                        if current_time - cached_time < expiration_time:
+                            return cached_value  # type: ignore[no-any-return]
+                        del cached_results[key]
+                    result = func(*args, **kwargs)
+                    cached_results[key] = (current_time, result)
             except TypeError as exc:
                 raise TypeError(f"Unhashable arguments: {exc}") from exc
 
@@ -94,7 +98,8 @@ def cache_with_expiration(
 
         def cache_clear() -> None:
             """Clear the cache."""
-            cached_results.clear()
+            with cache_lock:
+                cached_results.clear()
 
         wrapper.cache_clear = cache_clear  # type: ignore[attr-defined]
 

@@ -37,8 +37,9 @@ def polyline_encoding_list_of_ints(list_of_ints: list[int], precision: int = 0) 
     last_number: int = 0
 
     for number in list_of_ints:
-        delta: int = number - last_number
-        last_number = number
+        scaled_number = int(round(number * (10**precision)))
+        delta: int = scaled_number - last_number
+        last_number = scaled_number
 
         # Encode the delta using the polyline encoding scheme
         delta = ~(delta << 1) if delta < 0 else (delta << 1)

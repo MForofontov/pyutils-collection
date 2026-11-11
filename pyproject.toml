@@ -7,10 +7,11 @@ name = "pyutils-collection"
 dynamic = ["version"]
 description = "Enterprise-grade Python utilities: 320+ type-safe, tested functions across 23 specialized modules for async operations, data processing, file handling, security, and more"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [
-    { name = "MForofontov" }
+    { name = "Mykyta Forofontov" }
 ]
 keywords = [
     "utilities",
@@ -27,7 +28,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -64,6 +64,7 @@ dependencies = [
     "openpyxl==3.1.0",
     "pyarrow==18.1.0",
     "scipy==1.17.0",
+    "scikit-learn==1.6.1",
 ]
 
 [project.urls]
@@ -71,6 +72,7 @@ Homepage = "https://github.com/MForofontov/pyutils-collection"
 Repository = "https://github.com/MForofontov/pyutils-collection"
 Issues = "https://github.com/MForofontov/pyutils-collection/issues"
 Documentation = "https://github.com/MForofontov/pyutils-collection#readme"
+Author = "https://github.com/MForofontov"
 
 [project.optional-dependencies]
 dev = [

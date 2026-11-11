@@ -93,6 +93,14 @@ def test_merge_dicts_recursive_no_modification() -> None:
     assert dict2 == original_dict2
 
 
+def test_merge_dicts_recursive_does_not_alias_nested_mutables() -> None:
+    """Merged nested lists are independent from source dictionaries."""
+    inner = {"c": [1]}
+    merged = merge_dicts_recursive({"a": inner}, {"b": 2})
+    inner["c"].append(2)
+    assert merged == {"a": {"c": [1]}, "b": 2}
+
+
 def test_merge_dicts_recursive_type_error() -> None:
     """
     Test case 9: Test the merge_dicts_recursive function with invalid type for arguments.

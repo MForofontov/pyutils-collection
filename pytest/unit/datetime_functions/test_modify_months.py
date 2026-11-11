@@ -133,6 +133,9 @@ def test_modify_months_invalid_months_type() -> None:
     with pytest.raises(TypeError):
         modify_months(test_date, None)
 
+    with pytest.raises(TypeError):
+        modify_months(test_date, True)
+
 
 def test_modify_months_datetime_day_overflow() -> None:
     """

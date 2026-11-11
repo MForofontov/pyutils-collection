@@ -221,11 +221,13 @@ See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for det
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT © 2026 [Mykyta Forofontov](https://github.com/MForofontov)
+
+See [LICENSE](LICENSE) for the full license text.
 
 ## 👤 Author
 
-**MForofontov**
+**Mykyta Forofontov**
 - GitHub: [@MForofontov](https://github.com/MForofontov)
 
 ## 🔗 Links

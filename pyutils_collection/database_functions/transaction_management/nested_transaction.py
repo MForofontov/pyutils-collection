@@ -3,12 +3,23 @@ Nested transaction context manager using savepoints.
 """
 
 import logging
+import re
 import uuid
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+_SAVEPOINT_NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def _validate_savepoint_name(savepoint_name: str) -> None:
+    if not _SAVEPOINT_NAME_PATTERN.match(savepoint_name):
+        raise ValueError(
+            "savepoint_name must contain only letters, digits, and underscores "
+            "and start with a letter or underscore"
+        )
 
 
 @contextmanager
@@ -118,6 +129,10 @@ def nested_transaction(
     # Generate savepoint name if not provided
     if savepoint_name is None:
         savepoint_name = f"sp_{uuid.uuid4().hex[:8]}"
+    else:
+        _validate_savepoint_name(savepoint_name)
+
+    used_sql_savepoint = False
 
     try:
         # Create savepoint
@@ -140,6 +155,7 @@ def nested_transaction(
             except AttributeError:
                 try:
                     connection.execute(f"SAVEPOINT {savepoint_name}")
+                    used_sql_savepoint = True
                     logger.debug(f"Savepoint '{savepoint_name}' created via SQL")
                 except Exception as e:
                     logger.error(f"Failed to create savepoint: {e}")
@@ -157,18 +173,28 @@ def nested_transaction(
             except Exception as e:
                 logger.warning(f"Failed to release savepoint: {e}")
         else:
-            # Fallback: try connection method or manual SQL
-            try:
-                # For SQLAlchemy, commit releases the nested transaction
-                connection.commit()
-                logger.debug(
-                    f"Savepoint '{savepoint_name}' released via connection.commit()"
-                )
-            except AttributeError:
+            # Fallback: try SQL release before committing the outer transaction
+            if used_sql_savepoint or hasattr(connection, "execute"):
                 try:
                     connection.execute(f"RELEASE SAVEPOINT {savepoint_name}")
                     logger.debug(f"Savepoint '{savepoint_name}' released via SQL")
+                except AttributeError:
+                    try:
+                        connection.commit()
+                        logger.debug(
+                            f"Savepoint '{savepoint_name}' released via connection.commit()"
+                        )
+                    except AttributeError as e:
+                        logger.warning(f"Failed to release savepoint: {e}")
                 except Exception as e:
+                    logger.warning(f"Failed to release savepoint: {e}")
+            else:
+                try:
+                    connection.commit()
+                    logger.debug(
+                        f"Savepoint '{savepoint_name}' released via connection.commit()"
+                    )
+                except AttributeError as e:
                     logger.warning(f"Failed to release savepoint: {e}")
 
     except Exception as e:
@@ -186,18 +212,33 @@ def nested_transaction(
             except Exception as rollback_error:
                 logger.error(f"Savepoint rollback failed: {rollback_error}")
         else:
-            # Fallback: try connection method or manual SQL
-            try:
-                connection.rollback()
-                logger.debug(
-                    f"Rolled back to savepoint '{savepoint_name}' via connection.rollback()"
-                )
-            except AttributeError:
+            # Fallback: prefer savepoint rollback over full transaction rollback
+            if used_sql_savepoint or hasattr(connection, "execute"):
                 try:
                     connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
                     logger.debug(f"Rolled back to savepoint '{savepoint_name}' via SQL")
+                except AttributeError:
+                    try:
+                        connection.rollback()
+                        logger.debug(
+                            f"Rolled back to savepoint '{savepoint_name}' via connection.rollback()"
+                        )
+                    except Exception as rollback_error:
+                        logger.error(f"Savepoint rollback failed: {rollback_error}")
                 except Exception as rollback_error:
                     logger.error(f"Savepoint rollback failed: {rollback_error}")
+            else:
+                try:
+                    connection.rollback()
+                    logger.debug(
+                        f"Rolled back to savepoint '{savepoint_name}' via connection.rollback()"
+                    )
+                except AttributeError:
+                    try:
+                        connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint_name}")
+                        logger.debug(f"Rolled back to savepoint '{savepoint_name}' via SQL")
+                    except Exception as rollback_error:
+                        logger.error(f"Savepoint rollback failed: {rollback_error}")
 
         raise
 

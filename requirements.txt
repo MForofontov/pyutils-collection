@@ -22,3 +22,4 @@ beautifulsoup4==4.14.3
 lxml==6.0.2
 openpyxl==3.1.5
 pyarrow==18.1.0
+scikit-learn==1.6.1
