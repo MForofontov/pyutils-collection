@@ -3,7 +3,32 @@
 This plan covers the full library. Changes already made in this checkout stay in
 place; each new fix should have a reproducible failure or measured benefit.
 
-## Live-service follow-up — 2026-10-29
+## Platform CI — 2026-10-29
+
+The validated checkout is now on `codex/major-check-validation`, with draft
+[PR #534](https://github.com/MForofontov/pyutils-collection/pull/534). The PR's
+checks track the exact current revision, including Windows/Linux/macOS unit and
+clean-package jobs, lint/types, security, browser, and disposable service checks.
+The package remains unpublished and the PR remains a draft.
+
+The initial matrix verified Linux units (5,828 passed, 2 skipped), all three
+clean-package jobs, browser, PostgreSQL/MySQL/OpenSSH services, lint/types, and
+security. It also exposed three portability defects absent from the local host:
+
+- On macOS, psutil may omit CPU frequency support. CPU information now reports
+  None frequency fields for a missing or unimplemented reader, retaining usage
+  and count data. Two deterministic regressions reproduce both cases.
+- macOS ships Bash 3.2, which lacks mapfile. The shell runner now reads parsed
+  arguments into its array using portable read/array operations, preserving
+  quoting and exit-code behavior without evaluating shell expressions.
+- One session-restore test wrote to /tmp/session.json, which was absent on the
+  clean Windows runner. It now uses the test's isolated temporary directory.
+
+Remote artifacts for the initial head are retained locally under
+`.major-check/remote/4d50212e/`. Subsequent matrix results are recorded in the PR,
+so these earlier local validation records are not claims about newer revisions.
+
+## Live-service follow-up record — 2026-10-29
 
 - Docker became responsive (Engine 29.8.2, Compose 5.6.0). Disposable Compose
   projects use generated `pyutils-audit-*` names and random loopback-only ports.

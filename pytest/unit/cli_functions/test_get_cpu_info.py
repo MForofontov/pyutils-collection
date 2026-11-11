@@ -108,3 +108,19 @@ def test_get_cpu_info_consistency() -> None:
     assert len(cpu_info1["cpu_percent_per_core"]) == len(
         cpu_info2["cpu_percent_per_core"]
     )
+
+
+@pytest.mark.parametrize("availability", ["missing", "not_implemented"])
+def test_get_cpu_info_when_frequency_is_unavailable(monkeypatch, availability):
+    if availability == "missing":
+        monkeypatch.delattr(psutil, "cpu_freq", raising=False)
+    else:
+        def unavailable():
+            raise NotImplementedError("frequency is unavailable on this platform")
+
+        monkeypatch.setattr(psutil, "cpu_freq", unavailable, raising=False)
+    info = get_cpu_info(interval=0)
+    assert info["cpu_count"] > 0
+    assert info["cpu_freq_current"] is None
+    assert info["cpu_freq_min"] is None
+    assert info["cpu_freq_max"] is None

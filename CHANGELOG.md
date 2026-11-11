@@ -1,5 +1,13 @@
 # Changelog
 
+## Platform portability follow-up — 2026-10-29
+
+### Fixed
+- Return unavailable CPU-frequency fields as None on platforms without psutil
+  frequency support while preserving CPU count and usage information.
+- Support macOS Bash 3.2 in the test runner without losing quoted arguments or
+  checker exit codes. Isolate the session-restore fixture from host /tmp paths.
+
 ## Live-service follow-up — 2026-10-29
 
 ### Fixed

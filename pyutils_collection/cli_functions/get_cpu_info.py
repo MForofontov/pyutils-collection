@@ -29,7 +29,11 @@ def get_cpu_info(
     >>> cpu_info['cpu_count'] > 0
     True
     """
-    freq = psutil.cpu_freq()
+    frequency_reader = getattr(psutil, "cpu_freq", None)
+    try:
+        freq = frequency_reader() if frequency_reader is not None else None
+    except NotImplementedError:
+        freq = None
 
     return {
         "cpu_count": os.cpu_count(),

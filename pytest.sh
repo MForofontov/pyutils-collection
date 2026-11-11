@@ -46,7 +46,10 @@ if [ -n "$EXTRA_ARGS" ]; then
     log_with_time "[Info] Using extra pytest arguments: $EXTRA_ARGS"
     # Parse quoted pytest expressions without evaluating shell commands.
     PARSED_ARGS=$(python -c 'import shlex, sys; print("\n".join(shlex.split(sys.argv[1])))' "$EXTRA_ARGS")
-    mapfile -t EXTRA_ARGV <<< "$PARSED_ARGS"
+    EXTRA_ARGV=()
+    while IFS= read -r extra_arg; do
+        EXTRA_ARGV+=("$extra_arg")
+    done <<< "$PARSED_ARGS"
     PYTEST_CMD+=("${EXTRA_ARGV[@]}")
 fi
 
