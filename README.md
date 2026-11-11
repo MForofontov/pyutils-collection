@@ -19,6 +19,11 @@ A collection of **500+ utility functions** across **31 specialized modules**, de
 
 ## 📦 Quick Start
 
+Use **Python 3.15+** for the current release. Earlier Python versions require an
+older compatible release; see the [changelog](CHANGELOG.md). The PyPI badges show
+the published package, while this checkout may contain unreleased maintenance.
+
+
 ```bash
 # Install from PyPI
 pip install pyutils-collection
@@ -27,8 +32,8 @@ pip install pyutils-collection
 git clone https://github.com/MForofontov/pyutils-collection.git
 cd pyutils-collection/pyutils_collection
 
-# Or install for development
-pip install -e ".[dev]"
+# Or install the checked-out version for development
+python -m pip install -e ".[dev]"
 ```
 
 ## 📦 Modules Overview
@@ -232,6 +237,11 @@ includes checked-out connections; duplicate registration and foreign or duplicat
 release raise `ValueError`. ZIP extraction rejects unsafe member paths and
 existing symlink escapes; TAR extraction preflights members before writing.
 
+`savepoint_context` releases its owned savepoint after rollback or ignored body
+errors without committing the caller's outer transaction. Ignore mode retains
+partial body work, but setup/release failures propagate. Cancellation and process
+interruptions always attempt rollback and release before propagating.
+
 ## 🧪 Testing
 
 ```bash
@@ -246,7 +256,14 @@ python -m pytest pytest/performance -m 'performance and not slow'
 python -m pytest pytest/performance -m 'performance and slow'
 
 # Isolated local HTTP integration checks
-python -m pytest pytest/integration -q
+python -m pytest pytest/integration/test_http_loopback.py -q
+
+# Real browser checks (install Chromium first, then set PYUTILS_BROWSER_TESTS=1)
+python -m playwright install chromium --only-shell
+python -m pytest pytest/integration/test_browser_lifecycle.py -q
+
+# Disposable PostgreSQL, MySQL, and SSH/SFTP checks (requires Docker Compose)
+python scripts/run_service_integration.py --report-dir .major-check/services
 
 # Audit inventory, Python 3.15 wheels, and repeatable async-map benchmarks
 python scripts/audit_inventory.py .major-check/unit.xml
@@ -264,11 +281,14 @@ See [MAINTENANCE_PLAN.md](MAINTENANCE_PLAN.md) for verified results, platform co
 
 ## 🤝 Contributing
 
-See [`.github/copilot-instructions.md`](.github/copilot-instructions.md) for detailed guidelines:
-- NumPy-style docstrings with examples
-- Complete type hints (Python 3.15+ syntax)
-- 95%+ test coverage per function
-- Self-contained, copy-paste friendly code
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, validation, and the PR
+documentation-impact check. [AGENTS.md](AGENTS.md) holds shared AI guidance and
+links to reusable maintenance and documentation skills. Update documentation and
+release notes alongside changes, including internal maintenance, and update the
+package version once per completed changeset under the policy in `AGENTS.md`.
+CI exception support does not waive that repository policy. Public utilities use complete type hints
+and NumPy-style docstrings with examples. Test meaningful behavior and failure
+paths; current measured coverage belongs in the maintenance record.
 
 ## 📄 License
 
