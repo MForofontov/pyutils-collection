@@ -4,6 +4,7 @@ import os
 
 import pytest
 from pyutils_collection.playwright_functions.managed_browser import managed_browser
+from pyutils_collection.playwright_functions.parallel_scrape import parallel_scrape
 
 pytestmark = [
     pytest.mark.integration,
@@ -33,3 +34,23 @@ def test_real_browser_cleanup_after_user_error():
             raise ValueError("intentional failure")
     assert page.is_closed()
     assert not browser.is_connected()
+
+
+@pytest.mark.parametrize("workers", [1, 2])
+def test_real_parallel_scrape_thread_ownership_and_context_isolation(workers):
+    def scrape(page, url):
+        assert page.context.cookies() == []
+        page.context.add_cookies([
+            {"name": "visited", "value": url, "url": "https://example.test"}
+        ])
+        if url == "bad":
+            raise ValueError("intentional scrape failure")
+        page.set_content(f"<title>{url}</title>")
+        return {"title": page.title()}
+
+    results = parallel_scrape(["first", "bad", "last"], scrape, max_workers=workers)
+    assert [item["url"] for item in results] == ["first", "bad", "last"]
+    assert results[0]["data"] == {"title": "first"}
+    assert results[2]["data"] == {"title": "last"}
+    assert results[1]["success"] is False
+    assert "intentional scrape failure" in results[1]["error"]

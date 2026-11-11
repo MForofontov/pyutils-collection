@@ -140,3 +140,15 @@ def test_generate_dependency_graph_include_external_dependencies() -> None:
 
         # Assert
         assert "os" in result or "digraph" in result  # Will show in graph
+
+
+def test_nested_modules_use_dotted_names_and_keep_internal_imports(tmp_path):
+    import json
+
+    package = tmp_path / "package"
+    package.mkdir()
+    (package / "__init__.py").write_text("")
+    (package / "consumer.py").write_text("import package\n")
+    assert json.loads(generate_dependency_graph(tmp_path, output_format="json")) == {
+        "package.consumer": ["package"]
+    }

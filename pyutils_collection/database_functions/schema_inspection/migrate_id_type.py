@@ -508,20 +508,6 @@ def _execute_batch_update(
     """
     if not batch:
         return 0
-    # Build a bound mapping; IDs must never be interpolated as SQL syntax.
-    case_parts = []
-    old_ids = []
-
-    parameters: dict[str, str] = {}
-    for index, (new_id, old_id) in enumerate(batch):
-        case_parts.append(f"WHEN :old_{index} THEN :new_{index}")
-        old_ids.append(f":old_{index}")
-        parameters[f"old_{index}"] = old_id
-        parameters[f"new_{index}"] = new_id
-
-    case_statement = " ".join(case_parts)
-    where_clause = ", ".join(old_ids)
-
     quote = conn.dialect.identifier_preparer.quote
     table_name = quote(table_name)
     column_name = quote(column_name)
@@ -550,6 +536,17 @@ def _execute_batch_update(
             return int(result.rowcount or 0)
         finally:
             conn.exec_driver_sql(f"DROP TABLE {mapping}")
+    # Only CASE-based dialects need these strings and bound parameters.
+    case_parts = []
+    old_ids = []
+    parameters: dict[str, str] = {}
+    for index, (new_id, old_id) in enumerate(batch):
+        case_parts.append(f"WHEN :old_{index} THEN :new_{index}")
+        old_ids.append(f":old_{index}")
+        parameters[f"old_{index}"] = old_id
+        parameters[f"new_{index}"] = new_id
+    case_statement = " ".join(case_parts)
+    where_clause = ", ".join(old_ids)
     query = text(
         f"""
         UPDATE {table_name}

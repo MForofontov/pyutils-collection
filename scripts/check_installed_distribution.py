@@ -36,6 +36,7 @@ def main() -> None:
         "project"
     ]
     metadata = importlib.metadata.metadata("pyutils-collection")
+    assert metadata["Version"] == pyutils_collection.__version__
     assert metadata["Requires-Python"] == ">=3.15"
     runtime = [Requirement(item) for item in metadata.get_all("Requires-Dist", [])]
     runtime = [

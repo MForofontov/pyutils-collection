@@ -155,3 +155,21 @@ def test_paginate_links_value_error_invalid_range() -> None:
     # Act & Assert
     with pytest.raises(ValueError, match="start_page.*must be.*end_page"):
         paginate_links("https://example.com", start_page=5, end_page=3)
+
+
+@pytest.mark.parametrize("query", ["", "?sort=asc"])
+def test_pagination_query_precedes_fragment(query):
+    from urllib.parse import parse_qs, urlsplit
+
+    result = paginate_links(f"https://example.com/items{query}#details", 1, 2)
+    for page, url in enumerate(result, 1):
+        parsed = urlsplit(url)
+        assert parsed.fragment == "details"
+        assert parse_qs(parsed.query)["page"] == [str(page)]
+
+
+def test_page_parameter_name_is_one_encoded_key():
+    from urllib.parse import parse_qs, urlsplit
+
+    result = paginate_links("https://example.com", 1, 1, "page&sort=bad")
+    assert parse_qs(urlsplit(result[0]).query) == {"page&sort=bad": ["1"]}
