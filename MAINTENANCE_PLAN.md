@@ -7,6 +7,21 @@ The existing **0.2.2** patch bump from published **0.2.1** is retained. Historic
 audit sections below describe their original scope and results; their earlier
 no-publication statements do not describe this release preparation.
 
+- The first release PR, [#535](https://github.com/MForofontov/pyutils-collection/pull/535),
+  merged as `a5d04581a29808c9b00622321352a21c84999753`. Exact-commit manual
+  validation then exposed a missing Playwright test extra and six Allure teardown
+  errors caused by globally patched filesystem functions. Publication stopped;
+  no 0.2.2 tag or registry upload was created from that failed validation.
+- The follow-up keeps the same unpublished 0.2.2 version, installs the full test
+  extras in the manual workflow and README setup, and restores filesystem mocks
+  before reporting-plugin finalizers run. Every destination-preservation and
+  cleanup assertion is retained. Local reproduction recorded **56 test-body
+  passes and six teardown errors** with Allure enabled, matching the CI defect.
+  Follow-up evidence is under `.major-check/2026-11-09-ci-fix/` (ignored).
+- After narrowing mock lifetimes, all **56 affected cases pass with Allure
+  reporting enabled**. An AST comparison verifies that every assertion and
+  expected-exception call in the four adjusted test modules is unchanged.
+  Production package sources are unchanged from the first release candidate.
 - Candidate branch: `codex/release-0.2.2`, based on
   `92153c303ef2aa55c05bf0fe2e82ad8b36ed4f9c` (`v0.2.1`). Remote `main` was
   `ba8510a69d7ac2fe99de9ed7f9b8a6bc1d42374a`; all its commits are ancestors

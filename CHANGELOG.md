@@ -27,6 +27,8 @@
 - Use one dictionary lookup for cache hits, including cached `None` results.
 
 ### Maintenance
+- Install the Playwright test extra in the manual full-suite workflow and scope
+  filesystem failure mocks to utility calls so Allure can finish report writes.
 - Align README release/Python requirements, repository-root installation steps,
   exported-name counts, and utility descriptions with the 0.2.2 package.
 - Audit the 0.2.2 maintenance changeset with fresh Python 3.15 checks, behavioral

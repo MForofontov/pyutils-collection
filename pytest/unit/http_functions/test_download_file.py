@@ -93,26 +93,27 @@ def test_failure_preserves_destination_and_removes_partial_file(
         destination.write_bytes(b"original")
     error = OSError("simulated failure")
     callback = None
-    if failure == "request":
-        opener.side_effect = error
-    elif failure == "read":
-        response.read.side_effect = [b"partial", error]
-    elif failure == "callback":
-        callback = Mock(side_effect=error)
-    elif failure == "write":
-        original = tempfile.NamedTemporaryFile
+    with monkeypatch.context() as operation_patch:
+        if failure == "request":
+            opener.side_effect = error
+        elif failure == "read":
+            response.read.side_effect = [b"partial", error]
+        elif failure == "callback":
+            callback = Mock(side_effect=error)
+        elif failure == "write":
+            original = tempfile.NamedTemporaryFile
 
-        def create_file(**kwargs):
-            stream = original(**kwargs)
-            stream.write = Mock(side_effect=error)
-            return stream
+            def create_file(**kwargs):
+                stream = original(**kwargs)
+                stream.write = Mock(side_effect=error)
+                return stream
 
-        monkeypatch.setattr(tempfile, "NamedTemporaryFile", create_file)
-    else:
-        monkeypatch.setattr(os, "replace" if failure == "replace" else "fsync", Mock(side_effect=error))
+            operation_patch.setattr(tempfile, "NamedTemporaryFile", create_file)
+        else:
+            operation_patch.setattr(os, "replace" if failure == "replace" else "fsync", Mock(side_effect=error))
 
-    with pytest.raises(OSError) as caught:
-        download_file("https://example.com/data", str(destination), progress_callback=callback)
+        with pytest.raises(OSError) as caught:
+            download_file("https://example.com/data", str(destination), progress_callback=callback)
     assert caught.value is error
     if existing:
         assert destination.read_bytes() == b"original"
