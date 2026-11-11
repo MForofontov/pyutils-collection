@@ -48,7 +48,7 @@
 
 ### Added
 - Shared repository guidance, maintenance/documentation skills, and concise
-  Codex, Cursor, Claude, Gemini, and Copilot entry points.
+  Codex, Claude, Gemini, and Copilot entry points.
 - Read-only pull-request documentation-impact checks with reviewed exceptions
   and regression coverage for merge bases, renames, deletions, and fork events.
 

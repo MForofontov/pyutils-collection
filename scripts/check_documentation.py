@@ -9,7 +9,7 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
 DOC_NAMES = {"README.md", "CHANGELOG.md", "CONTRIBUTING.md", "MAINTENANCE_PLAN.md"}
-AI_ROOTS = {".agents", ".codex", ".cursor", ".claude", ".gemini"}
+AI_ROOTS = {".agents", ".codex", ".claude", ".gemini"}
 CONFIG_NAMES = {
     "pyproject.toml",
     "pytest.sh",

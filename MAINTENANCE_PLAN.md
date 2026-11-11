@@ -296,7 +296,7 @@ and measurements below remain dated evidence, not current release-gate outcomes.
   respective fixes; all 13 lifecycle/interruption cases now pass.
 - Correct the numerical-derivative docstring's endpoint results. Its four doctest
   statements pass; numerical behavior is unchanged.
-- Root `AGENTS.md` is canonical. Two shared skills plus native Cursor, Claude,
+- Root `AGENTS.md` is canonical. Two shared skills plus native Claude,
   Gemini, and Copilot entry points replace outdated duplicated instructions.
   Documentation and one version update are required per completed changeset.
 - Read-only documentation-impact CI compares the true merge base, checks both

@@ -28,7 +28,6 @@ from scripts.check_documentation import (
         ".github/copilot-instructions.md",
         ".github/pull_request_template.md",
         ".agents/skills/major-check/SKILL.md",
-        ".cursor/rules/repository.mdc",
         ".codex/config.toml",
         ".claude/rules/example.md",
         ".gemini/settings.json",

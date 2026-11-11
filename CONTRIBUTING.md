@@ -53,10 +53,9 @@ PR bodies are read from event JSON as data; no PR text is executed.
 
 ## AI tools
 
-Codex reads root `AGENTS.md` and discovers shared `.agents/skills/`. Cursor's
-always-applied `.cursor/rules/repository.mdc`, Claude's `CLAUDE.md`, Gemini's
-`GEMINI.md`, and Copilot's `.github/copilot-instructions.md` route to the same
-guidance. Read shared skill files when a tool does not discover them automatically.
+Codex reads root `AGENTS.md` and discovers shared `.agents/skills/`. Claude's
+`CLAUDE.md`, Gemini's `GEMINI.md`, and Copilot's `.github/copilot-instructions.md`
+route to the same guidance. Read shared skill files when a tool does not discover them automatically.
 Keep policy in one place rather than maintaining divergent copies.
 
 ## Major validation
