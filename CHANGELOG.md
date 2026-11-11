@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-04
+
+### Fixed
+- Export hygiene: `get_current_datetime_iso`, playwright `__version__`
+- Security: constant-time PBKDF2 verification
+- Decorators: thread-safe cache/rate-limit/throttle, non-blocking timeout, RLock for recursive cache
+- Datetime: reject bool offsets in `modify_months`/`modify_years`
+- Iterable: `safe_cast` string wrapping, `try_convert_to_type` bool strings, `merge_dicts_recursive` deep copy
+- ML: bootstrap refit, estimator cloning, overfitting severity, model report validation
+- Database: nested transaction savepoint rollback, managed connection exception handling
+- SSH: connection cleanup, interpreter allowlist
+- HTTP: `http_get` returns error dict on HTTPError (consistent with `http_post`)
+- Network: `ping_host` macOS timeout flag
+- Compression: polyline precision scaling
+- Multiprocessing: preserve `None` results in `parallel_gather_errors`
+
+### Added
+- `scikit-learn` as declared dependency for `machine_learning_functions`
+- ML unit tests (8 modules), package export validation test, decorator regression tests
+
 ## [0.1.4] - 2026-02-17
 
 Initial release with comprehensive Python utilities library containing 200+ reusable functions, classes, and decorators organized into specialized modules.
