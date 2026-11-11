@@ -72,7 +72,7 @@ Homepage = "https://github.com/MForofontov/pyutils-collection"
 Repository = "https://github.com/MForofontov/pyutils-collection"
 Issues = "https://github.com/MForofontov/pyutils-collection/issues"
 Documentation = "https://github.com/MForofontov/pyutils-collection#readme"
-Author = "https://github.com/MForofontov"
+Author Profile = "https://github.com/MForofontov"
 
 [project.optional-dependencies]
 dev = [
