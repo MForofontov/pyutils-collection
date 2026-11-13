@@ -34,6 +34,8 @@ def normalize_url(
         Remove trailing slash from path (by default False).
     lowercase_scheme_host : bool, optional
         Convert scheme and host to lowercase (by default True).
+        When False, preserve their case while still recognizing default ports
+        independently of scheme capitalization.
 
     Returns
     -------
@@ -109,13 +111,23 @@ def normalize_url(
         raise ValueError(f"Invalid URL: {e}") from e
 
     # Normalize scheme and host
-    scheme = parsed.scheme.lower() if lowercase_scheme_host else parsed.scheme
+    scheme = parsed.scheme
+    if (
+        not lowercase_scheme_host
+        and scheme
+        and url[: len(scheme)].lower() == scheme
+        and url[len(scheme) :].startswith(":")
+    ):
+        # urllib.parse has already lowercased the parsed scheme.
+        scheme = url[: len(scheme)]
 
     # Handle port
     port = parsed.port
     if port is not None and remove_default_port:
         # Remove default ports
-        if (scheme == "http" and port == 80) or (scheme == "https" and port == 443):
+        if (scheme.lower() == "http" and port == 80) or (
+            scheme.lower() == "https" and port == 443
+        ):
             port = None
 
     if lowercase_scheme_host:

@@ -19,7 +19,8 @@ A collection of **500+ utility functions** across **31 specialized modules**, de
 
 ## 📦 Quick Start
 
-Version **0.2.2** requires **Python 3.15+** with `compression.zstd`. Release
+Development version **0.2.3** requires **Python 3.15+** with `compression.zstd`.
+The PyPI installation example below targets release **0.2.2**. Release
 0.1.5 declared Python 3.10+ support. See the
 [changelog](CHANGELOG.md) for release history. The PyPI badges show the published
 package; development checkouts may contain changes listed under `Unreleased`.

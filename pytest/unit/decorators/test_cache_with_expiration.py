@@ -20,6 +20,15 @@ def concat(*args: str, **kwargs: str) -> str:
     return "".join(args) + "".join(kwargs.values())
 
 
+@pytest.fixture(autouse=True)
+def isolate_caches():
+    add.cache_clear()
+    concat.cache_clear()
+    yield
+    add.cache_clear()
+    concat.cache_clear()
+
+
 def test_cache_basic() -> None:
 
     """
@@ -41,7 +50,7 @@ def test_cache_expiration() -> None:
     assert add(1, 2) == 3
     time.sleep(3)
     assert add(1, 2) == 3  # Should recompute as cache expired
-    assert call_counts["add"] == 1  # Function should be called twice
+    assert call_counts["add"] == 2  # Function should be called twice
     call_counts["add"] = 0
 
 
@@ -53,7 +62,7 @@ def test_cache_different_args() -> None:
     call_counts["add"] = 0
     assert add(1, 2) == 3
     assert add(2, 3) == 5  # Different arguments, should not use cache
-    assert call_counts["add"] == 1  # Function should be called twice
+    assert call_counts["add"] == 2  # Function should be called twice
     call_counts["add"] = 0
 
 
@@ -90,7 +99,7 @@ def test_cache_concat_different_args() -> None:
     assert concat("a", "b", "c") == "abc"
     # Different arguments, should not use cache
     assert concat("x", "y", "z") == "xyz"
-    assert call_counts["concat"] == 1  # Function should be called twice
+    assert call_counts["concat"] == 2  # Function should be called twice
     call_counts["concat"] = 0
 
 

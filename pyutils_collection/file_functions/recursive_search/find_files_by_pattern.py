@@ -23,6 +23,7 @@ def find_files_by_pattern(
         The filename pattern to match (supports wildcards * and ?).
     case_sensitive : bool, optional
         Whether the pattern matching should be case sensitive (by default False).
+        Explicit case sensitivity is honored on every platform, including Windows.
 
     Returns
     -------
@@ -90,13 +91,13 @@ def find_files_by_pattern(
             for file in files:
                 # Apply case sensitivity
                 if case_sensitive:
-                    if fnmatch.fnmatch(file, pattern):
+                    if fnmatch.fnmatchcase(file, pattern):
                         matching_files.append(str(Path(root) / file))
                 else:
                     test_file = file.casefold()
                     test_pattern = pattern.casefold()
 
-                    if fnmatch.fnmatch(test_file, test_pattern):
+                    if fnmatch.fnmatchcase(test_file, test_pattern):
                         full_path = Path(root) / file
                         canonical_path = str(full_path).casefold()
                         if canonical_path not in seen_casefolded_paths:

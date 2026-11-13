@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from pathlib import Path
 
 
 def merge_folders(folder1: str, folder2: str, output_folder: str) -> None:
@@ -21,10 +22,19 @@ def merge_folders(folder1: str, folder2: str, output_folder: str) -> None:
     -------
     None
 
+    Raises
+    ------
+    FileNotFoundError
+        If either source is not a directory.
+    ValueError
+        If the output and either source overlap.
+
     Notes
     -----
     - If the output folder does not exist, it will be created.
-    - If there are file naming conflicts, the conflicting files will be renamed with a "_copy" suffix.
+    - Conflicts use "_copy", then "_copy2", "_copy3", and so on without
+      overwriting existing entries. Concurrent destination writers are unsupported.
+    - Source and output directories must not contain one another.
     - The function ensures that all intermediate directories are created as needed.
     """
 
@@ -32,6 +42,12 @@ def merge_folders(folder1: str, folder2: str, output_folder: str) -> None:
         raise FileNotFoundError(f"Source folder not found: {folder1}")
     if not os.path.isdir(folder2):
         raise FileNotFoundError(f"Source folder not found: {folder2}")
+
+    destination = Path(output_folder).resolve()
+    for folder in (folder1, folder2):
+        source = Path(folder).resolve()
+        if destination.is_relative_to(source) or source.is_relative_to(destination):
+            raise ValueError("Source and output folders must not overlap")
 
     def copy_files(src_folder: str) -> None:
         """
@@ -54,9 +70,13 @@ def merge_folders(folder1: str, folder2: str, output_folder: str) -> None:
 
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
 
-                if os.path.exists(dest_file_path):
+                if os.path.lexists(dest_file_path):
                     base, ext = os.path.splitext(dest_file_path)
                     dest_file_path = f"{base}_copy{ext}"
+                    suffix = 2
+                    while os.path.lexists(dest_file_path):
+                        dest_file_path = f"{base}_copy{suffix}{ext}"
+                        suffix += 1
 
                 shutil.copy2(src_file_path, dest_file_path)
 

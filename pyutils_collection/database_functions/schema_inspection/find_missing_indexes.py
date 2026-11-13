@@ -100,10 +100,11 @@ def find_missing_indexes(
     recommendations = []
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = f"{schema}.{table_name}" if schema is not None else table_name
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
 
         # Get existing indexes
         try:

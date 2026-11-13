@@ -1,6 +1,7 @@
 """Generate dependency graph for Python modules."""
 
 import ast
+from importlib.util import resolve_name
 from pathlib import Path
 
 
@@ -54,6 +55,8 @@ def generate_dependency_graph(
     - Parses import statements using AST
     - Can export to DOT format for Graphviz visualization
     - Filters out standard library imports by default
+    - Resolves package-relative imports before grouping dependencies by their
+      top-level import name
 
     Complexity
     ----------
@@ -120,10 +123,25 @@ def generate_dependency_graph(
                         if include_external or imported_module in modules_in_project:
                             imports.add(imported_module)
                 elif isinstance(node, ast.ImportFrom):
-                    if node.module:
-                        imported_module = node.module.split(".")[0]
-                        if include_external or imported_module in modules_in_project:
-                            imports.add(imported_module)
+                    if node.level:
+                        package = (
+                            module_name
+                            if py_file.name == "__init__.py"
+                            else module_name.rpartition(".")[0]
+                        )
+                        try:
+                            absolute_name = resolve_name(
+                                "." * node.level + (node.module or ""), package
+                            )
+                        except ImportError:
+                            continue
+                    elif node.module:
+                        absolute_name = node.module
+                    else:
+                        continue
+                    imported_module = absolute_name.split(".")[0]
+                    if include_external or imported_module in modules_in_project:
+                        imports.add(imported_module)
 
             if imports:
                 dependencies[module_name] = imports

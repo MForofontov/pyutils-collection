@@ -1,6 +1,7 @@
 """Get local IP address."""
 
 import socket
+from contextlib import closing
 
 
 def get_local_ip() -> str:
@@ -12,17 +13,19 @@ def get_local_ip() -> str:
     str
         Local IP address as a string.
 
+    Notes
+    -----
+    The probe socket is closed on success and failure. Failures return 127.0.0.1.
+
     Examples
     --------
     >>> get_local_ip()
     '192.168.1.100'
     """
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return str(ip)
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_DGRAM)) as s:
+            s.connect(("8.8.8.8", 80))
+            return str(s.getsockname()[0])
     except Exception:
         return "127.0.0.1"
 

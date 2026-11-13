@@ -51,6 +51,8 @@ def export_current_figure(
     Notes
     -----
     Uses plt.gcf() to get the current figure.
+    If no figure exists, raises without creating a figure. An existing figure
+    without axes is left open when rejected.
     Supported formats: PNG, PDF, SVG, JPG, EPS.
 
     Complexity
@@ -81,6 +83,8 @@ def export_current_figure(
         raise ValueError(f"filepath must have an extension (e.g., .png): '{filepath}'")
 
     # Get current figure
+    if not plt.get_fignums():
+        raise ValueError("No active figure to export")
     fig = plt.gcf()
 
     if fig is None or not fig.get_axes():

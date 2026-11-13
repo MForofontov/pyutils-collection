@@ -140,13 +140,19 @@ def compare_table_data(
         bind=target_connection, schema=target_schema, only=[target_table]
     )
 
-    if source_table not in source_metadata.tables:
+    source_key = (
+        f"{source_schema}.{source_table}" if source_schema is not None else source_table
+    )
+    target_key = (
+        f"{target_schema}.{target_table}" if target_schema is not None else target_table
+    )
+    if source_key not in source_metadata.tables:
         raise ValueError(f"Source table {source_table} not found in metadata")
-    if target_table not in target_metadata.tables:
+    if target_key not in target_metadata.tables:
         raise ValueError(f"Target table {target_table} not found")
 
-    src_table = source_metadata.tables[source_table]
-    tgt_table = target_metadata.tables[target_table]
+    src_table = source_metadata.tables[source_key]
+    tgt_table = target_metadata.tables[target_key]
 
     # Find common columns
     src_columns = {col.name for col in src_table.columns}

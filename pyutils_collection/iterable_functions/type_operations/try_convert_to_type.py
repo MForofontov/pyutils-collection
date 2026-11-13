@@ -39,7 +39,8 @@ def try_convert_to_type(value: Any, target_type: type[T]) -> T:
     TypeError
         If ``target_type`` is not a ``type``.
     ValueError
-        If the conversion fails.
+        If the conversion fails, including numeric overflow. The original
+        conversion exception is preserved as the cause.
     """
     if not isinstance(target_type, type):
         raise TypeError("target_type must be a type")
@@ -48,7 +49,7 @@ def try_convert_to_type(value: Any, target_type: type[T]) -> T:
         if target_type is bool:
             return _convert_to_bool(value)  # type: ignore[return-value]
         return target_type(value)  # type: ignore[call-arg]
-    except (ValueError, TypeError) as e:
+    except (ValueError, TypeError, OverflowError) as e:
         raise ValueError(f"Failed to convert {value} to {target_type}") from e
 
 

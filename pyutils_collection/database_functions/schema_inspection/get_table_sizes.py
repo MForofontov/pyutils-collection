@@ -5,7 +5,7 @@ Get storage size information for database tables.
 import logging
 from typing import Any
 
-from sqlalchemy import MetaData, text
+from sqlalchemy import MetaData, func, select, text
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +109,14 @@ def get_table_sizes(
 
         try:
             # Get row count (database-agnostic)
-            if table_name in metadata.tables:
-                metadata.tables[table_name]
-                count_query = text(f"SELECT COUNT(*) FROM {table_name}")
+            table_key = (
+                f"{schema}.{table_name}"
+                if schema is not None and tables
+                else table_name
+            )
+            if table_key in metadata.tables:
+                table = metadata.tables[table_key]
+                count_query = select(func.count()).select_from(table)
                 result = connection.execute(count_query)
                 table_info["row_count"] = result.scalar() or 0
 

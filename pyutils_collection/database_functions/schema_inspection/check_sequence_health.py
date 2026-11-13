@@ -8,7 +8,7 @@ ID exhaustion failures in production.
 import logging
 from typing import Any
 
-from sqlalchemy import MetaData, inspect, text
+from sqlalchemy import MetaData, func, inspect, select
 
 logger = logging.getLogger(__name__)
 
@@ -114,10 +114,13 @@ def check_sequence_health(
     results = []
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = (
+            f"{schema}.{table_name}" if schema is not None and tables else table_name
+        )
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
 
         # Find auto-increment/serial columns
         for column in table.columns:
@@ -142,8 +145,8 @@ def check_sequence_health(
 
             try:
                 # Get current maximum value in the column
-                max_query = f"SELECT MAX({column.name}) FROM {table_name}"
-                result = connection.execute(text(max_query))
+                max_query = select(func.max(column)).select_from(table)
+                result = connection.execute(max_query)
                 current_value = result.scalar()
 
                 if current_value is None:

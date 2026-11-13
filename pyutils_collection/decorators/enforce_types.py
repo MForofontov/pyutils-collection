@@ -4,6 +4,7 @@ import inspect
 import logging
 from collections.abc import Callable
 from functools import wraps
+from types import UnionType
 from typing import Any, ParamSpec, TypeVar, get_args, get_origin, get_type_hints
 
 from pyutils_collection.logger_functions.logger import validate_logger
@@ -32,6 +33,11 @@ def enforce_types(
     ------
     TypeError
         If the logger is not an instance of logging.Logger or None.
+
+    Notes
+    -----
+    ``Any`` accepts every value. Union annotations accept a value matching any
+    member, including when nested inside supported container annotations.
     """
     validate_logger(logger)
 
@@ -74,10 +80,14 @@ def enforce_types(
             """
 
             def _is_instance(value: Any, expected_type: Any) -> bool:
+                if expected_type is Any:
+                    return True
                 origin = get_origin(expected_type)
                 if origin is None:
                     return isinstance(value, expected_type)
                 args = get_args(expected_type)
+                if origin is UnionType:
+                    return any(_is_instance(value, member) for member in args)
                 if origin in {list, set, frozenset}:
                     if not isinstance(value, origin):
                         return False

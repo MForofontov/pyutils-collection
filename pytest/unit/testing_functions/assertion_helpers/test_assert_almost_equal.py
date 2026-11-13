@@ -83,3 +83,30 @@ def test_assert_almost_equal_assertion_error_exceeds_tolerance() -> None:
         AssertionError, match="Values differ by .* which exceeds tolerance"
     ):
         assert_almost_equal(1.0, 2.0, 0.1)
+
+
+@pytest.mark.parametrize(
+    ("actual", "expected"),
+    [(float("nan"), 1.0), (1.0, float("nan")), (float("nan"), float("nan"))],
+)
+def test_almost_equal_rejects_nan(actual: float, expected: float) -> None:
+    with pytest.raises(AssertionError):
+        assert_almost_equal(actual, expected)
+
+
+def test_almost_equal_rejects_nan_tolerance() -> None:
+    with pytest.raises(ValueError):
+        assert_almost_equal(1.0, 2.0, float("nan"))
+
+
+@pytest.mark.parametrize("value", [float("inf"), -float("inf"), 10**400])
+def test_almost_equal_identical_extreme_values(value: float) -> None:
+    assert_almost_equal(value, value)
+
+
+@pytest.mark.parametrize(
+    ("actual", "expected"), [(float("inf"), 1.0), (float("inf"), -float("inf"))]
+)
+def test_almost_equal_different_infinities(actual: float, expected: float) -> None:
+    with pytest.raises(AssertionError):
+        assert_almost_equal(actual, expected)

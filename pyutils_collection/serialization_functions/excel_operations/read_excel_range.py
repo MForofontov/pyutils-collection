@@ -56,6 +56,7 @@ def read_excel_range(
     Notes
     -----
     Requires openpyxl package.
+    The owned workbook is closed on success and on sheet-selection/read failure.
     Uses Excel range notation (e.g., 'A1:B10').
 
     Complexity
@@ -82,38 +83,39 @@ def read_excel_range(
 
     # Load workbook and sheet
     wb = load_workbook(file_path, read_only=True, data_only=values_only)
+    try:
+        if isinstance(sheet_name, int):
+            if sheet_name < 0 or sheet_name >= len(wb.sheetnames):
+                raise ValueError(f"sheet_name index {sheet_name} out of range")
+            ws = wb.worksheets[sheet_name]
+        else:
+            if sheet_name not in wb.sheetnames:
+                raise ValueError(f"sheet_name '{sheet_name}' not found")
+            ws = wb[sheet_name]
 
-    if isinstance(sheet_name, int):
-        if sheet_name < 0 or sheet_name >= len(wb.sheetnames):
-            raise ValueError(f"sheet_name index {sheet_name} out of range")
-        ws = wb.worksheets[sheet_name]
-    else:
-        if sheet_name not in wb.sheetnames:
-            raise ValueError(f"sheet_name '{sheet_name}' not found")
-        ws = wb[sheet_name]
-
-    # Read range
-    if range_string:
-        cell_range = ws[range_string]
-        # Handle single cell
-        if not isinstance(cell_range, tuple):
-            data = [[cell_range.value if values_only else cell_range]]
-        # Handle single row
-        elif not isinstance(cell_range[0], tuple):
-            data = [[cell.value if values_only else cell for cell in cell_range]]
-        # Handle 2D range
+        # Read range
+        if range_string:
+            cell_range = ws[range_string]
+            # Handle single cell
+            if not isinstance(cell_range, tuple):
+                data = [[cell_range.value if values_only else cell_range]]
+            # Handle single row
+            elif not isinstance(cell_range[0], tuple):
+                data = [[cell.value if values_only else cell for cell in cell_range]]
+            # Handle 2D range
+            else:
+                data = [
+                    [cell.value if values_only else cell for cell in row]
+                    for row in cell_range
+                ]
         else:
             data = [
                 [cell.value if values_only else cell for cell in row]
-                for row in cell_range
+                for row in ws.iter_rows()
             ]
-    else:
-        data = [
-            [cell.value if values_only else cell for cell in row]
-            for row in ws.iter_rows()
-        ]
 
-    wb.close()
+    finally:
+        wb.close()
     return data
 
 

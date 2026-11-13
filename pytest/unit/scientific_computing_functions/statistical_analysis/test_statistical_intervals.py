@@ -4,6 +4,9 @@ import numpy as np
 from scipy import stats
 
 import pytest
+from pyutils_collection.scientific_computing_functions.statistical_analysis.bootstrap_statistic import (
+    bootstrap_statistic,
+)
 from pyutils_collection.scientific_computing_functions.statistical_analysis.comprehensive_stats import (
     comprehensive_stats,
 )
@@ -43,6 +46,7 @@ def test_constant_sample_interval_collapses_to_mean():
     "function,inputs,parameter",
     [
         (comprehensive_stats, ([1.0, 2.0, 3.0],), "confidence_level"),
+        (bootstrap_statistic, ([1.0, 2.0, 3.0],), "confidence_level"),
         (correlation_analysis, ([1.0, 2.0, 3.0], [3.0, 1.0, 2.0]), "alpha"),
         (perform_t_test, ([1.0, 2.0, 3.0], [3.0, 1.0, 2.0]), "alpha"),
     ],

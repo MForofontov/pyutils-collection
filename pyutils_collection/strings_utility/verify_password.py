@@ -22,7 +22,9 @@ def verify_password(
         The password to verify.
     custom_checks : Iterable[Callable[[str], bool]], optional
         An iterable of custom check functions that take the password as input and
-        return a boolean. Defaults to ``None``.
+        return a boolean. Defaults to ``None``. One-shot iterables are consumed
+        once into a tuple before validation; rules then run in iteration order
+        and stop at the first false result.
 
     Returns
     -------
@@ -55,13 +57,15 @@ def verify_password(
         raise TypeError("The password must be a string.")
 
     if custom_checks is None:
-        custom_checks = []
-    elif (
-        not isinstance(custom_checks, Iterable)
-        or isinstance(custom_checks, (str, bytes))
-        or not all(callable(check) for check in custom_checks)
+        custom_checks = ()
+    elif not isinstance(custom_checks, Iterable) or isinstance(
+        custom_checks, (str, bytes)
     ):
         raise TypeError("custom_checks must be an iterable of callables.")
+    else:
+        custom_checks = tuple(custom_checks)
+        if not all(callable(check) for check in custom_checks):
+            raise TypeError("custom_checks must be an iterable of callables.")
 
     # Check if the password is at least 8 characters long
     if len(password) < 8:

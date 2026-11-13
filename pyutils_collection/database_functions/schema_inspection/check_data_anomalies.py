@@ -29,7 +29,8 @@ def check_data_anomalies(
     connection : Any
         Database connection.
     tables : list[str] | None, optional
-        Specific tables to check (by default None for all tables).
+        Specific table names within ``schema`` to check (by default None for
+        all tables). Explicit names are retained in the reported results.
     schema : str | None, optional
         Schema name (by default None).
     check_all_same : bool, optional
@@ -107,10 +108,13 @@ def check_data_anomalies(
     anomalies = []
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = (
+            f"{schema}.{table_name}" if schema is not None and tables else table_name
+        )
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
 
         # Get total row count
         total_rows_query = select(func.count()).select_from(table)

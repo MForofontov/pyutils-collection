@@ -14,7 +14,8 @@ def format_number_compact(
     number : int | float
         Number to format.
     precision : int, optional
-        Number of decimal places to display (by default 1).
+        Maximum number of decimal places to display (by default 1). Fractional
+        trailing zeros are removed; integer trailing zeros are preserved.
     threshold : int, optional
         Minimum value to start using compact notation (by default 1000).
 
@@ -41,11 +42,13 @@ def format_number_compact(
     >>> format_number_compact(500)
     '500'
     >>> format_number_compact(1500, precision=2)
-    '1.50K'
+    '1.5K'
     >>> format_number_compact(999, threshold=1000)
     '999'
     >>> format_number_compact(1000, threshold=1000)
-    '1.0K'
+    '1K'
+    >>> format_number_compact(10000, precision=0)
+    '10K'
     >>> format_number_compact(0)
     '0'
     >>> format_number_compact(-1500)
@@ -100,7 +103,9 @@ def format_number_compact(
         if abs_number >= divisor:
             value = number / divisor
             # Format with precision
-            formatted = f"{value:.{precision}f}".rstrip("0").rstrip(".")
+            formatted = f"{value:.{precision}f}"
+            if "." in formatted:
+                formatted = formatted.rstrip("0").rstrip(".")
             return f"{formatted}{suffix}"
 
     # Fallback (should not reach here given logic above)

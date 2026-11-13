@@ -33,11 +33,14 @@ def analyze_column_cardinality(
     connection : Any
         Database connection.
     tables : list[str] | None, optional
-        Specific tables to analyze (by default None for all tables).
+        Specific table names within ``schema`` to analyze (by default None for
+        all tables). Explicit names are retained in the reported results.
     schema : str | None, optional
         Schema name (by default None).
     sample_size : int | None, optional
-        Limit analysis to N rows (by default None for full scan).
+        Limit input rows before computing all statistics (by default None for
+        full scan). The database determines which rows are selected; this is
+        not a random sample.
     low_cardinality_threshold : float, optional
         Ratio below which column is considered low cardinality (by default 0.01).
     high_cardinality_threshold : float, optional
@@ -129,15 +132,21 @@ def analyze_column_cardinality(
     results = []
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = (
+            f"{schema}.{table_name}" if schema is not None and tables else table_name
+        )
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        reflected_table = metadata.tables[table_key]
+        table = (
+            select(reflected_table).limit(sample_size).subquery()
+            if sample_size is not None
+            else reflected_table
+        )
 
         # Get total row count
         count_query = select(func.count()).select_from(table)
-        if sample_size:
-            count_query = count_query.limit(sample_size)
 
         result = connection.execute(count_query)
         total_rows = result.scalar() or 0
@@ -156,8 +165,6 @@ def analyze_column_cardinality(
                 null_query = (
                     select(func.count()).select_from(table).where(column.is_(None))
                 )
-                if sample_size:
-                    null_query = null_query.limit(sample_size)
                 result = connection.execute(null_query)
                 null_count = result.scalar() or 0
 
@@ -165,8 +172,6 @@ def analyze_column_cardinality(
                 distinct_query = select(func.count(func.distinct(column))).select_from(
                     table
                 )
-                if sample_size:
-                    distinct_query = distinct_query.limit(sample_size)
                 result = connection.execute(distinct_query)
                 distinct_count = result.scalar() or 0
 
@@ -246,7 +251,7 @@ def analyze_column_cardinality(
     results.sort(
         key=lambda x: (
             category_order[str(x["cardinality_category"])],
-            float(x["cardinality_ratio"]),  # type: ignore[arg-type]
+            float(x["cardinality_ratio"]),
         )
     )
 

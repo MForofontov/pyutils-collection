@@ -3,6 +3,7 @@
 import lzma
 import os
 import stat
+from shutil import SameFileError
 
 
 def decompress_file_lzma(input_file: str, output_file: str) -> None:
@@ -18,6 +19,9 @@ def decompress_file_lzma(input_file: str, output_file: str) -> None:
 
     Raises
     ------
+    SameFileError
+        If input and output refer to the same file, including hard-link aliases.
+        The source is preserved because this check precedes opening the output.
     TypeError
         If input_file or output_file is not a string.
     FileNotFoundError
@@ -30,6 +34,13 @@ def decompress_file_lzma(input_file: str, output_file: str) -> None:
         raise TypeError("input_file must be a string")
     if not isinstance(output_file, str):
         raise TypeError("output_file must be a string")
+
+    if (
+        os.path.exists(input_file)
+        and os.path.exists(output_file)
+        and os.path.samefile(input_file, output_file)
+    ):
+        raise SameFileError("Input and output must refer to different files")
 
     try:
         if not os.path.exists(input_file):

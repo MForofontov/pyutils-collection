@@ -108,3 +108,41 @@ def test_merge_folders_read_only_output_dir(
     monkeypatch.setattr(shutil, "copy2", mock_copy2)
     with pytest.raises(PermissionError):
         merge_folders(str(folder1), str(folder2), str(output))
+
+
+def test_merge_preserves_existing_conflicts(tmp_path: Path) -> None:
+    first, second, output = (tmp_path / name for name in ("first", "second", "output"))
+    for folder in (first, second, output):
+        folder.mkdir()
+    (first / "a.txt").write_text("first")
+    (second / "a.txt").write_text("second")
+    (output / "a.txt").write_text("existing")
+    (output / "a_copy.txt").write_text("existing copy")
+    merge_folders(str(first), str(second), str(output))
+    assert (output / "a_copy.txt").read_text() == "existing copy"
+    assert {p.read_text() for p in output.iterdir()} == {
+        "first",
+        "second",
+        "existing",
+        "existing copy",
+    }
+
+
+@pytest.mark.parametrize("nested", [False, True])
+def test_folder_output_must_not_overlap_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, nested: bool
+) -> None:
+    import os
+
+    first, second = tmp_path / "first", tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    output = first / "output" if nested else first
+
+    def forbidden_walk(*args: object, **kwargs: object) -> None:
+        pytest.fail("overlap must be rejected before traversal")
+
+    monkeypatch.setattr(os, "walk", forbidden_walk)
+    with pytest.raises(ValueError, match="overlap"):
+        merge_folders(str(first), str(second), str(output))
+    assert list(first.iterdir()) == []

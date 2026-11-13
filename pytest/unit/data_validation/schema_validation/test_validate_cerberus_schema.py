@@ -1,4 +1,4 @@
-import sys
+import importlib
 
 import pytest
 
@@ -367,39 +367,19 @@ def test_validate_cerberus_schema_custom_param_name() -> None:
         validate_cerberus_schema(data, schema, param_name="config_data")
 
 
-def test_validate_cerberus_schema_cerberus_not_available() -> None:
-    """Test case 20: ImportError when Cerberus is not available."""
-    # Save the original module if it exists
-    original_module = sys.modules.get(
-        "data_validation.schema_validation.validate_cerberus_schema"
+def test_validate_cerberus_schema_cerberus_not_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Simulate missing Cerberus without replacing the cached production module."""
+    module = importlib.import_module(
+        "pyutils_collection.data_validation.schema_validation.validate_cerberus_schema"
     )
-
-    try:
-        # Temporarily remove and reimport with CERBERUS_AVAILABLE = False
-        if "pyutils_collection.data_validation.schema_validation.validate_cerberus_schema" in sys.modules:
-            del sys.modules[
-                "pyutils_collection.data_validation.schema_validation.validate_cerberus_schema"
-            ]
-
-        # Mock the module
-        import pyutils_collection.data_validation.schema_validation.validate_cerberus_schema as module
-
-        original_available = module.CERBERUS_AVAILABLE
-        module.CERBERUS_AVAILABLE = False
-
+    with monkeypatch.context() as operation_patch:
+        operation_patch.setattr(module, "CERBERUS_AVAILABLE", False)
         with pytest.raises(
             ImportError, match="Cerberus is required for schema validation"
         ):
             module.validate_cerberus_schema({}, {})
-
-        # Restore
-        module.CERBERUS_AVAILABLE = original_available
-    finally:
-        # Restore the original module
-        if original_module:
-            sys.modules[
-                "data_validation.schema_validation.validate_cerberus_schema"
-            ] = original_module
 
 
 def test_validate_cerberus_schema_normalize_type_error() -> None:

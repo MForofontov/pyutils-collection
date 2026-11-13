@@ -27,7 +27,8 @@ def parallel_accumulate(
     Parameters
     ----------
     func : Callable[[T, T], T]
-        The function to combine two elements into one cumulative value.
+        Associative function combining two elements into one cumulative value.
+        Operand order is preserved; commutativity is not required.
     data : list[T]
         The list of data items to process.
     num_processes : int | None, optional
@@ -41,13 +42,30 @@ def parallel_accumulate(
     list[T]
         The list of cumulative results.
 
+    Raises
+    ------
+    TypeError
+        If chunk_size is not an integer.
+    ValueError
+        If chunk_size is not positive. Invalid chunk sizes are rejected before
+        worker processes are started.
+
     Examples
     --------
-    >>> def add(x: int, y: int) -> int:
-    >>>     return x + y
-    >>> parallel_accumulate(add, [1, 2, 3, 4, 5])
+    >>> import operator
+    >>> parallel_accumulate(operator.add, [1, 2, 3, 4, 5], num_processes=2)
     [1, 3, 6, 10, 15]
+
+    Notes
+    -----
+    Chunked accumulation requires an associative operation. Floating-point
+    operations may differ from sequential accumulation through regrouping.
     """
+
+    if not isinstance(chunk_size, int):
+        raise TypeError("chunk_size must be an integer")
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
 
     # If num_processes is not specified, default to the number of available CPUs minus one
     if num_processes is None:
@@ -69,14 +87,14 @@ def parallel_accumulate(
 
     # Initialize the results list and cumulative offset
     results: list[T] = []
-    cumulative_offset: T = 0  # type: ignore[assignment]
 
     # Adjust partial results and combine them into the final results list
     for partial in partial_results:
-        # Adjust each partial result by adding the cumulative offset
-        adjusted_partial = [x + cumulative_offset for x in partial]  # type: ignore[operator]
-        # Update the cumulative offset to the last value of the adjusted partial
-        cumulative_offset = adjusted_partial[-1]
+        # The first chunk needs no identity value. Later chunks combine the
+        # preceding prefix on the left using the caller's operation.
+        adjusted_partial = (
+            [func(results[-1], value) for value in partial] if results else partial
+        )
         # Extend the results list with the adjusted partial results
         results.extend(adjusted_partial)
 

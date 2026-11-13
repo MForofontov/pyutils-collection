@@ -1,6 +1,7 @@
 """Opt-in real Chromium lifecycle checks using generated content only."""
 
 import os
+from pathlib import Path
 
 import pytest
 from pyutils_collection.playwright_functions.managed_browser import managed_browser
@@ -32,6 +33,28 @@ def test_real_browser_cleanup_after_user_error():
         with managed_browser(headless=True) as (browser, context, page):
             page.set_content("<p>Temporary page</p>")
             raise ValueError("intentional failure")
+    assert page.is_closed()
+    assert not browser.is_connected()
+
+
+def test_real_browser_uses_download_directory_and_cleans_download(tmp_path: Path) -> None:
+    downloads = tmp_path / "downloads"
+    with managed_browser(downloads_path=str(downloads)) as (browser, context, page):
+        page.route(
+            "http://downloads.test/file",
+            lambda route: route.fulfill(
+                status=200,
+                headers={"Content-Disposition": 'attachment; filename="sample.txt"'},
+                body="generated download",
+            ),
+        )
+        page.set_content('<a href="http://downloads.test/file">Download</a>')
+        with page.expect_download() as pending:
+            page.get_by_role("link", name="Download").click()
+        downloaded = pending.value.path()
+        assert downloaded.parent.resolve() == downloads.resolve()
+        assert downloaded.read_text(encoding="utf-8") == "generated download"
+    assert not downloaded.exists()
     assert page.is_closed()
     assert not browser.is_connected()
 

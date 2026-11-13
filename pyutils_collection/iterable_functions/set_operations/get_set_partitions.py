@@ -45,12 +45,15 @@ def get_set_partitions(input_set: set[T], k: int) -> list[list[set[T]]]:
 
     Notes
     -----
-    This uses a recursive algorithm to generate all partitions.
+    This uses backtracking to generate each distinct partition exactly once.
+    Output groups follow their first element in sorted input order; returned
+    subsets are independent sets, and the input set is unchanged.
     For large sets, this can be very slow due to combinatorial explosion.
 
     Complexity
     ----------
-    Time: O(k! * Stirling2nd(n,k)), Space: O(k! * Stirling2nd(n,k) * n)
+    Time: O(n * k * Stirling2nd(n,k)), output space: O(n * Stirling2nd(n,k)).
+    Backtracking uses O(n) additional working state.
     """
     # Input validation
     if not isinstance(input_set, set):
@@ -68,56 +71,33 @@ def get_set_partitions(input_set: set[T], k: int) -> list[list[set[T]]]:
     # Convert to sorted list for consistent ordering
     elements = sorted(list(input_set))  # type: ignore[type-var]
 
-    def generate_partitions(remaining: list[T], num_parts: int) -> list[list[list[T]]]:
-        """Recursive helper to generate partitions."""
-        if num_parts == 1:
-            return [[remaining]]
+    partitions: list[list[set[T]]] = []
+    groups: list[set[T]] = []
 
-        if not remaining:
-            return []
+    def generate(index: int) -> None:
+        remaining = len(elements) - index
+        if len(groups) + remaining < k:
+            return
+        if index == len(elements):
+            if len(groups) == k:
+                partitions.append([group.copy() for group in groups])
+            return
 
-        result = []
-        first = remaining[0]
-        rest = remaining[1:]
+        element = elements[index]
+        # Existing groups are ordered by their first sorted element. A new
+        # group is introduced only at the end, so unlabeled partitions are
+        # generated exactly once.
+        for group in groups:
+            group.add(element)
+            generate(index + 1)
+            group.remove(element)
+        if len(groups) < k:
+            groups.append({element})
+            generate(index + 1)
+            groups.pop()
 
-        # Try putting first element in each possible subset
-        for i in range(num_parts):
-            # Get partitions of the rest
-            sub_partitions = generate_partitions(
-                rest, num_parts if i == num_parts - 1 else num_parts - 1
-            )
-
-            for partition in sub_partitions:
-                # Insert first element into the i-th subset
-                new_partition = partition.copy()
-                if i < len(new_partition):
-                    new_partition[i] = [first] + new_partition[i]
-                else:
-                    new_partition.append([first])
-                result.append(new_partition)
-
-        return result
-
-    # Generate partitions and convert to sets
-    raw_partitions = generate_partitions(elements, k)
-    set_partitions: list[list[set[T]]] = []
-
-    for partition in raw_partitions:
-        set_partition: list[set[T]] = [set(subset) for subset in partition]
-        set_partitions.append(set_partition)
-
-    # Remove duplicates (since we're dealing with sets)
-    unique_partitions: list[list[set[T]]] = []
-    seen: set[frozenset[frozenset[T]]] = set()
-
-    for partition in set_partitions:  # type: ignore[assignment]
-        # Create a frozenset of frozensets for hashing
-        partition_hash = frozenset(frozenset(s) for s in partition)
-        if partition_hash not in seen:
-            seen.add(partition_hash)
-            unique_partitions.append(partition)  # type: ignore[arg-type]
-
-    return unique_partitions
+    generate(0)
+    return partitions
 
 
 __all__ = ["get_set_partitions"]

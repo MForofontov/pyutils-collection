@@ -5,7 +5,7 @@ Create temporary directory fixture for testing.
 import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 
 @contextmanager
@@ -18,7 +18,8 @@ def create_temp_dir_fixture(
     Parameters
     ----------
     files : dict[str, str] | None, optional
-        Dictionary mapping filenames to contents (by default None).
+        Dictionary mapping relative filenames inside the temporary directory to
+        contents (by default None). Nested subdirectories are supported.
 
     Yields
     ------
@@ -29,6 +30,9 @@ def create_temp_dir_fixture(
     ------
     TypeError
         If files is not a dict or None.
+    ValueError
+        If a filename is absolute, drive-qualified, or escapes the temporary
+        directory. Existing files outside the directory are never written.
 
     Examples
     --------
@@ -55,6 +59,12 @@ def create_temp_dir_fixture(
         if files:
             for filename, content in files.items():
                 file_path = temp_dir / filename
+                if (
+                    Path(filename).is_absolute()
+                    or PureWindowsPath(filename).drive
+                    or not file_path.resolve().is_relative_to(temp_dir.resolve())
+                ):
+                    raise ValueError("Files must remain inside the temporary directory")
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 file_path.write_text(content)
 

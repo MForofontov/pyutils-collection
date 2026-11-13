@@ -34,6 +34,12 @@ def invert_dict(d: dict[str, Any], allow_duplicates: bool = False) -> dict[Any, 
     >>> invert_dict(d, allow_duplicates=False)
     Traceback (most recent call last):
     ValueError: Duplicate values found: [1]
+
+    Notes
+    -----
+    With duplicates allowed, groups and their keys retain first-seen order.
+    Buckets are built in one pass, with expected O(n) time for ordinary hash
+    behavior and O(n) output space. The input dictionary is not modified.
     """
     if not isinstance(d, dict):
         raise TypeError(f"d must be a dictionary, got {type(d).__name__}")
@@ -41,24 +47,22 @@ def invert_dict(d: dict[str, Any], allow_duplicates: bool = False) -> dict[Any, 
     inverted: dict[Any, Any] = {}
     duplicates: list[Any] = []
 
+    if allow_duplicates:
+        for key, value in d.items():
+            if value in inverted:
+                inverted[value].append(key)
+            else:
+                inverted[value] = [key]
+        return inverted
+
     for key, value in d.items():
         if value in inverted:
-            if not allow_duplicates:
-                if value not in duplicates:
-                    duplicates.append(value)
-            else:
-                if not isinstance(inverted[value], list):
-                    inverted[value] = [inverted[value]]
-                inverted[value].append(key)
+            if value not in duplicates:
+                duplicates.append(value)
         else:
             inverted[value] = key
-        if allow_duplicates:
-            # Ensure all values are lists (even if only one key)
-            for key in inverted:
-                if not isinstance(inverted[key], list):
-                    inverted[key] = [inverted[key]]
 
-    if duplicates and not allow_duplicates:
+    if duplicates:
         raise ValueError(f"Duplicate values found: {duplicates}")
 
     return inverted

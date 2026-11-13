@@ -51,6 +51,9 @@ def find_duplicate_indexes(
     -----
     Removing unnecessary indexes improves write performance and reduces
     storage. Always verify with query analysis before dropping.
+    A unique index is never reported as redundant solely because its columns
+    are a prefix of a longer index: uniqueness of a longer tuple does not
+    enforce uniqueness of that prefix.
 
     Complexity
     ----------
@@ -112,7 +115,7 @@ def find_duplicate_indexes(
 
             # Check if one is prefix of another
             if cols1 != cols2:
-                if tuple(cols2[: len(cols1)]) == cols1:
+                if not idx1["unique"] and tuple(cols2[: len(cols1)]) == cols1:
                     redundant.append(
                         {
                             "redundant_index": idx1["name"],
@@ -123,7 +126,7 @@ def find_duplicate_indexes(
                             "reason": f"Index {idx1['name']} is redundant - {idx2['name']} starts with same columns",
                         }
                     )
-                elif tuple(cols1[: len(cols2)]) == cols2:
+                elif not idx2["unique"] and tuple(cols1[: len(cols2)]) == cols2:
                     redundant.append(
                         {
                             "redundant_index": idx2["name"],

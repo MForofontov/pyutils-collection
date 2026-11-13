@@ -34,7 +34,9 @@ def bootstrap_statistic(
     confidence_level : float, optional
         Confidence level for interval (by default 0.95).
     random_seed : int | None, optional
-        Random seed for reproducibility (by default None).
+        Local random seed for reproducibility (by default None). An explicit
+        seed preserves NumPy's global random state. Without a seed, the global
+        generator is consumed as usual.
 
     Returns
     -------
@@ -50,7 +52,8 @@ def bootstrap_statistic(
     TypeError
         If parameters are of wrong type.
     ValueError
-        If data is empty, n_iterations < 1, or statistic is invalid.
+        If data is empty, n_iterations < 1, statistic is invalid, or the
+        confidence level is outside the open interval (0, 1), including NaN.
 
     Examples
     --------
@@ -91,7 +94,7 @@ def bootstrap_statistic(
         raise TypeError(
             f"confidence_level must be a number, got {type(confidence_level).__name__}"
         )
-    if confidence_level <= 0 or confidence_level >= 1:
+    if not 0 < confidence_level < 1:
         raise ValueError(
             f"confidence_level must be between 0 and 1, got {confidence_level}"
         )
@@ -114,9 +117,8 @@ def bootstrap_statistic(
     if arr.size == 0:
         raise ValueError("data contains only NaN values")
 
-    # Set random seed for reproducibility
-    if random_seed is not None:
-        np.random.seed(random_seed)
+    # Preserve seeded resampling sequences without resetting caller-owned state.
+    rng = np.random.RandomState(random_seed) if random_seed is not None else np.random
 
     # Select statistic function
     from collections.abc import Callable
@@ -135,7 +137,7 @@ def bootstrap_statistic(
     # Bootstrap resampling
     bootstrap_samples = np.zeros(n_iterations)
     for i in range(n_iterations):
-        sample = np.random.choice(arr, size=arr.size, replace=True)
+        sample = rng.choice(arr, size=arr.size, replace=True)
         bootstrap_samples[i] = stat_func(sample)
 
     # Calculate confidence interval

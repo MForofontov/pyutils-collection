@@ -101,10 +101,13 @@ def suggest_data_type_optimizations(
     suggestions: list[dict[str, Any]] = []
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = (
+            f"{schema}.{table_name}" if schema is not None and tables else table_name
+        )
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
 
         # Get total row count
         count_query = select(func.count()).select_from(table)

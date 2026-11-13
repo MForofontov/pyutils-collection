@@ -1,5 +1,6 @@
 """Excel to CSV batch converter."""
 
+import os
 from pathlib import Path
 
 import openpyxl
@@ -71,6 +72,8 @@ def excel_to_csv_batch(
     -----
     Output CSV files are named: {sheet_name}.csv
     Special characters in sheet names are replaced with underscores.
+    Distinct exported sheets that produce the same filename are rejected before
+    writing any CSV files. Empty sheets excluded by ``skip_empty`` do not collide.
 
     Complexity
     ----------
@@ -120,6 +123,8 @@ def excel_to_csv_batch(
     results: dict[str, int] = {}
 
     try:
+        destinations: list[tuple[str, Path]] = []
+        used_names: dict[str, str] = {}
         for sheet_name in sheets_to_process:
             ws = wb[sheet_name]
 
@@ -139,7 +144,16 @@ def excel_to_csv_batch(
                 c if c.isalnum() or c in ("-", "_") else "_" for c in sheet_name
             )
             csv_file = output_path / f"{safe_name}.csv"
+            key = os.path.normcase(csv_file.name)
+            if key in used_names and used_names[key] != sheet_name:
+                raise ValueError(
+                    f"Sheet names produce colliding filenames: {csv_file.name}"
+                )
+            used_names[key] = sheet_name
+            destinations.append((sheet_name, csv_file))
 
+        for sheet_name, csv_file in destinations:
+            ws = wb[sheet_name]
             # Write CSV
             import csv
 

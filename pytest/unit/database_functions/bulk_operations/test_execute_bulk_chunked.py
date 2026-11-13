@@ -419,7 +419,7 @@ def test_execute_bulk_chunked_commit_failure_in_skip_mode() -> None:
 
     # Assert - rows counted as both successful (executed) and failed (commit failed)
     assert len(commit_called) == 1
-    assert result["successful"] == 2  # Execution succeeded
+    assert result["successful"] == 0  # A failed commit is not a successful chunk
     assert result["failed"] == 2  # Commit failed, chunk skipped
     assert len(result["errors"]) == 1
     assert "Commit failed" in result["errors"][0]["error"]
@@ -489,11 +489,11 @@ def test_execute_bulk_chunked_continue_mode_commit_error() -> None:
         commit_func=always_failing_commit,
     )
 
-    # Assert - chunk executed (successful=3), commit failed, individual rows failed on re-execution
+    # Assert - commit failed, and individual rows failed on re-execution
     assert (
         commit_count[0] == 1
     )  # Only chunk commit attempted (row execution failed before commit)
-    assert result["successful"] == 3  # Chunk execution succeeded initially
+    assert result["successful"] == 0  # The initial chunk was never committed
     assert result["failed"] == 3  # All 3 rows failed on individual retry
     assert len(result["errors"]) == 3  # 3 errors from individual row retries
     # Errors are IntegrityError, not commit errors, because re-execution failed

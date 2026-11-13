@@ -3,6 +3,7 @@ Create bar plot with support for grouped and stacked bars.
 """
 
 import logging
+from contextlib import suppress
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -91,6 +92,10 @@ def create_bar_plot(
 
     Notes
     -----
+    Returned figures belong to the caller. If plotting fails after figure
+    creation, only the newly created figure is closed before propagating the
+    original exception.
+
     Supports both single and multiple bar series with automatic positioning
     for grouped bars.
 
@@ -166,76 +171,80 @@ def create_bar_plot(
 
     # Create plot
     fig, ax = plt.subplots(figsize=figsize)
+    try:
+        x = np.arange(len(categories))
+        width = 0.8 / num_series if not stacked else 0.8
 
-    x = np.arange(len(categories))
-    width = 0.8 / num_series if not stacked else 0.8
+        if stacked:
+            # Stacked bars
+            bottom = np.zeros(len(categories))
+            for i, series in enumerate(value_series):
+                kwargs: dict[str, Any] = {}
+                if labels is not None:
+                    kwargs["label"] = labels[i]
+                if colors is not None:
+                    kwargs["color"] = colors[i]
 
-    if stacked:
-        # Stacked bars
-        bottom = np.zeros(len(categories))
-        for i, series in enumerate(value_series):
-            kwargs: dict[str, Any] = {}
-            if labels is not None:
-                kwargs["label"] = labels[i]
-            if colors is not None:
-                kwargs["color"] = colors[i]
+                if horizontal:
+                    # barh uses 'height' parameter instead of 'width'
+                    ax.barh(x, series, height=width, left=bottom, **kwargs)
+                else:
+                    ax.bar(x, series, width=width, bottom=bottom, **kwargs)
 
-            if horizontal:
-                # barh uses 'height' parameter instead of 'width'
-                ax.barh(x, series, height=width, left=bottom, **kwargs)
-            else:
-                ax.bar(x, series, width=width, bottom=bottom, **kwargs)
+                bottom += np.array(series)
+        else:
+            # Grouped bars
+            for i, series in enumerate(value_series):
+                offset = (i - num_series / 2 + 0.5) * width
+                kwargs = {}
+                if labels is not None:
+                    kwargs["label"] = labels[i]
+                if colors is not None:
+                    kwargs["color"] = colors[i]
 
-            bottom += np.array(series)
-    else:
-        # Grouped bars
-        for i, series in enumerate(value_series):
-            offset = (i - num_series / 2 + 0.5) * width
-            kwargs = {}
-            if labels is not None:
-                kwargs["label"] = labels[i]
-            if colors is not None:
-                kwargs["color"] = colors[i]
+                if horizontal:
+                    # barh uses 'height' parameter instead of 'width'
+                    ax.barh(x + offset, series, height=width, **kwargs)
+                else:
+                    ax.bar(x + offset, series, width=width, **kwargs)
 
-            if horizontal:
-                # barh uses 'height' parameter instead of 'width'
-                ax.barh(x + offset, series, height=width, **kwargs)
-            else:
-                ax.bar(x + offset, series, width=width, **kwargs)
+        # Set ticks and labels
+        if horizontal:
+            ax.set_yticks(x)
+            ax.set_yticklabels(categories)
+            if xlabel:
+                ax.set_xlabel(xlabel, fontsize=12)
+            if ylabel:
+                ax.set_ylabel(ylabel, fontsize=12)
+            if grid:
+                ax.grid(True, alpha=0.3, linestyle="--", axis="x")
+        else:
+            ax.set_xticks(x)
+            ax.set_xticklabels(categories, rotation=45, ha="right")
+            if xlabel:
+                ax.set_xlabel(xlabel, fontsize=12)
+            if ylabel:
+                ax.set_ylabel(ylabel, fontsize=12)
+            if grid:
+                ax.grid(True, alpha=0.3, linestyle="--", axis="y")
 
-    # Set ticks and labels
-    if horizontal:
-        ax.set_yticks(x)
-        ax.set_yticklabels(categories)
-        if xlabel:
-            ax.set_xlabel(xlabel, fontsize=12)
-        if ylabel:
-            ax.set_ylabel(ylabel, fontsize=12)
-        if grid:
-            ax.grid(True, alpha=0.3, linestyle="--", axis="x")
-    else:
-        ax.set_xticks(x)
-        ax.set_xticklabels(categories, rotation=45, ha="right")
-        if xlabel:
-            ax.set_xlabel(xlabel, fontsize=12)
-        if ylabel:
-            ax.set_ylabel(ylabel, fontsize=12)
-        if grid:
-            ax.grid(True, alpha=0.3, linestyle="--", axis="y")
+        if title:
+            ax.set_title(title, fontsize=14, fontweight="bold")
 
-    if title:
-        ax.set_title(title, fontsize=14, fontweight="bold")
+        if legend and labels is not None:
+            ax.legend(loc="best", framealpha=0.9)
 
-    if legend and labels is not None:
-        ax.legend(loc="best", framealpha=0.9)
+        plt.tight_layout()
 
-    plt.tight_layout()
+        logger.debug(
+            f"Created bar plot with {len(categories)} categories and {num_series} series"
+        )
 
-    logger.debug(
-        f"Created bar plot with {len(categories)} categories and {num_series} series"
-    )
-
-    return fig, ax
+        return fig, ax
+    except BaseException:
+        with suppress(Exception):
+            plt.close(fig)
+        raise
 
 
 __all__ = ["create_bar_plot"]

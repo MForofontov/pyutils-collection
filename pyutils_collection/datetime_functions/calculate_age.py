@@ -15,7 +15,8 @@ def calculate_age(
     birth_date : datetime
         The birth datetime.
     reference_date : datetime, optional
-        Datetime against which to calculate the age. Defaults to now.
+        Datetime against which to calculate the age. Defaults to now in the
+        birth date's timezone, or local naive time for a naive birth date.
 
     Returns
     -------
@@ -39,7 +40,7 @@ def calculate_age(
         raise TypeError("birth_date must be a datetime object")
 
     if reference_date is None:
-        reference_date = datetime.now()
+        reference_date = datetime.now(tz=birth_date.tzinfo)
     elif not isinstance(reference_date, datetime):
         raise TypeError("reference_date must be a datetime object")
 

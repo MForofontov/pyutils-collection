@@ -3,6 +3,7 @@ Create histogram with support for multiple distributions.
 """
 
 import logging
+from contextlib import suppress
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -95,6 +96,10 @@ def create_histogram(
 
     Notes
     -----
+    Returned figures belong to the caller. If plotting fails after figure
+    creation, only the newly created figure is closed before propagating the
+    original exception.
+
     Automatically handles multiple distributions with proper overlap visualization.
 
     Complexity
@@ -174,44 +179,48 @@ def create_histogram(
 
     # Create plot
     fig, ax = plt.subplots(figsize=figsize)
+    try:
+        for i, dataset in enumerate(datasets):
+            hist_kwargs: dict[str, Any] = {
+                "bins": bins,
+                "alpha": alpha,
+                "density": density,
+                "cumulative": cumulative,
+            }
 
-    for i, dataset in enumerate(datasets):
-        hist_kwargs: dict[str, Any] = {
-            "bins": bins,
-            "alpha": alpha,
-            "density": density,
-            "cumulative": cumulative,
-        }
+            if labels is not None:
+                hist_kwargs["label"] = labels[i]
+            if colors is not None:
+                hist_kwargs["color"] = colors[i]
 
-        if labels is not None:
-            hist_kwargs["label"] = labels[i]
-        if colors is not None:
-            hist_kwargs["color"] = colors[i]
+            ax.hist(dataset, **hist_kwargs)
 
-        ax.hist(dataset, **hist_kwargs)
+        # Customize plot
+        if title:
+            ax.set_title(title, fontsize=14, fontweight="bold")
+        if xlabel:
+            ax.set_xlabel(xlabel, fontsize=12)
+        if ylabel:
+            ax.set_ylabel(ylabel, fontsize=12)
 
-    # Customize plot
-    if title:
-        ax.set_title(title, fontsize=14, fontweight="bold")
-    if xlabel:
-        ax.set_xlabel(xlabel, fontsize=12)
-    if ylabel:
-        ax.set_ylabel(ylabel, fontsize=12)
+        if grid:
+            ax.grid(True, alpha=0.3, linestyle="--", axis="y")
 
-    if grid:
-        ax.grid(True, alpha=0.3, linestyle="--", axis="y")
+        if legend and labels is not None:
+            ax.legend(loc="best", framealpha=0.9)
 
-    if legend and labels is not None:
-        ax.legend(loc="best", framealpha=0.9)
+        plt.tight_layout()
 
-    plt.tight_layout()
+        total_points = sum(len(d) for d in datasets)
+        logger.debug(
+            f"Created histogram with {num_datasets} datasets and {total_points} total data points"
+        )
 
-    total_points = sum(len(d) for d in datasets)
-    logger.debug(
-        f"Created histogram with {num_datasets} datasets and {total_points} total data points"
-    )
-
-    return fig, ax
+        return fig, ax
+    except BaseException:
+        with suppress(Exception):
+            plt.close(fig)
+        raise
 
 
 __all__ = ["create_histogram"]

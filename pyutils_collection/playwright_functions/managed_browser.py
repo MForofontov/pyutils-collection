@@ -52,7 +52,8 @@ def managed_browser(
     user_agent : str | None, optional
         Custom user agent string (by default None, uses Playwright default).
     downloads_path : str | None, optional
-        Path for downloaded files (by default None, uses temp directory).
+        Directory passed to the browser launcher for downloaded files (by default
+        None, uses Playwright's temporary directory). Created before launch.
     timeout : float, optional
         Default timeout in milliseconds for operations (by default 30000).
     logger : logging.Logger | None, optional
@@ -157,7 +158,11 @@ def managed_browser(
         browser_launcher = getattr(playwright_instance, browser_type)
 
         # Launch browser
-        browser = browser_launcher.launch(headless=headless)
+        launch_options: dict[str, Any] = {"headless": headless}
+        if downloads_path:
+            Path(downloads_path).mkdir(parents=True, exist_ok=True)
+            launch_options["downloads_path"] = downloads_path
+        browser = browser_launcher.launch(**launch_options)
         if logger:
             logger.debug(f"Browser launched (headless={headless})")
 
@@ -170,7 +175,6 @@ def managed_browser(
             context_options["user_agent"] = user_agent
 
         if downloads_path:
-            Path(downloads_path).mkdir(parents=True, exist_ok=True)
             context_options["accept_downloads"] = True
 
         context = browser.new_context(**context_options)

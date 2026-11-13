@@ -1,5 +1,7 @@
 """Network interface information retrieval."""
 
+import socket
+
 import psutil
 
 
@@ -24,6 +26,9 @@ def get_network_info() -> dict[str, dict[str, list[dict[str, str | int]]]]:
 
     Notes
     -----
+    IPv4, IPv6, and MAC addresses are classified using native platform family
+    constants, including Windows-specific values. Unknown families use "other".
+
     Returned dictionary structure:
     {
         'interface_name': {
@@ -58,11 +63,11 @@ def get_network_info() -> dict[str, dict[str, list[dict[str, str | int]]]]:
             }
 
             # Categorize by address family
-            if addr.family == 2:  # AF_INET (IPv4)
+            if addr.family == socket.AF_INET:
                 interface_info["ipv4"].append(addr_dict)
-            elif addr.family == 30 or addr.family == 10:  # AF_INET6 (IPv6)
+            elif addr.family == socket.AF_INET6:
                 interface_info["ipv6"].append(addr_dict)
-            elif addr.family == 17 or addr.family == 1:  # AF_LINK/AF_PACKET (MAC)
+            elif addr.family == psutil.AF_LINK:
                 interface_info["mac"].append(addr_dict)
             else:
                 interface_info["other"].append(addr_dict)

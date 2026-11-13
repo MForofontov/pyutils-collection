@@ -62,7 +62,7 @@ def extract_emails(
         raise TypeError(f"unique must be bool, got {type(unique).__name__}")
 
     # RFC 5322 simplified email pattern
-    pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+    pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 
     matches = re.findall(pattern, text)
 

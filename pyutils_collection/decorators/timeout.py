@@ -44,6 +44,13 @@ def timeout(
     TypeError
         If ``seconds`` is not an integer or if ``logger`` is not an instance of
         ``logging.Logger`` or ``None``.
+
+    Notes
+    -----
+    A TimeoutError raised by the decorated function propagates unchanged;
+    TimeoutException indicates that the decorator's waiting deadline expired.
+    The executor is shut down even when submitting the function fails. Running
+    threads cannot be forcibly stopped and may finish after a waiting timeout.
     """
     validate_logger(logger)
 
@@ -92,15 +99,22 @@ def timeout(
                 return func(*args, **kwargs)
 
             executor = ThreadPoolExecutor(max_workers=1)
-            future = executor.submit(_run_func)
             try:
-                return future.result(timeout=seconds)  # type: ignore[no-any-return]
-            except FuturesTimeoutError as exc:
-                message = f"Function {func.__name__} timed out after {seconds} seconds"
-                if logger:
-                    logger.error(message)
-                future.cancel()
-                raise TimeoutException(message) from exc
+                future = executor.submit(_run_func)
+                try:
+                    return future.result(timeout=seconds)  # type: ignore[no-any-return]
+                except FuturesTimeoutError as exc:
+                    # Distinguish the body's TimeoutError from a waiting
+                    # timeout, including completion just after the deadline.
+                    if future.done() and future.exception() is exc:
+                        raise
+                    message = (
+                        f"Function {func.__name__} timed out after {seconds} seconds"
+                    )
+                    if logger:
+                        logger.error(message)
+                    future.cancel()
+                    raise TimeoutException(message) from exc
             finally:
                 executor.shutdown(wait=False, cancel_futures=True)
 

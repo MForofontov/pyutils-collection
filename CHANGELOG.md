@@ -2,6 +2,100 @@
 
 ## [Unreleased]
 
+### Fixed
+- Require patched Soup Sieve 4.0.1 for CSS selection, addressing
+  CVE-2026-126190 (descendant-selector denial of service).
+- Match complete foreign keys during integrity audits, including self references,
+  without allowing nullable parent keys to hide orphaned rows. Preserve the
+  existing first-column report and sample format.
+- Reject colliding Excel sheet CSV filenames before writing batch exports,
+  preserving existing output when distinct sheet names normalize identically.
+- Apply conversion failure handling to numeric overflow: `safe_cast` returns its
+  fallback and `try_convert_to_type` raises `ValueError` with the original cause.
+- Avoid creating an empty figure when rejecting an export with no active figure;
+  preserve caller-owned empty figures on rejection.
+- Preserve NumPy's global random state when bootstrap analysis receives an
+  explicit seed, retaining its seeded resampling sequence. Reject NaN confidence
+  levels before resampling instead of failing later during percentile evaluation.
+- Execute SSH scripts with Node's stdin entry point instead of its unsupported
+  `-s` option; a real local Node probe verifies the generated command.
+- Preserve uniqueness requirements in index advice: a unique prefix index is
+  not redundant merely because a longer index starts with the same columns.
+- Honor explicit schemas in table analysis, statistics, comparisons, index
+  recommendations and referential-integrity checks. Apply cardinality sample
+  limits before computing aggregates; use reflected identifiers for table row
+  counts and sequence maximum queries.
+- Measure resource-monitor counter increments across samples and avoid adding
+  process I/O bytes to system-wide disk totals a second time.
+- Include package-relative imports in dependency graphs while preserving existing
+  top-level dependency grouping.
+- Close pages created by failed session restoration while preserving caller pages,
+  the original error cause, and successful pages needed for session storage.
+- Apply `managed_browser`'s requested download directory to the browser launch
+  instead of only creating the directory and enabling downloads.
+- Preserve URL scheme capitalization when case normalization is disabled, while
+  retaining case-insensitive default-port removal.
+- Close Excel sheet/range reader workbooks on sheet-selection and iteration
+  failures, preserving the original error and input file.
+- Contain temporary-directory fixture filenames within the owned directory,
+  rejecting absolute paths and parent traversal that could overwrite outside files.
+- Reject missing exceptions in `assert_raises_with_message` even when expecting
+  `AssertionError` or `Exception`; the helper no longer catches its own failure.
+- Count bulk database rows as successful after commit callbacks succeed, avoiding
+  duplicate success/failure counts. Roll back failed per-row commits before
+  processing subsequent rows when a rollback callback is supplied.
+- Preserve compression/decompression inputs by rejecting same-file and hard-link
+  output aliases in gzip, bz2, lzma, TAR and ZIP file helpers before output opens.
+- Honor explicit case-sensitive filename patterns on Windows.
+- Close newly created plot figures on configuration failures while preserving
+  figures owned by the caller.
+- Preserve wrapped function exceptions in conditional execution and timeout
+  decorators, and shut down timeout executors when submission fails.
+- Accept `Any` and union members during runtime type enforcement, including
+  nested supported containers.
+- Use the birth date's timezone for default age calculations, avoiding comparisons
+  between aware and naive datetimes.
+- Reject invalid accumulation chunk sizes before starting worker processes.
+- Cancel and await both tasks owned by `async_cancellable_task` when its caller
+  is cancelled; preserve cancellation/timeouts when worker cleanup fails.
+- Classify network interface families using platform constants on Windows as well
+  as Unix; close local-IP, connectivity, and multicast sockets on failure and keep
+  the connectivity probe's timeout local to its own socket.
+- Reject same-file and hard-link concatenation before copying, and avoid creating
+  output when the input is missing.
+- Apply generator-based custom password rules instead of consuming them during
+  validation and bypassing their checks.
+- Preserve significant integer zeros in compact numbers with zero decimal places.
+- Generate every set partition into exactly the requested number of nonempty
+  subsets, without invalid or missing partitions.
+- Preserve existing folder-merge conflict files using available numbered copy
+  names, and reject overlapping source/output directories before traversal.
+- Merge CSV files using the first nonempty header. Stage output before replacement
+  so header, write, and replacement failures preserve the destination, including
+  when the output is also an input. Replacement uses temporary-file permissions.
+- Resolve extracted HTML links against the base document URL, including relative,
+  parent, network, query, and fragment references; preserve explicit schemes.
+- Combine parallel accumulation chunks with the supplied associative operation
+  in operand order instead of hardcoded addition and a numeric identity.
+- Reject NaN comparisons and NaN tolerances in approximate-equality assertions,
+  while retaining equal infinities and arbitrarily large integer equality.
+- Exclude the accidental pipe character from email top-level-domain matching.
+
+### Enhanced
+- Build duplicate-allowed inverted dictionaries in one pass, preserving group
+  order and avoiding repeated scans of previously created groups.
+- Reconstruct rank-k SVD approximations by scaling singular-vector columns,
+  avoiding a diagonal-matrix allocation and multiplication.
+
+### Maintenance
+- Isolate cache tests between cases and assert independent call counts, including
+  actual recomputation after expiry; previously some passed only in suite order.
+- Keep the Cerberus availability test's override local and preserve the cached
+  production module, including when the test assertion fails.
+- Prepare development version 0.2.3 and record a fresh whole-codebase audit,
+  behavioral regressions, packaging checks, and validation limitations in
+  `MAINTENANCE_PLAN.md`.
+
 ## [0.2.2] - 2026-11-09
 
 ### Fixed

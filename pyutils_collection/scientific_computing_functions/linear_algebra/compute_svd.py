@@ -59,6 +59,9 @@ def compute_svd(
     -----
     SVD is useful for dimensionality reduction, matrix approximation,
     and solving ill-conditioned least squares problems.
+    Rank-k reconstruction scales singular-vector columns directly, avoiding
+    allocation and multiplication of a k-by-k diagonal matrix. Floating-point
+    rounding may differ from explicit diagonal-matrix multiplication.
 
     Complexity
     ----------
@@ -128,7 +131,7 @@ def compute_svd(
         s_k = s[:low_rank_k]
         Vt_k = Vt[:low_rank_k, :]
 
-        approximation = U_k @ np.diag(s_k) @ Vt_k
+        approximation = (U_k * s_k) @ Vt_k
         error = np.linalg.norm(mat - approximation, "fro")
 
         result["approximation"] = approximation

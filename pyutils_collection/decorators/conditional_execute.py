@@ -30,6 +30,11 @@ def conditional_execute(
     ------
     TypeError
         If the predicate is not callable.
+
+    Notes
+    -----
+    Predicate failures are wrapped in RuntimeError with their cause retained.
+    Exceptions from the decorated function propagate unchanged.
     """
     if not callable(predicate):
         raise TypeError("Predicate must be callable")
@@ -72,12 +77,13 @@ def conditional_execute(
                 If the predicate function raises an error.
             """
             try:
-                if predicate():
-                    return func(*args, **kwargs)
+                execute = bool(predicate())
             except Exception as exc:
                 raise RuntimeError(
                     f"Predicate function raised an error: {exc}"
                 ) from exc
+            if execute:
+                return func(*args, **kwargs)
             return None
 
         return wrapper

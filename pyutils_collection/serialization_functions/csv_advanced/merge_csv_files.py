@@ -3,6 +3,8 @@ Merge multiple CSV files into one.
 """
 
 import csv
+import os
+import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -54,21 +56,25 @@ def merge_csv_files(
 
     Examples
     --------
-    >>> files = ['data1.csv', 'data2.csv', 'data3.csv']
-    >>> rows = merge_csv_files(files, 'merged.csv')
-    >>> rows
-    1500
-
-    >>> merge_csv_files(files, 'merged.csv', skip_duplicates=True)
-    1342
-
-    >>> merge_csv_files(files, 'merged.csv', has_header=False)
-    1550
+    >>> from tempfile import TemporaryDirectory
+    >>> with TemporaryDirectory() as directory:
+    ...     first = Path(directory) / 'first.csv'
+    ...     second = Path(directory) / 'second.csv'
+    ...     output = Path(directory) / 'merged.csv'
+    ...     _ = first.write_text('name\\nAda\\n', encoding='utf-8')
+    ...     _ = second.write_text('name\\nAda\\nBob\\n', encoding='utf-8')
+    ...     merge_csv_files([first, second], output, skip_duplicates=True)
+    2
 
     Notes
     -----
-    When has_header=True, uses first file's header and validates others match.
+    When has_header=True, uses the first nonempty file's header and validates
+    others match. Empty files are skipped.
     Duplicate detection keeps first occurrence and compares full row content.
+    Output is staged beside the destination and replaced only after success;
+    failures remove the temporary file and preserve existing output. The output
+    may also be an input. Replacement uses temporary-file permissions and replaces
+    a destination symlink itself; parent-directory metadata is not synced.
 
     Complexity
     ----------
@@ -110,46 +116,62 @@ def merge_csv_files(
     header: list[str] | None = None
     rows_written = 0
 
-    with open(output_file, "w", encoding=encoding, newline="") as outfile:
-        writer: Any = None
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding=encoding,
+            newline="",
+            dir=Path(output_file).parent,
+            prefix=".merge-csv-",
+            delete=False,
+        ) as outfile:
+            temporary = Path(outfile.name)
+            writer: Any = None
 
-        for idx, input_path in enumerate(input_files):
-            with open(input_path, encoding=encoding, newline="") as infile:
-                reader = csv.reader(infile, **kwargs)
+            for input_path in input_files:
+                with open(input_path, encoding=encoding, newline="") as infile:
+                    reader = csv.reader(infile, **kwargs)
 
-                # Handle header
-                if has_header:
-                    file_header = next(reader, None)
-                    if file_header is None:
-                        continue  # Skip empty file
+                    # Handle header
+                    if has_header:
+                        file_header = next(reader, None)
+                        if file_header is None:
+                            continue  # Skip empty file
 
-                    if idx == 0:
-                        # First file - establish header
-                        header = file_header
-                        writer = csv.writer(outfile, **kwargs)
-                        writer.writerow(header)
+                        if header is None:
+                            # First nonempty file establishes the header
+                            header = file_header
+                            writer = csv.writer(outfile, **kwargs)
+                            writer.writerow(header)
+                        else:
+                            # Validate header matches
+                            if file_header != header:
+                                raise ValueError(
+                                    f"Header mismatch in {input_path}. "
+                                    f"Expected {header}, got {file_header}"
+                                )
                     else:
-                        # Validate header matches
-                        if file_header != header:
-                            raise ValueError(
-                                f"Header mismatch in {input_path}. "
-                                f"Expected {header}, got {file_header}"
-                            )
-                else:
-                    if writer is None:
-                        writer = csv.writer(outfile, **kwargs)
+                        if writer is None:
+                            writer = csv.writer(outfile, **kwargs)
 
-                # Write data rows
-                for row in reader:
-                    if skip_duplicates:
-                        row_tuple = tuple(row)
-                        if row_tuple in seen_rows:
-                            continue
-                        seen_rows.add(row_tuple)
+                    # Write data rows
+                    for row in reader:
+                        if skip_duplicates:
+                            row_tuple = tuple(row)
+                            if row_tuple in seen_rows:
+                                continue
+                            seen_rows.add(row_tuple)
 
-                    if writer is not None:
-                        writer.writerow(row)
-                        rows_written += 1
+                        if writer is not None:
+                            writer.writerow(row)
+                            rows_written += 1
+            outfile.flush()
+            os.fsync(outfile.fileno())
+        os.replace(temporary, output_file)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
     return rows_written
 

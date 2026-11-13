@@ -27,7 +27,8 @@ def check_encoding_issues(
     connection : Any
         Database connection.
     tables : list[str] | None, optional
-        Specific tables to check (by default None for all tables).
+        Specific table names within ``schema`` to check (by default None for
+        all tables). Explicit names are retained in the reported results.
     schema : str | None, optional
         Schema name (by default None).
     sample_limit : int, optional
@@ -91,10 +92,13 @@ def check_encoding_issues(
     db_dialect = connection.dialect.name.lower()
 
     for table_name in table_names:
-        if table_name not in metadata.tables:
+        table_key = (
+            f"{schema}.{table_name}" if schema is not None and tables else table_name
+        )
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
 
         # Find text columns
         text_columns = [

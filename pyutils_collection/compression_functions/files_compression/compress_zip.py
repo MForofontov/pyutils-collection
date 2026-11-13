@@ -2,6 +2,7 @@
 
 import os
 import zipfile
+from shutil import SameFileError
 
 
 def compress_zip(input_path: str, output_zip: str) -> None:
@@ -17,6 +18,9 @@ def compress_zip(input_path: str, output_zip: str) -> None:
 
     Raises
     ------
+    SameFileError
+        If a file input and output refer to the same file, including hard links.
+        The input is preserved because aliases are rejected before output opens.
     TypeError
         If input_path or output_zip is not a string.
     FileNotFoundError
@@ -33,6 +37,9 @@ def compress_zip(input_path: str, output_zip: str) -> None:
     # Check if the input path exists
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"The input path {input_path} does not exist.")
+
+    if os.path.exists(output_zip) and os.path.samefile(input_path, output_zip):
+        raise SameFileError("Input and output must refer to different files")
 
     try:
         check_path = (

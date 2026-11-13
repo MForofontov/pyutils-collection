@@ -2,6 +2,7 @@
 
 import bz2
 import os
+from shutil import SameFileError
 
 
 def compress_file_bz2(input_file: str, output_file: str) -> None:
@@ -22,6 +23,9 @@ def compress_file_bz2(input_file: str, output_file: str) -> None:
 
     Raises
     ------
+    SameFileError
+        If input and output refer to the same file, including hard-link aliases.
+        The source is preserved because this check precedes opening the output.
     TypeError
         If input_file or output_file is not a string.
     FileNotFoundError
@@ -44,6 +48,13 @@ def compress_file_bz2(input_file: str, output_file: str) -> None:
     # Check if the input file exists
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"The input file {input_file} does not exist.")
+
+    if (
+        os.path.exists(input_file)
+        and os.path.exists(output_file)
+        and os.path.samefile(input_file, output_file)
+    ):
+        raise SameFileError("Input and output must refer to different files")
 
     try:
         # Explicitly verify read permissions on the input file.

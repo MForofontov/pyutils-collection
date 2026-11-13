@@ -2,6 +2,9 @@
 Extract links from HTML content.
 """
 
+from typing import cast
+from urllib.parse import urljoin
+
 from bs4 import BeautifulSoup, Tag
 
 
@@ -48,6 +51,9 @@ def extract_links(
     Notes
     -----
     Only extracts links from <a> tags with href attributes.
+    Absolute conversion resolves URL references against the base document URL,
+    including parent paths, network paths, queries, and fragments. Explicit
+    schemes are preserved; this function does not filter navigation targets.
 
     Complexity
     ----------
@@ -67,21 +73,15 @@ def extract_links(
     if absolute and base_url is None:
         raise ValueError("base_url must be provided when absolute is True")
 
-    links = []
+    links: list[str] = []
     for tag in element.find_all("a", href=True):
-        href = tag["href"]
+        href = cast(str, tag["href"])
         if absolute and base_url:
-            # Simple absolute URL construction
-            if href.startswith("http://") or href.startswith("https://"):  # type: ignore[union-attr]
-                links.append(href)
-            elif href.startswith("/"):  # type: ignore[union-attr]
-                links.append(base_url.rstrip("/") + href)  # type: ignore[operator]
-            else:
-                links.append(base_url.rstrip("/") + "/" + href)  # type: ignore[operator]
+            links.append(urljoin(base_url, href))
         else:
             links.append(href)
 
-    return links  # type: ignore[return-value]
+    return links
 
 
 __all__ = ["extract_links"]

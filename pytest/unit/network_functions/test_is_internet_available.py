@@ -85,7 +85,8 @@ def test_is_internet_available_timeout_set(
     is_internet_available(timeout=timeout_value)
 
     # Assert
-    mock_timeout.assert_called_once_with(timeout_value)
+    mock_instance.settimeout.assert_called_once_with(timeout_value)
+    mock_timeout.assert_not_called()
 
 
 @patch("socket.socket")

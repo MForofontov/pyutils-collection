@@ -71,6 +71,8 @@ def ssh_execute_script(
     -----
     Uses paramiko to read the script file and execute it remotely via the specified interpreter.
     The script content is piped to the interpreter stdin.
+    Node uses its ``-`` stdin entry point; shell and Python command flags retain
+    their existing behavior.
 
     Complexity
     ----------
@@ -139,7 +141,7 @@ def ssh_execute_script(
             script_content = script_file.read()
 
         # Execute the script by piping it to the interpreter
-        command = f"{interpreter} -s"
+        command = "node -" if interpreter == "node" else f"{interpreter} -s"
         stdin, stdout, stderr = client.exec_command(command, timeout=timeout)  # nosec B601 # Interpreter is allowlisted; script is supplied on stdin.
 
         # Send input while collecting both output streams. A script can write

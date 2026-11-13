@@ -3,6 +3,7 @@
 import bz2
 import os
 import stat
+from shutil import SameFileError
 
 
 def decompress_file_bz2(input_bz2: str, output_file: str) -> None:
@@ -18,6 +19,9 @@ def decompress_file_bz2(input_bz2: str, output_file: str) -> None:
 
     Raises
     ------
+    SameFileError
+        If input and output refer to the same file, including hard-link aliases.
+        The source is preserved because this check precedes opening the output.
     TypeError
         If input_bz2 or output_file is not a string.
     FileNotFoundError
@@ -30,6 +34,13 @@ def decompress_file_bz2(input_bz2: str, output_file: str) -> None:
         raise TypeError("input_bz2 must be a string")
     if not isinstance(output_file, str):
         raise TypeError("output_file must be a string")
+
+    if (
+        os.path.exists(input_bz2)
+        and os.path.exists(output_file)
+        and os.path.samefile(input_bz2, output_file)
+    ):
+        raise SameFileError("Input and output must refer to different files")
 
     try:
         if not os.path.exists(input_bz2):

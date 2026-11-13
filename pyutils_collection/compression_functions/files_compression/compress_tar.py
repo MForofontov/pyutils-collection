@@ -2,6 +2,7 @@
 
 import os
 import tarfile
+from shutil import SameFileError
 
 
 def compress_tar(input_path: str, output_tar: str) -> None:
@@ -22,6 +23,9 @@ def compress_tar(input_path: str, output_tar: str) -> None:
 
     Raises
     ------
+    SameFileError
+        If a file input and output refer to the same file, including hard links.
+        The input is preserved because aliases are rejected before output opens.
     TypeError
         If input_path or output_tar is not a string.
     FileNotFoundError
@@ -42,6 +46,9 @@ def compress_tar(input_path: str, output_tar: str) -> None:
     # Check if the input path exists
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"The input path {input_path} does not exist.")
+
+    if os.path.exists(output_tar) and os.path.samefile(input_path, output_tar):
+        raise SameFileError("Input and output must refer to different files")
 
     try:
         check_path = (

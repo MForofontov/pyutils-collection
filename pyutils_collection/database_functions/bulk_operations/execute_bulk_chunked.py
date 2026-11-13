@@ -66,8 +66,8 @@ def execute_bulk_chunked(
     rollback_func : Callable[[], None] | None, optional
         Function to rollback the current transaction (by default None).
         When provided and using "skip" or "continue" modes, automatically rolls back failed chunks.
-        For "fail_fast" mode, this is ignored (caller manages transaction).
         Examples: lambda: conn.rollback(), lambda: connection.rollback()
+        Also invoked before propagating an execution failure in "fail_fast" mode.
     progress_callback : Callable[[int, int], None] | None, optional
         Function called after each chunk with (completed, total) counts.
 
@@ -75,6 +75,9 @@ def execute_bulk_chunked(
     -------
     BulkOperationResult
         Dictionary containing operation statistics and error details.
+        With a commit callback, rows count as successful only after it returns
+        successfully. Failed per-row commits invoke the rollback callback before
+        processing the next row.
 
     Raises
     ------
@@ -228,7 +231,6 @@ def execute_bulk_chunked(
         try:
             # Execute operation for this chunk
             statement_executor(chunk)
-            successful += len(chunk)
             logger.debug(
                 f"Chunk {chunk_number} processed successfully ({len(chunk)} rows)"
             )
@@ -243,6 +245,8 @@ def execute_bulk_chunked(
                         f"Failed to commit chunk {chunk_number}: {commit_error}"
                     )
                     raise
+
+            successful += len(chunk)
 
         except Exception as e:
             logger.warning(f"Chunk {chunk_number} failed: {e}")
@@ -328,6 +332,13 @@ def execute_bulk_chunked(
                                         "error_type": "CommitError",
                                     }
                                 )
+                                if rollback_func is not None:
+                                    try:
+                                        rollback_func()
+                                    except Exception as rollback_error:
+                                        logger.warning(
+                                            f"Failed to rollback row {row_index}: {rollback_error}"
+                                        )
                     except Exception as row_error:
                         failed += 1
                         errors.append(

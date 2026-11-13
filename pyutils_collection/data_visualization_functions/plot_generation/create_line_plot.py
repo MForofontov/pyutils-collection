@@ -3,6 +3,7 @@ Create line plot with multiple series and comprehensive customization.
 """
 
 import logging
+from contextlib import suppress
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -85,6 +86,10 @@ def create_line_plot(
 
     Notes
     -----
+    Returned figures belong to the caller. If plotting fails after figure
+    creation, only the newly created figure is closed before propagating the
+    original exception.
+
     This function provides a convenient wrapper around matplotlib with sensible
     defaults and automatic handling of multiple series.
 
@@ -182,42 +187,46 @@ def create_line_plot(
 
     # Create plot
     fig, ax = plt.subplots(figsize=figsize)
+    try:
+        for i, y in enumerate(y_series):
+            plot_kwargs: dict[str, Any] = {}
 
-    for i, y in enumerate(y_series):
-        plot_kwargs: dict[str, Any] = {}
+            if labels is not None:
+                plot_kwargs["label"] = labels[i]
+            if colors is not None:
+                plot_kwargs["color"] = colors[i]
+            if line_styles is not None:
+                plot_kwargs["linestyle"] = line_styles[i]
+            if markers is not None:
+                plot_kwargs["marker"] = markers[i]
 
-        if labels is not None:
-            plot_kwargs["label"] = labels[i]
-        if colors is not None:
-            plot_kwargs["color"] = colors[i]
-        if line_styles is not None:
-            plot_kwargs["linestyle"] = line_styles[i]
-        if markers is not None:
-            plot_kwargs["marker"] = markers[i]
+            ax.plot(x_data, y, **plot_kwargs)
 
-        ax.plot(x_data, y, **plot_kwargs)
+        # Customize plot
+        if title:
+            ax.set_title(title, fontsize=14, fontweight="bold")
+        if xlabel:
+            ax.set_xlabel(xlabel, fontsize=12)
+        if ylabel:
+            ax.set_ylabel(ylabel, fontsize=12)
 
-    # Customize plot
-    if title:
-        ax.set_title(title, fontsize=14, fontweight="bold")
-    if xlabel:
-        ax.set_xlabel(xlabel, fontsize=12)
-    if ylabel:
-        ax.set_ylabel(ylabel, fontsize=12)
+        if grid:
+            ax.grid(True, alpha=0.3, linestyle="--")
 
-    if grid:
-        ax.grid(True, alpha=0.3, linestyle="--")
+        if legend and labels is not None:
+            ax.legend(loc="best", framealpha=0.9)
 
-    if legend and labels is not None:
-        ax.legend(loc="best", framealpha=0.9)
+        plt.tight_layout()
 
-    plt.tight_layout()
+        logger.debug(
+            f"Created line plot with {num_series} series and {len(x_data)} data points"
+        )
 
-    logger.debug(
-        f"Created line plot with {num_series} series and {len(x_data)} data points"
-    )
-
-    return fig, ax
+        return fig, ax
+    except BaseException:
+        with suppress(Exception):
+            plt.close(fig)
+        raise
 
 
 __all__ = ["create_line_plot"]

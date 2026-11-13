@@ -75,6 +75,14 @@ def time_and_resource_function(
         not a number.
     ValueError
         If interval is not finite and positive.
+
+    Notes
+    -----
+    Process counters report observed increments rather than sums of lifetime
+    totals. Child-process increments are measured between that child's first
+    and last successful samples; activity before discovery or after its last
+    sample cannot be recovered. Disk and network counters are system-wide,
+    so child-process I/O bytes are not added to disk totals.
     """
     validate_logger(logger)
     if not isinstance(interval, (int, float)) or isinstance(interval, bool):
@@ -128,6 +136,14 @@ def time_and_resource_function(
                 if monitor_disk and hasattr(psutil, "disk_io_counters")
                 else None
             )
+            previous_context_switches: Any = None
+            if monitor_context_switches and hasattr(process, "num_ctx_switches"):
+                try:
+                    previous_context_switches = process.num_ctx_switches()
+                except psutil.NoSuchProcess, psutil.AccessDenied:
+                    pass
+            child_io_samples: dict[tuple[int, float], Any] = {}
+            child_context_samples: dict[tuple[int, float], Any] = {}
 
             stop_event = threading.Event()
             sample_finished = threading.Event()
@@ -152,6 +168,7 @@ def time_and_resource_function(
                     total_bytes_sent, \
                     total_bytes_recv
                 nonlocal total_read_bytes, total_write_bytes
+                nonlocal previous_context_switches
 
                 while not stop_event.is_set():
                     try:
@@ -204,10 +221,20 @@ def time_and_resource_function(
                                     total_threads += child.num_threads()
                                 if monitor_io and hasattr(child, "io_counters"):
                                     child_io_counters = child.io_counters()
-                                    total_read_ops += child_io_counters.read_count
-                                    total_write_ops += child_io_counters.write_count
-                                    total_read_bytes += child_io_counters.read_bytes
-                                    total_write_bytes += child_io_counters.write_bytes
+                                    child_key = (child.pid, child.create_time())
+                                    previous_io = child_io_samples.get(child_key)
+                                    if previous_io is not None:
+                                        total_read_ops += max(
+                                            0,
+                                            child_io_counters.read_count
+                                            - previous_io.read_count,
+                                        )
+                                        total_write_ops += max(
+                                            0,
+                                            child_io_counters.write_count
+                                            - previous_io.write_count,
+                                        )
+                                    child_io_samples[child_key] = child_io_counters
                                 if monitor_open_files and hasattr(child, "open_files"):
                                     open_files += len(child.open_files())
                                 if monitor_page_faults and hasattr(
@@ -221,11 +248,23 @@ def time_and_resource_function(
                                     child, "num_ctx_switches"
                                 ):
                                     child_context_switches = child.num_ctx_switches()
-                                    total_voluntary_context_switches += (
-                                        child_context_switches.voluntary
+                                    child_key = (child.pid, child.create_time())
+                                    previous_context = child_context_samples.get(
+                                        child_key
                                     )
-                                    total_involuntary_context_switches += (
-                                        child_context_switches.involuntary
+                                    if previous_context is not None:
+                                        total_voluntary_context_switches += max(
+                                            0,
+                                            child_context_switches.voluntary
+                                            - previous_context.voluntary,
+                                        )
+                                        total_involuntary_context_switches += max(
+                                            0,
+                                            child_context_switches.involuntary
+                                            - previous_context.involuntary,
+                                        )
+                                    child_context_samples[child_key] = (
+                                        child_context_switches
                                     )
                             except psutil.NoSuchProcess, psutil.AccessDenied:
                                 continue
@@ -245,12 +284,18 @@ def time_and_resource_function(
                         if monitor_page_faults:
                             max_page_faults = max(max_page_faults, page_faults)
                         if monitor_context_switches:
-                            total_voluntary_context_switches += (
-                                context_switches.voluntary
-                            )
-                            total_involuntary_context_switches += (
-                                context_switches.involuntary
-                            )
+                            if previous_context_switches is not None:
+                                total_voluntary_context_switches += max(
+                                    0,
+                                    context_switches.voluntary
+                                    - previous_context_switches.voluntary,
+                                )
+                                total_involuntary_context_switches += max(
+                                    0,
+                                    context_switches.involuntary
+                                    - previous_context_switches.involuntary,
+                                )
+                            previous_context_switches = context_switches
 
                         stop_event.wait(interval)
                     except psutil.NoSuchProcess, psutil.AccessDenied:
@@ -358,12 +403,10 @@ def time_and_resource_function(
                     read_bytes = (
                         final_disk_io_counters.read_bytes
                         - initial_disk_io_counters.read_bytes
-                        + total_read_bytes
                     )
                     write_bytes = (
                         final_disk_io_counters.write_bytes
                         - initial_disk_io_counters.write_bytes
-                        + total_write_bytes
                     )
                 else:
                     read_bytes = total_read_bytes

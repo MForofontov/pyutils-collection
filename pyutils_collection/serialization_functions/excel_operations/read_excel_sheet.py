@@ -65,6 +65,7 @@ def read_excel_sheet(
     Notes
     -----
     Requires openpyxl package.
+    The owned workbook is closed on success and on sheet-selection/read failure.
     Row and column indices are 1-based (Excel convention).
 
     Complexity
@@ -101,30 +102,31 @@ def read_excel_sheet(
 
     # Load workbook and sheet
     wb = load_workbook(file_path, read_only=True, data_only=values_only)
+    try:
+        if isinstance(sheet_name, int):
+            if sheet_name < 0 or sheet_name >= len(wb.sheetnames):
+                raise ValueError(
+                    f"sheet_name index {sheet_name} out of range (0-{len(wb.sheetnames) - 1})"
+                )
+            ws = wb.worksheets[sheet_name]
+        else:
+            if sheet_name not in wb.sheetnames:
+                raise ValueError(f"sheet_name '{sheet_name}' not found in workbook")
+            ws = wb[sheet_name]
 
-    if isinstance(sheet_name, int):
-        if sheet_name < 0 or sheet_name >= len(wb.sheetnames):
-            raise ValueError(
-                f"sheet_name index {sheet_name} out of range (0-{len(wb.sheetnames) - 1})"
-            )
-        ws = wb.worksheets[sheet_name]
-    else:
-        if sheet_name not in wb.sheetnames:
-            raise ValueError(f"sheet_name '{sheet_name}' not found in workbook")
-        ws = wb[sheet_name]
+        # Read data
+        data = []
+        for row in ws.iter_rows(
+            min_row=min_row,
+            max_row=max_row,
+            min_col=min_col,
+            max_col=max_col,
+            values_only=values_only,
+        ):
+            data.append(list(row))
 
-    # Read data
-    data = []
-    for row in ws.iter_rows(
-        min_row=min_row,
-        max_row=max_row,
-        min_col=min_col,
-        max_col=max_col,
-        values_only=values_only,
-    ):
-        data.append(list(row))
-
-    wb.close()
+    finally:
+        wb.close()
     return data
 
 

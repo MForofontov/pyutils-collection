@@ -29,9 +29,10 @@ def assert_almost_equal(
     TypeError
         If parameters are of wrong type.
     ValueError
-        If tolerance is negative.
+        If tolerance is negative or NaN.
     AssertionError
-        If values differ by more than tolerance.
+        If values differ by more than tolerance or either value is NaN.
+        Matching infinities compare equal.
 
     Examples
     --------
@@ -49,11 +50,11 @@ def assert_almost_equal(
     if not isinstance(tolerance, (int, float)):
         raise TypeError(f"tolerance must be a number, got {type(tolerance).__name__}")
 
-    if tolerance < 0:
-        raise ValueError(f"tolerance must be non-negative, got {tolerance}")
+    if tolerance < 0 or tolerance != tolerance:
+        raise ValueError(f"tolerance must be non-negative and not NaN, got {tolerance}")
 
     diff = abs(actual - expected)
-    if diff > tolerance:
+    if actual != expected and not diff <= tolerance:
         raise AssertionError(
             f"Values differ by {diff}, which exceeds tolerance {tolerance}: "
             f"actual={actual}, expected={expected}"

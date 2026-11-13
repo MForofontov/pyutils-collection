@@ -18,6 +18,15 @@ def concat(*args, **kwargs):
     return "".join(args) + "".join(kwargs.values())
 
 
+@pytest.fixture(autouse=True)
+def isolate_caches():
+    add.cache_clear()
+    concat.cache_clear()
+    yield
+    add.cache_clear()
+    concat.cache_clear()
+
+
 def test_cache_basic() -> None:
 
     """
@@ -108,7 +117,7 @@ def test_cache_concat_different_kwargs() -> None:
     assert (
         concat(x="x", y="y", z="z") == "xyz"
     )  # Different arguments, should not use cache
-    assert call_counts["concat"] == 1  # Function should be called twice
+    assert call_counts["concat"] == 2  # Function should be called twice
     call_counts["concat"] = 0
 
 
@@ -135,7 +144,7 @@ def test_cache_concat_different_mixed_args() -> None:
     assert (
         concat("x", "y", z="z", w="w") == "xyzw"
     )  # Different arguments, should not use cache
-    assert call_counts["concat"] == 1  # Function should be called twice
+    assert call_counts["concat"] == 2  # Function should be called twice
     call_counts["concat"] = 0
 
 

@@ -328,6 +328,9 @@ def test_managed_browser_with_downloads_path(mock_path: Mock, mock_sync_playwrig
     
     # Assert
     mock_path_instance.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+    mock_playwright.chromium.launch.assert_called_once_with(
+        headless=True, downloads_path="/tmp/downloads"
+    )
     call_args = mock_browser.new_context.call_args
     assert call_args[1]["accept_downloads"] is True
 

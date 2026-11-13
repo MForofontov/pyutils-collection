@@ -3,6 +3,7 @@ Create scatter plot with customizable styling.
 """
 
 import logging
+from contextlib import suppress
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -81,6 +82,10 @@ def create_scatter_plot(
 
     Notes
     -----
+    Returned figures belong to the caller. If plotting fails after figure
+    creation, only the newly created figure is closed before propagating the
+    original exception.
+
     This function provides a clean interface for creating scatter plots with
     automatic validation and sensible defaults.
 
@@ -132,25 +137,29 @@ def create_scatter_plot(
 
     # Create plot
     fig, ax = plt.subplots(figsize=figsize)
+    try:
+        ax.scatter(x_data, y_data, c=colors, s=sizes, alpha=alpha, marker=marker)
 
-    ax.scatter(x_data, y_data, c=colors, s=sizes, alpha=alpha, marker=marker)
+        # Customize plot
+        if title:
+            ax.set_title(title, fontsize=14, fontweight="bold")
+        if xlabel:
+            ax.set_xlabel(xlabel, fontsize=12)
+        if ylabel:
+            ax.set_ylabel(ylabel, fontsize=12)
 
-    # Customize plot
-    if title:
-        ax.set_title(title, fontsize=14, fontweight="bold")
-    if xlabel:
-        ax.set_xlabel(xlabel, fontsize=12)
-    if ylabel:
-        ax.set_ylabel(ylabel, fontsize=12)
+        if grid:
+            ax.grid(True, alpha=0.3, linestyle="--")
 
-    if grid:
-        ax.grid(True, alpha=0.3, linestyle="--")
+        plt.tight_layout()
 
-    plt.tight_layout()
+        logger.debug(f"Created scatter plot with {len(x_data)} data points")
 
-    logger.debug(f"Created scatter plot with {len(x_data)} data points")
-
-    return fig, ax
+        return fig, ax
+    except BaseException:
+        with suppress(Exception):
+            plt.close(fig)
+        raise
 
 
 __all__ = ["create_scatter_plot"]

@@ -40,6 +40,11 @@ def assert_raises_with_message(
     AssertionError
         If function doesn't raise expected exception or message doesn't match.
 
+    Notes
+    -----
+    Only exceptions raised by ``func`` satisfy the expectation, including when
+    expecting ``AssertionError`` or the base ``Exception`` class.
+
     Examples
     --------
     >>> def failing_func():
@@ -63,9 +68,6 @@ def assert_raises_with_message(
 
     try:
         func(*args, **kwargs)
-        raise AssertionError(
-            f"Expected {exception_type.__name__} to be raised, but no exception was raised"
-        )
     except exception_type as e:
         if message_pattern not in str(e):
             raise AssertionError(
@@ -75,3 +77,7 @@ def assert_raises_with_message(
         raise AssertionError(
             f"Expected {exception_type.__name__}, but got {type(e).__name__}: {str(e)}"
         ) from None
+    else:
+        raise AssertionError(
+            f"Expected {exception_type.__name__} to be raised, but no exception was raised"
+        )

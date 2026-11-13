@@ -53,6 +53,9 @@ def verify_referential_integrity(
     -----
     Critical for data migration and constraint enforcement.
     Can be slow on large tables - consider adding WHERE clauses for subsets.
+    Composite references are matched across every key column. References with
+    any NULL component are excluded (MATCH SIMPLE semantics). Reported column
+    names and sample IDs retain the first key component for compatibility.
 
     Complexity
     ----------
@@ -73,10 +76,11 @@ def verify_referential_integrity(
     metadata.reflect(bind=connection, schema=schema)
 
     for table_name in tables:
-        if table_name not in metadata.tables:
+        table_key = f"{schema}.{table_name}" if schema is not None else table_name
+        if table_key not in metadata.tables:
             continue
 
-        table = metadata.tables[table_name]
+        table = metadata.tables[table_key]
         fks = inspector.get_foreign_keys(table_name, schema=schema)
 
         for fk in fks:
@@ -92,26 +96,41 @@ def verify_referential_integrity(
                 continue
 
             # Get table objects
-            if referred_table_name not in metadata.tables:
+            referred_schema = fk.get("referred_schema") or schema
+            referred_key = (
+                f"{referred_schema}.{referred_table_name}"
+                if referred_schema is not None
+                else referred_table_name
+            )
+            if referred_key not in metadata.tables:
                 continue
 
-            referred_table = metadata.tables[referred_table_name]
+            referred_table = metadata.tables[referred_key].alias()
             fk_column = table.c[constrained_columns[0]]
-            ref_column = referred_table.c[referred_columns[0]]
 
             try:
-                # Build subquery for valid references
-                select(ref_column).subquery()
+                key_pairs = [
+                    (table.c[local], referred_table.c[remote])
+                    for local, remote in zip(
+                        constrained_columns, referred_columns, strict=True
+                    )
+                ]
+                valid_reference = (
+                    select(1)
+                    .select_from(referred_table)
+                    .where(and_(*(local == remote for local, remote in key_pairs)))
+                    .correlate(table)
+                    .exists()
+                )
+                orphan_condition = and_(
+                    *(local.isnot(None) for local, _ in key_pairs),
+                    not_(valid_reference),
+                )
 
                 # Find orphaned records using SQLAlchemy expressions
                 orphaned_query = (
                     select(fk_column, func.count().label("cnt"))
-                    .where(
-                        and_(
-                            fk_column.isnot(None),
-                            not_(fk_column.in_(select(ref_column))),
-                        )
-                    )
+                    .where(orphan_condition)
                     .group_by(fk_column)
                     .limit(10)
                 )
@@ -122,14 +141,7 @@ def verify_referential_integrity(
                 if orphaned:
                     # Get total count of orphaned records
                     count_query = (
-                        select(func.count())
-                        .select_from(table)
-                        .where(
-                            and_(
-                                fk_column.isnot(None),
-                                not_(fk_column.in_(select(ref_column))),
-                            )
-                        )
+                        select(func.count()).select_from(table).where(orphan_condition)
                     )
                     total_result = connection.execute(count_query)
                     total_count = total_result.scalar()

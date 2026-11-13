@@ -72,3 +72,7 @@ def test_extract_emails_invalid_type_unique() -> None:
     """Test TypeError for invalid unique type."""
     with pytest.raises(TypeError, match="unique must be bool"):
         extract_emails("test@example.com", unique=cast(Any, "yes"))
+
+
+def test_email_tld_does_not_include_pipe() -> None:
+    assert extract_emails("bad@example.c|m") == []

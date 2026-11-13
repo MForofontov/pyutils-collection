@@ -3,14 +3,19 @@ import pytest
 # Try to import BeautifulSoup - tests will be skipped if not available
 try:
     from bs4 import BeautifulSoup
-    from pyutils_collection.web_scraping_functions.html_parsing.extract_links import extract_links
+    from pyutils_collection.web_scraping_functions.html_parsing.extract_links import (
+        extract_links,
+    )
+
     BS4_AVAILABLE = True
 except ImportError:
     BS4_AVAILABLE = False
     BeautifulSoup = None  # type: ignore
     extract_links = None  # type: ignore
 
-pytestmark = pytest.mark.skipif(not BS4_AVAILABLE, reason="beautifulsoup4 not installed")
+pytestmark = pytest.mark.skipif(
+    not BS4_AVAILABLE, reason="beautifulsoup4 not installed"
+)
 pytestmark = [pytestmark, pytest.mark.unit, pytest.mark.web_scraping]
 
 
@@ -137,3 +142,22 @@ def test_extract_links_value_error_missing_base_url() -> None:
         ValueError, match="base_url must be provided when absolute is True"
     ):
         extract_links(soup, absolute=True)
+
+
+@pytest.mark.parametrize(
+    ("href", "expected"),
+    [
+        ("/root", "https://example.com/root"),
+        ("next", "https://example.com/docs/next"),
+        ("../up", "https://example.com/up"),
+        ("//other.example/path", "https://other.example/path"),
+        ("#part", "https://example.com/docs/page#part"),
+        ("?q=1", "https://example.com/docs/page?q=1"),
+        ("mailto:a@example.com", "mailto:a@example.com"),
+    ],
+)
+def test_links_resolve_references(href: str, expected: str) -> None:
+    soup = BeautifulSoup(f'<a href="{href}">link</a>', "html.parser")
+    assert extract_links(
+        soup, absolute=True, base_url="https://example.com/docs/page"
+    ) == [expected]

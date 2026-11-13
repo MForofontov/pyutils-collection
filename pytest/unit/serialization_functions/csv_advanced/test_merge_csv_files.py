@@ -11,13 +11,19 @@ import pytest
 pytestmark = [pytest.mark.unit, pytest.mark.serialization]
 
 try:
-    from pyutils_collection.serialization_functions.csv_advanced.merge_csv_files import merge_csv_files
+    from pyutils_collection.serialization_functions.csv_advanced.merge_csv_files import (
+        merge_csv_files,
+    )
+
     IMPORT_SUCCESS = True
 except ImportError:
     IMPORT_SUCCESS = False
     merge_csv_files = None  # type: ignore
 
-pytestmark = [pytest.mark.skipif(not IMPORT_SUCCESS, reason="dependencies not installed"), *pytestmark]
+pytestmark = [
+    pytest.mark.skipif(not IMPORT_SUCCESS, reason="dependencies not installed"),
+    *pytestmark,
+]
 
 
 def test_merge_csv_files_basic_merge() -> None:
@@ -227,3 +233,70 @@ def test_merge_csv_files_header_mismatch_error() -> None:
 
         with pytest.raises(ValueError, match="Header mismatch"):
             merge_csv_files([file1, file2], output)
+
+
+def test_csv_ignores_leading_empty_file(tmp_path: Path) -> None:
+    empty, data, output = (
+        tmp_path / name for name in ("empty.csv", "data.csv", "out.csv")
+    )
+    empty.write_text("")
+    data.write_text("name\nAda\n")
+    assert merge_csv_files([empty, data], output) == 1
+    assert output.read_text() == "name\nAda\n"
+
+
+@pytest.mark.parametrize("existing", [True, False])
+def test_csv_header_failure_preserves_destination(
+    tmp_path: Path, existing: bool
+) -> None:
+    first, second, output = (
+        tmp_path / name for name in ("first.csv", "second.csv", "out.csv")
+    )
+    first.write_text("name\nAda\n")
+    second.write_text("wrong\nBob\n")
+    if existing:
+        output.write_text("original")
+    before = set(tmp_path.iterdir())
+    with pytest.raises(ValueError, match="Header mismatch"):
+        merge_csv_files([first, second], output)
+    assert set(tmp_path.iterdir()) == before
+    if existing:
+        assert output.read_text() == "original"
+
+
+def test_csv_output_can_be_input(tmp_path: Path) -> None:
+    first, second = tmp_path / "first.csv", tmp_path / "second.csv"
+    first.write_text("name\nAda\n")
+    second.write_text("name\nBob\n")
+    assert merge_csv_files([first, second], first) == 2
+    assert first.read_text() == "name\nAda\nBob\n"
+
+
+@pytest.mark.parametrize("failure", ["fsync", "replace"])
+def test_csv_io_failure_preserves_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    import os
+
+    source, output = tmp_path / "source.csv", tmp_path / "output.csv"
+    source.write_text("name\nAda\n")
+    output.write_text("original")
+    error = OSError("injected failure")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise error
+
+    with monkeypatch.context() as patch:
+        patch.setattr(os, failure, fail)
+        with pytest.raises(OSError) as caught:
+            merge_csv_files([source], output)
+    assert caught.value is error
+    assert output.read_text() == "original"
+    assert set(tmp_path.iterdir()) == {source, output}
+
+
+def test_csv_all_empty_files(tmp_path: Path) -> None:
+    source, output = tmp_path / "source.csv", tmp_path / "output.csv"
+    source.write_text("")
+    assert merge_csv_files([source, source], output) == 0
+    assert output.read_bytes() == b""

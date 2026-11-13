@@ -97,10 +97,11 @@ def get_column_statistics(
     metadata = MetaData()
     metadata.reflect(bind=connection, schema=schema, only=[table_name])
 
-    if table_name not in metadata.tables:
+    table_key = f"{schema}.{table_name}" if schema is not None else table_name
+    if table_key not in metadata.tables:
         raise ValueError(f"Table {table_name} not found")
 
-    table = metadata.tables[table_name]
+    table = metadata.tables[table_key]
 
     # Get total row count using SQLAlchemy
     total_query = select(func.count()).select_from(table)

@@ -1,9 +1,8 @@
 """Cancellable async task utilities."""
 
 import asyncio
-import contextlib
 from collections.abc import Awaitable, Callable
-from typing import Any, TypeVar
+from typing import TypeVar
 
 # Define a type variable T to represent the return type of the task
 T = TypeVar("T")
@@ -36,10 +35,16 @@ async def async_cancellable_task(
     Raises
     ------
     asyncio.CancelledError
-        If the cancellation event is set before the task completes.
+        If the caller is cancelled or the cancellation event is set before the
+        task completes. Both owned tasks are cancelled and awaited before exit.
     asyncio.TimeoutError
         If ``timeout`` is provided and the operation takes longer than the
         specified number of seconds.
+
+    Notes
+    -----
+    Exceptions raised by worker cleanup after cancellation are retrieved without
+    replacing the caller's cancellation or timeout. Normal worker failures propagate.
 
     Examples
     --------
@@ -56,36 +61,27 @@ async def async_cancellable_task(
         raise asyncio.CancelledError("Task was cancelled.")
 
     task_future: asyncio.Task[T] = asyncio.create_task(task())  # type: ignore[arg-type]
-    cancel_future: asyncio.Task[Any] = asyncio.create_task(cancel_event.wait())
-    pending: set[asyncio.Task[Any]] = set()
+    cancel_future = asyncio.create_task(cancel_event.wait())
 
     try:
-        done, pending = await asyncio.wait(
+        done, _ = await asyncio.wait(
             {task_future, cancel_future},
             return_when=asyncio.FIRST_COMPLETED,
             timeout=timeout,
         )
 
         if not done:
-            task_future.cancel()
-            cancel_future.cancel()
             raise TimeoutError("async_cancellable_task timed out.")
 
         if cancel_future in done:
-            task_future.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await task_future
             raise asyncio.CancelledError("Task was cancelled.")
 
-        cancel_future.cancel()
-        with contextlib.suppress(asyncio.CancelledError):
-            await cancel_future
         return task_future.result()
     finally:
-        for pending_future in pending:
-            pending_future.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await pending_future
+        for owned_task in (task_future, cancel_future):
+            if not owned_task.done():
+                owned_task.cancel()
+        await asyncio.gather(task_future, cancel_future, return_exceptions=True)
 
 
 __all__ = ["async_cancellable_task"]

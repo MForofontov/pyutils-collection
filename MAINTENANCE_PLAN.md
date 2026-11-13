@@ -1,5 +1,369 @@
 # Current maintenance record
 
+## Final local validation — 2026-11-13
+
+The exhaustive source review and locally available final gates are complete for
+the existing uncommitted **0.2.3** changeset. Version 0.2.3 is retained; nothing
+was committed, pushed, tagged, published or launched in remote CI.
+
+- All **603 package source files** across the 31 families have review dispositions,
+  contracts, test references, findings or explicit no-additional-finding outcomes
+  in `.major-check/2026-11-11-exhaustive/review-register.json`. A separate
+  `tooling-review-register.json` covers 30 tooling/configuration files.
+  `findings-register.json` prioritizes reproduced repairs, measured optimizations
+  and unresolved candidates. Per-file manifestations are not independent defect
+  counts. Exhaustive source review is not a guarantee that no defects remain.
+- Final candidate `final2-candidate-manifest.json` records HEAD
+  `46ed7a2e7c948139856cf294495790128f6a34dd`, the uncommitted source hashes,
+  Windows 10, CPython 3.15.2 and dependency versions. The final unit invocation
+  passes **6,159 tests, five skips, 12 numerical warnings** in 262.25 seconds,
+  with **91.15% line coverage**, JUnit, coverage XML and a 31-family inventory.
+  `final-evidence.json` verifies no runtime, test, tooling or dependency-config
+  hash changed during validation. Documentation-only evidence updates follow it.
+- Ruff lint/format, strict Mypy, Bandit, `pip check` and `pip-audit --local` all
+  pass. The security-required pin to **Soup Sieve 4.0.1** addresses
+  [CVE-2026-126190](https://github.com/facelessuser/soupsieve/security/advisories/GHSA-mmhr-3c5m-f64f).
+  The failing advisory report and bounded before/after selector probe are retained;
+  all 166 scraping tests and the final full suite pass with the patched version.
+  The advisory service cannot audit unpublished local `pyutils-collection 0.2.3`;
+  this explicit skip is not a security certification of the package itself.
+- Real HTTP/Chromium checks pass **eight tests** in 34.77 seconds. The earlier
+  download timeout and passing isolated retry remain separate evidence. Real
+  PostgreSQL/OpenSSH checks pass **14 tests**, with **six MySQL cases skipped**.
+  MySQL failed its disposable service startup health check; its tests did not run.
+  Both task-owned Compose projects have no remaining containers, networks or
+  locally built SSH images after cleanup, verified in `final-evidence.json`.
+- Clean wheel and sdist builds, Twine metadata checks, separate isolated
+  installation/`pip check`, and both installed probes pass. Each probe verifies
+  **603 byte-identical sources, 790 exports, six README examples, metadata and
+  typing markers**. The build uses installed setuptools 84.2.1, satisfying the
+  declared backend requirement. The initial sdist probe setup lacked setuptools;
+  its failed install is retained separately, and the corrected setup passes.
+  Final artifact hashes are in `final2-artifact-hashes.json`.
+- Public function/class signatures and exports match the frozen starting working
+  tree across all 603 sources. Forty applicable doctest statements and 18 affected
+  local documentation links pass; working-tree documentation policy and its
+  repository tests pass. The committed-change checker has no suitable committed
+  candidate because commits were explicitly excluded from this task.
+- Retained optimizations are the measured SVD reconstruction and one-pass grouped
+  dictionary inversion described below. Their measured source hashes still match
+  the final implementation. All ten standard paired workloads have equivalent
+  output digests and no recorded RSS sampling errors. Timings, Python allocation
+  peaks and process memory remain separate; no application-wide speedup is claimed.
+- Outstanding platform/infrastructure checks are Linux/macOS, exact-candidate
+  remote CI, MySQL, three Windows symlink-privilege cases and Unix ownership.
+  The fifth unit skip is a binary-compression module without `__all__`.
+  Compatibility-sensitive review candidates remain: dialect-specific raw SQL
+  identifier formatting, partial/expression/collation index equivalence,
+  caller-owned truncate transactions, advertised solver-mode mismatches,
+  ambiguous nested-path/nonfinite/label policies and unverified SSH interpreter
+  flags beyond the repaired Node path. They are recorded limitations, not passes
+  or newly promised behavior. Illustrative external-service doctests are not
+  presented as executed examples.
+
+## Development evidence — 2026-11-11 to 2026-11-13
+
+The checkpoints below describe progress before final selection. Pending work and
+intermediate failures in this record are superseded only by the explicit final
+results above, while their original reports remain preserved.
+
+This continues the same uncommitted **0.2.3** changeset. Its comparison baseline
+is the frozen working tree under `.major-check/2026-11-11-exhaustive/baseline/`,
+including the preceding repairs, rather than Git HEAD alone. The baseline
+manifest hashes 1,213 tracked files, including all 603 package sources, and
+`starting.diff` preserves the original uncommitted changes.
+
+- The frozen baseline passes **5,994 tests, five skips, 12 warnings** in one
+  invocation. That result does not certify the newer repairs described below.
+- The per-file review register distinguishes completed source-and-test review,
+  source review awaiting test review, and pending files. At this checkpoint,
+  **all 603 files have completed source-and-test review**, including private
+  helpers and exports. The JSON register records literal contracts, tests,
+  reviewed behavior, findings and limitations. Tooling/configuration review has
+  a separate 30-entry register. Review coverage is not proof of correctness;
+  final verification is still in progress.
+- The November 13 continuation completes iterable and serialization test review.
+  Numeric overflow now follows documented conversion failure behavior (nine
+  failures before; 60 type-operation tests pass). Rejecting an export with no
+  active figure no longer creates one (one failure before; 250 visualization
+  tests pass), while preserving existing empty caller-owned figures.
+- Three real SQLite regressions expose incomplete composite/self-referencing
+  foreign-key matching and NULL parent keys hiding orphans. Correlated aliased
+  `EXISTS` checks now match all key components, exclude nullable child references
+  with MATCH SIMPLE semantics, and preserve the first-column report/sample shape.
+  Two valid Excel sheet names that normalize identically previously overwrote
+  one CSV silently; batch exports now validate eligible destinations before
+  writing. Four regressions fail before these repairs, one preservation case
+  passes; all **1,154** schema/serialization/iterable tests pass afterward.
+- The first frozen candidate passes Ruff lint/format, strict Mypy, Bandit and
+  dependency consistency. Its vulnerability audit reports
+  **CVE-2026-126190 / GHSA-mmhr-3c5m-f64f** in installed Soup Sieve 3.0.4.
+  The [maintainer advisory](https://github.com/facelessuser/soupsieve/security/advisories/GHSA-mmhr-3c5m-f64f)
+  identifies 4.0 as patched. A bounded nested-selector probe preserves empty
+  results with downloaded 4.0.1; the security-required dependency update and fresh
+  candidate validation are pending. No advisory exception or weakened gate is used.
+- The first real HTTP/Chromium invocation records seven passes and one download
+  click timeout. The isolated retry passes; both reports are preserved. A clean
+  combined rerun is required after final candidate selection. Docker now responds,
+  and the disposable service runner has started task-owned services. Startup,
+  integration and cleanup outcomes remain pending, rather than recorded as passes.
+- The November 12 continuation completes asynchronous, development-tool,
+  decorator, database, SSH and string-utility test review. New checkpoints pass 271
+  asynchronous/development tests, 318 decorator tests, and 239 schema-inspection
+  tests. These focused results do not replace final-candidate validation.
+- SSH tests pass **217 cases**, including a real local Node probe that failed
+  with exit code 9 for the generated `node -s` command and now executes supplied
+  stdin using `node -`. This validates interpreter arguments with the SSH
+  transport mocked; it does not substitute for the disposable remote service.
+  Ruff lint/format and strict Mypy on the 22 files covering the preceding new
+  repairs pass after removal of an obsolete type-ignore comment. The public
+  contract comparison still matches all 603 frozen sources.
+- Dependency graphs now resolve package-relative imports before retaining their
+  existing top-level grouping (three failures before; package-initializer and
+  invalid-context preservation also pass). Resource monitoring uses counter
+  increments and avoids double-counting process bytes in system disk totals;
+  deterministic checks cover repeated samples, reused process IDs and an
+  unavailable initial counter. Cache tests now isolate cached state: three
+  selected cases failed before; all 25 pass with accurate independent counts.
+- Twelve real SQLite regressions demonstrate schema-qualified reflection lookup
+  failures or silently empty/zero results across analysis helpers. Qualified
+  metadata lookup preserves requested result names; row counts and sequence
+  maxima use reflected SQL expressions. Cardinality sampling now bounds input
+  rows before all aggregates (two failures before, 19 related tests pass).
+  Unique-prefix indexes are excluded from prefix-redundancy advice because a
+  longer index does not preserve their uniqueness constraint (two failures
+  before, 15 related tests pass). Raw SQL in remaining dialect-specific paths
+  and partial-index equivalence still need investigation; composite-key and NULL
+  matching are now repaired as recorded above.
+- An intermediate quality run passes Ruff lint/format, strict Mypy, Bandit,
+  dependency consistency and vulnerability checks. Its checks overlap development
+  and predate the latest database edits, so it is not final-candidate evidence.
+  The dependency advisory audit explicitly skips unpublished local
+  `pyutils-collection 0.2.3`; no known vulnerabilities are reported for audited
+  dependencies. Fresh final checks and distribution builds remain outstanding.
+- New failure reproductions cover timezone-aware default age references, invalid
+  accumulation chunk settings before pool startup, caller cancellation and worker
+  cleanup, Windows address-family classification, same-file/hard-link
+  concatenation, generator-based password rules, socket cleanup/default-timeout
+  ownership, compact-number integer zeros, and exact-k set-partition completeness.
+  Focused regressions and existing preservation cases pass after each repair.
+- Cancellation cleanup now retrieves both owned tasks' outcomes, preserving
+  cancellation/timeouts when a worker raises during cleanup. Network probes close
+  their sockets on failure; the connectivity timeout no longer changes global
+  socket defaults. The old timeout test now requires the socket-local setting and
+  explicitly rejects changing the process default.
+- Password-rule generators are materialized once so validation cannot consume and
+  bypass custom checks. Concatenation rejects source/destination aliases before
+  copying. Set-partition tests assert completeness and exact cardinality directly;
+  older tests that filtered invalid results are retained alongside them.
+- Further reproduced repairs cover explicit case-sensitive filename matching on
+  Windows (44 recursive-search tests pass), gzip/bz2/lzma same-file and hard-link
+  input preservation, extended to TAR/ZIP creation after four further failure
+  reproductions (118 file-compression tests pass, one skip), commit-failure
+  accounting and per-row rollback (28 bulk-operation tests pass), assertion helpers
+  accepting their own missing-exception failure (14 related tests pass), temporary
+  fixture path containment (27 fixture tests pass), and Excel reader failure cleanup
+  (25 related tests pass). Each has saved failing-before and passing-after reports.
+  Two bulk-operation assertions that expected double counting were corrected;
+  independent regressions verify counts, progress, and committed database rows.
+- Plot-generation failures close the newly created figure while preserving caller
+  figures. Conditional execution and timeout decorators preserve body exceptions;
+  timeout executors also shut down after submission failure. Runtime type checks
+  accept `Any` and union members in supported containers. Focused before/after and
+  adjacent preservation checks are retained for these repairs.
+- URL case-normalization opt-out now preserves scheme case while recognizing
+  default ports case-insensitively (three failing reproductions; 114 URL tests
+  pass). A scoped Cerberus availability-test override preserves the cached module
+  identity; an independent isolation probe and all 122 validation tests pass.
+- Browser download-directory forwarding has a failing-before regression and 17
+  passing manager tests. Eight real HTTP/Chromium integrations pass, including a
+  generated download stored in the requested directory and removed at context
+  cleanup. Failed session restoration also closes only pages it creates, while
+  successful session-storage pages remain usable; 22 related unit tests pass.
+- A broad checkpoint invocation passes **6,077 tests, five skips, 12 warnings** in
+  292.11 seconds, with JUnit, coverage and the 31-family inventory retained. Its
+  collection predates the latest database, assertion, fixture and Excel-reader
+  regressions and their repairs; it is **not final-candidate validation**.
+- A later development checkpoint records **6,134 passes, one failure, five skips,
+  12 warnings** in 462.71 seconds. It overlaps ongoing edits and includes the new
+  Node regression before that process used the repair. Its failing JUnit/log and
+  coverage are preserved as `checkpoint2-*`; it is not a passing candidate gate.
+  Subsequent SSH checks pass all 217 cases. Future final-suite validation must
+  run against a frozen implementation without concurrent source edits.
+- Seeded bootstrap analysis no longer resets the caller's NumPy random state
+  (three failures before, 26 related tests pass). Six comparisons against the
+  frozen implementation preserve exact outputs for all three statistics with and
+  without explicit seeds; unseeded calls retain legacy global RNG consumption.
+  NaN confidence levels now fail validation before resampling (one failure before,
+  three preservation cases pass). All 180 statistical-analysis checks pass with
+  12 existing numerical warnings; no performance claim is attached to this repair.
+- SVD prototype measurements use the frozen source, warmups, five alternating
+  samples, and two independent rounds. The larger whole-function workload improves
+  in both rounds; the smaller workload is mixed. Traced allocation peaks are
+  unchanged. Numerical preservation checks cover tall/wide/square matrices, full
+  and reduced decomposition, ranks, output keys, and caller-owned input.
+- Dictionary-inversion profiling exposes a quadratic scan of previously created
+  groups. The first one-pass prototype increases list allocations and is rejected.
+  The refined prototype improves all three workloads in both rounds without
+  increasing traced allocation peaks. Both prototype reports and profiles are
+  retained; the integrated implementation preserves ordering, independent output
+  buckets, input ownership, and duplicate errors in focused checks.
+- Prototype timing, traced allocation peaks, and absolute post-call RSS are
+  separate measurements. Post-call RSS is **not** a sampled peak. Integrated-code
+  confirmation now uses the actual implementations against the frozen sources.
+  Inversion improves all three cases in both confirmation rounds with slightly
+  lower traced peaks. Whole-function SVD medians for 512x256/rank 256 improve
+  roughly 4–7%; the smaller case is near neutral in one round. A separate five-pair
+  fresh-process RSS check samples approximately every millisecond: median lifetime
+  peaks are 46,198,784 baseline and 46,403,584 candidate bytes. That check includes
+  imports, repeated calls and output serialization; it can miss short peaks.
+  The approximately 0.4% RSS difference does not establish a meaningful memory
+  regression, and no reduced whole-function peak-memory claim is made.
+- All ten standard paired workloads also complete against the frozen working tree,
+  using five alternating samples, matching output digests, separate allocation/RSS
+  measurements, and profiles. An ignored adapter reads frozen files instead of a
+  Git revision, avoiding attribution of preceding uncommitted repairs to this pass.
+  Public signature/class/export AST comparison matches all 603 frozen sources.
+  Package checks and remaining contract/test review are still outstanding; no
+  portable or application-wide speedup is claimed.
+
+Evidence and progress are retained under `.major-check/2026-11-11-exhaustive/`.
+The previous audit/recheck sections below remain historical evidence.
+
+## Independent full recheck — 2026-11-11
+
+The same uncommitted **0.2.3** changeset was checked again without further
+implementation changes or another version increment. Fresh evidence is under
+`.major-check/2026-11-11-recheck/`, including source/environment manifests and
+independent logs; previous reports were not overwritten.
+
+- One full invocation passes **5,994 tests, five skips, 12 warnings** in 602.02
+  seconds. Coverage remains **13,767 / 15,149 lines (90.88%)**. All 31 utility
+  families are represented in the refreshed inventory.
+- Ruff lint/formatting, strict Mypy, Bandit, dependency consistency, and installed
+  dependency vulnerability checks pass. All seven real HTTP/Chromium integration
+  cases, 16 doctest statements, and 18 local documentation links pass again.
+- Public API comparison still matches baseline `46ed7a2e` across 603 sources.
+  Fresh wheel/sdist archives pass metadata checks and installation into the
+  separate artifact environments. Both probes verify 603 sources, 790 exports,
+  six README examples, metadata, and typing; dependency consistency passes.
+- All ten paired benchmark workloads complete again with five alternating samples,
+  matching output digests, separate profiles/allocation/RSS measurements, and zero
+  RSS sampling errors. Timing variation does not warrant a new speedup claim.
+  Manifest comparison confirms the tested implementation, tests, and tooling
+  stayed unchanged throughout this recheck.
+- Docker health again exceeds its 30-second operational deadline. No service
+  project was started. Live PostgreSQL/MySQL/SSH, Linux/macOS, remote CI, and the
+  committed-change documentation CLI remain unverified as previously recorded.
+
+## Whole-codebase maintenance audit — 2026-11-10 to 2026-11-11
+
+This local changeset starts from clean revision
+`46ed7a2e7c948139856cf294495790128f6a34dd` (0.2.2). Development version
+**0.2.3** applies one patch increment for the complete changeset. No push, merge,
+tag, publication, or remote workflow launch is part of this audit.
+
+Evidence is retained under `.major-check/2026-11-10-audit/` (ignored): baseline
+source hashes, environment/dependencies, JUnit/coverage reports, failure
+reproductions, per-family review register, profiles, and distribution probes.
+The environment is Windows 10 with CPython 3.15.2 and standard-library Zstandard;
+BLAS/OpenMP thread counts are limited to one for full tests and measurements.
+
+### Findings and repairs
+
+- **High priority — file preservation:** folder merging could overwrite an
+  existing `_copy` file and traverse an output nested inside its source. Conflicts
+  now select an unused `_copy`, `_copy2`, etc.; overlapping source/output roots
+  are rejected before traversal. Concurrent writers remain unsupported.
+- **High priority — CSV preservation:** header errors left partial output, and
+  using an input as output truncated that input. Output is now staged beside the
+  destination, synced, and replaced after success, with failure cleanup. Empty
+  leading inputs no longer prevent header discovery. Replacement uses temporary
+  file permissions and replaces destination symlinks themselves.
+- **Correctness — accumulation:** chunk results now combine with the supplied
+  associative operation, preserving operand order and avoiding a numeric identity.
+  Multiplication and string concatenation regressions cover multiple chunk sizes.
+  Associativity and possible floating-point regrouping differences are documented.
+- **Correctness — links:** extracted references now resolve against the base
+  document URL, including root/parent/network paths, query strings, and fragments.
+  Explicit schemes remain unchanged; extraction does not filter navigation targets.
+- **Correctness — assertions and matching:** approximate-equality checks reject
+  NaN values/tolerances while preserving matching infinities and large integers;
+  the email pattern no longer accepts a pipe in the top-level domain.
+- **23 unique regression cases fail before repair.** The first repaired focused
+  run passes all 69 cases. Eight additional preservation/cleanup cases cover CSV
+  syncing/replacement failures, all-empty inputs, infinities, and large integers.
+  CSV and accumulation docstring examples are made executable and self-contained.
+
+### Review coverage and evidence
+
+- Inventory and representative risk-based source review cover all **31 utility
+  families**, plus deadline, audit, packaging, and workflow tooling. This is not
+  exhaustive manual certification of every function. The review register names
+  the inspected sources, contracts, and corresponding family test scopes.
+- Filename gaps are reviewed: hostname behavior is exercised by
+  `test_network_get_hostname.py`; four root SSH modules re-export tested local
+  helpers. No tests were added merely to satisfy filename matching.
+- The pristine baseline passes **5,963 tests, five skips, 12 warnings** in one
+  invocation. The first repaired candidate passes **5,994 tests, five skips,
+  12 warnings**. The five skips concern Windows symlink privileges, Unix ownership,
+  and one compression package without `__all__`. Numerical warnings are retained,
+  not suppressed or counted as failures.
+- All **seven real HTTP/Chromium integration cases pass** on the baseline.
+  Baseline lint/formatting, strict Mypy, Bandit, dependency consistency, and the
+  installed-dependency vulnerability audit pass. The first candidate Mypy check
+  identifies an incorrect BeautifulSoup type-ignore; an explicit string cast
+  corrects the annotation without changing URL-resolution behavior.
+- Initial wheel/sdist builds pass metadata checks and independent fresh-environment
+  installations. Both probes verify **603 sources, 790 exports, six README
+  examples**, metadata, and `py.typed`. Final artifacts are rebuilt after the
+  annotation/docstring corrections and checked against the resulting checkout.
+
+### Final verification and performance review
+
+- The final complete invocation passes **5,994 tests, five skips, 12 warnings**.
+  Coverage is **13,767 / 15,149 lines (90.88%)**. Final evidence uses the
+  `verified-*` reports; earlier candidate results are retained separately.
+  The overnight interruption inflated elapsed wall-clock time; it is not a
+  benchmark result. No interrupted unit reports were combined to obtain this pass.
+- The corrected source passes Ruff lint/formatting, strict Mypy over all 603
+  package sources, Bandit, `pip check`, and `pip-audit --local`. The registry lookup
+  explicitly skips the unpublished 0.2.3 project itself; dependencies report no
+  known vulnerabilities. All **77 focused cases pass with Allure enabled**.
+- All **seven HTTP/Chromium integration cases pass again** against the final
+  package source. All **16 affected doctest statements** and **18 local links**
+  pass. AST comparison preserves public signatures, constructors, decorators,
+  class bases, and exports across all **603 package sources**.
+- All **ten paired benchmark workloads** complete with five alternating samples,
+  matching output digests, ten separate candidate profiles, and zero RSS sampling
+  errors. Timing, Python allocation peaks, and absolute sampled RSS remain separate
+  measurements. The benchmarked implementations are unchanged from the baseline;
+  observed timing variation does not establish an optimization or regression.
+  No speculative optimization or new speedup claim is retained. Profiles include
+  process lifecycle, Excel parsing, and database execution costs; these results
+  do not establish application-wide performance or certify every utility.
+- The final wheel/sdist are rebuilt from a fresh staging directory. The separate
+  environments initially resolved dependencies independently; final artifacts
+  replace the package without resolving dependencies again. Logs retain the
+  initial typing failure and the corrected checks. Long wall-clock durations
+  spanning the overnight interruption are not performance measurements.
+- Both final installed-distribution probes pass for **603 sources, 790 exports,
+  six README examples**, metadata, and typing; both dependency-consistency checks
+  pass. Archive SHA-256 values are retained in `final-artifact-hashes.json`.
+  `findings.json`, `review-register.json`, and `verified-family-results.json`
+  retain the repaired findings and all 31 families' test outcomes. Source and
+  report hashes identify this uncommitted candidate independently of its baseline.
+
+### Validation limits
+
+- Docker health exceeded its 30-second operational deadline; no Compose project
+  was started and no service resources were created. Live PostgreSQL/MySQL/SSH
+  checks are unavailable locally, not passing.
+- Linux/macOS and remote CI remain unverified for this unpushed changeset.
+  Historical release authorization and green CI do not apply to this audit.
+- Committed-change documentation CLI validation is deferred while the changeset
+  remains uncommitted; documentation-policy unit tests and local links are checked.
+
 ## 0.2.2 release preparation — 2026-11-09
 
 Publication and merging through a pull request are authorized for this release.

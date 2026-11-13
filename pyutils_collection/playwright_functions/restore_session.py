@@ -7,9 +7,10 @@ saved JSON files, enabling continuation of authenticated sessions.
 
 import json
 import logging
+from contextlib import suppress
 from pathlib import Path
 
-from playwright.sync_api import BrowserContext
+from playwright.sync_api import BrowserContext, Page
 
 
 def restore_session(
@@ -66,6 +67,9 @@ def restore_session(
     - localStorage/sessionStorage require navigating to URL first
     - URL must match the domain where storage was saved
     - Some sites may require additional validation after restoration
+    - A page created for storage restoration remains open on success so its
+      sessionStorage can be used by the caller. On failure, only a newly created
+      page is closed; existing caller pages remain open.
 
     Complexity
     ----------
@@ -90,6 +94,8 @@ def restore_session(
     if not session_path.exists():
         raise FileNotFoundError(f"Session file not found: {session_file}")
 
+    owned_page: Page | None = None
+    completed = False
     try:
         if logger:
             logger.debug(f"Restoring session from: {session_file}")
@@ -123,6 +129,7 @@ def restore_session(
             pages = context.pages
             if not pages:
                 page = context.new_page()
+                owned_page = page
             else:
                 page = pages[0]
 
@@ -152,12 +159,17 @@ def restore_session(
 
         if logger:
             logger.info(f"Session restored successfully from: {session_file}")
+        completed = True
 
     except Exception as e:
         error_msg = f"Failed to restore session: {e}"
         if logger:
             logger.error(error_msg, exc_info=True)
         raise RuntimeError(error_msg) from e
+    finally:
+        if owned_page is not None and not completed:
+            with suppress(Exception):
+                owned_page.close()
 
 
 __all__ = ["restore_session"]

@@ -135,6 +135,7 @@ def test_export_current_figure_no_current_raises_error() -> None:
     # Act & Assert
     with pytest.raises(ValueError, match=expected_message):
         export_current_figure("test.png")
+    assert plt.get_fignums() == []
 
 
 def test_export_current_figure_invalid_filepath_raises_error() -> None:
@@ -189,6 +190,18 @@ def test_export_current_figure_invalid_dpi_raises_error() -> None:
 
     # Cleanup
     plt.close(fig)
+
+
+def test_export_rejection_preserves_existing_empty_figure(tmp_path) -> None:
+    fig = plt.figure()
+    try:
+        before = plt.get_fignums()
+        with pytest.raises(ValueError, match="No active figure to export"):
+            export_current_figure(tmp_path / "empty.png", close_after_save=True)
+        assert plt.get_fignums() == before
+        assert not (tmp_path / "empty.png").exists()
+    finally:
+        plt.close(fig)
 
 
 __all__ = ["test_export_current_figure_basic"]
