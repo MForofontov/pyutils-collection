@@ -1,5 +1,11 @@
 # Current maintenance record
 
+Release preparation on 2026-11-13 is now authorized to commit, push and publish
+0.2.3 after fresh local validation and exact-commit remote CI. The earlier
+no-publication statements below describe the preceding audit scope. Remote main
+Cursor-configuration removals are preserved. Release validation evidence uses
+`.major-check/2026-11-13-release/`; publication remains conditional on its gates.
+
 ## Final local validation — 2026-11-13
 
 The exhaustive source review and locally available final gates are complete for

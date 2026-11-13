@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-13
+
 ### Fixed
 - Require patched Soup Sieve 4.0.1 for CSS selection, addressing
   CVE-2026-126190 (descendant-selector denial of service).
